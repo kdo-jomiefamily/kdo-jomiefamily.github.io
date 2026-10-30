@@ -409,6 +409,15 @@ button.h-ring{cursor:pointer}
 .sv-x{width:34px;height:34px;padding:0;font-size:16px}
 #pparents .field.parents{margin-top:22px;padding-top:16px;border-top:1.5px dashed var(--line, rgba(0,0,0,.08))}
 #pparents .people{margin-top:10px}
+.cmbadge{position:absolute;left:0;top:-2px;padding:2px 6px;border-radius:999px;background:#fff;color:var(--brand-deep);font-size:11px;font-weight:900;line-height:1.3;box-shadow:0 2px 8px rgba(0,0,0,.25);animation:bump .5s cubic-bezier(.2,1.8,.4,1)}
+.switch{display:flex;align-items:center;gap:12px;width:100%;border:2px solid var(--line, rgba(0,0,0,.1));background:var(--surface, #fff);border-radius:16px;padding:12px 14px;font:inherit;font-weight:800;font-size:15px;color:inherit;cursor:pointer;text-align:left}
+.switch .knob{flex:none;position:relative;width:46px;height:28px;border-radius:999px;background:#d9cfd4;transition:background .2s}
+.switch .knob::after{content:'';position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:transform .2s}
+.switch.on{border-color:var(--brand)}
+.switch.on .knob{background:var(--brand)}
+.switch.on .knob::after{transform:translateX(18px)}
+#pparents .glabel.small{display:block;margin-top:12px}
+.hint.warn{color:var(--brand-deep);font-weight:700}
 .sv-frame{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .sv-frame.paused .sv-bars .run i{animation-play-state:paused}
 .sv-nav{position:absolute;top:70px;bottom:0;width:35%;background:none;border:0;z-index:2;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -1015,7 +1024,7 @@ async function createFirebaseBackend() {
       const pushItems = () => { const m = new Map(); Object.values(itemSets).flat().forEach(i => m.set(i.id, i)); on.items([...m.values()]); };
       const q = (name, ...w) => F.query(col(fid, name), ...w);
       // One listener per person, except me and the children I'm a parent of: those surprises are never sent to me
-      const quiet = e => console.error(e);
+      const quiet = e => { console.error(e); rulesHint(e); };
       const track = p => {
         const pid = p.id, hidden = pid === me || (p.managed && (p.parents || []).includes(me));
         if (hidden) {
@@ -1157,8 +1166,12 @@ function createMockBackend() {
       if (!p || !(id === me() || (member(fid, me()) && p.managed))) deny();
       if ('managed' in data || 'login' in data) deny();
       const was = p.parents || [];
-      if (was.length && !was.includes(me())) deny();
-      if ('parents' in data && (!p.managed || (was.length && !(data.parents || []).includes(me())))) deny();
+      if ('parents' in data && !p.managed) deny();
+      if (was.length && !was.includes(me())) {
+        // Not one of the child's parents: I can only add or remove myself as a parent
+        const now = data.parents || [], diff = [...now.filter(x => !was.includes(x)), ...was.filter(x => !now.includes(x))];
+        if (Object.keys(data).join() !== 'parents' || diff.length !== 1 || diff[0] !== me()) deny();
+      }
       Object.assign(p, clean(data)); emit();
     },
     async deleteProfile(fid, id, itemIds) {
@@ -1293,8 +1306,9 @@ function startSession(me) {
       S.comments = list.filter(c => c.expiresAt > now).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
       renderStoryComments();
       tidyComments();
+      announceComments(); queueRender();
     },
-    error: e => { console.error(e); toast('La synchronisation a échoué. Vérifie ta connexion internet.'); },
+    error: e => { console.error(e); if (!rulesHint(e)) toast('La synchronisation a échoué. Vérifie ta connexion internet.'); },
   });
 }
 // One-time setup asked for by the family: Taya's parents are Lily and Robin, Isusa's are Jérôme and Ghita.
@@ -1312,11 +1326,39 @@ function defaultParents(list) {
     backend.updateProfile(DEV.fid, child.id, { parents: ids }).catch(err => console.error(err));
   }
 }
+// Firebase refusing to send something usually means its security rules are older than the app
+let rulesHinted = false;
+function rulesHint(e) {
+  if (!/permission/i.test(String(e?.code || e?.message || ''))) return false;
+  if (!rulesHinted) { rulesHinted = true; toast("Firebase n'a pas les dernières règles de sécurité : certaines infos ne s'affichent pas. Préviens celui qui gère KDO."); }
+  return true;
+}
+// New emojis and messages on my stories: a badge on "Moi", and a little alert when one arrives while KDO is open
+let knownComments = null;
+function unseenOnMyStories() {
+  const mine = new Set(S.stories.filter(x => x.by === S.me).map(x => x.id)), seen = DEV.cmSeen || {};
+  return S.comments.filter(c => mine.has(c.storyId) && c.by !== S.me && (c.createdAt || 0) > (seen[c.storyId] || 0));
+}
+function announceComments() {
+  const now = new Set(S.comments.map(c => c.id));
+  if (knownComments) {
+    const fresh = unseenOnMyStories().filter(c => !knownComments.has(c.id) && !(viewerState && viewerState.sid === c.storyId));
+    const last = fresh[fresh.length - 1];
+    if (last) {
+      const who = prof(last.by)?.name || "Quelqu'un";
+      toast(fresh.length > 1 ? `${fresh.length} nouveaux messages sur ta story` : `${who} sur ta story : ${last.text}`, 'Voir', () => openStory(S.me));
+      if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+        try { new Notification('KDO', { body: `${who} : ${last.text}`, icon: 'icons/icon-192.png', tag: 'kdo-story' }); } catch (e) {}
+      }
+    }
+  }
+  knownComments = now;
+}
 function endSession() {
   stopSync?.(); stopSync = null;
   closeStory();
   Object.assign(S, { me: null, profiles: [], items: [], res: {}, proposals: [], ideas: [], stories: [], comments: [], tab: 'wishes' });
-  rawStories = null; rawComments = [];
+  rawStories = null; rawComments = []; knownComments = null;
   for (const o of [resByOwner, propsByOwner]) Object.keys(o).forEach(k => delete o[k]);
   render();
 }
@@ -1368,10 +1410,12 @@ function storyState(pid) {
 function renderFamily() {
   const sel = selected(), v = viewer(), box = $('#family');
   if (!v) { box.innerHTML = ''; return; }
+  const unread = unseenOnMyStories().length;
   const bubble = (p, isMe) => `
     <button class="fam ${sel && p.id === sel.id ? 'on' : ''}" data-act="select" data-id="${p.id}" role="tab" aria-selected="${!!sel && p.id === sel.id}">
       <span class="ring ${storyState(p.id)}">${face(p, 'md')}</span>
       ${isMe ? '<span class="splus" data-act="story-new" role="button" aria-label="Ajouter une story">+</span>' : ''}
+      ${isMe && unread ? `<span class="cmbadge" aria-label="${unread} nouveaux messages sur ta story">💬${unread}</span>` : ''}
       <span class="fname">${isMe ? 'Moi' : esc(p.name)}</span>
     </button>`;
   box.innerHTML = bubble(v, true) + S.profiles.filter(p => p.id !== S.me).map(p => bubble(p, false)).join('') + `
@@ -1677,6 +1721,7 @@ function renderMain() {
   const notices = secret ? [] : S.items.filter(i => i.ownerId === sel.id && i.removed && (i.reservedBy === v.id || S.res[i.id]?.joiners?.[v.id]));
   const title = isOwner ? 'Mes envies' : parent ? `La liste ${esc(ofName(sel.name))}` : `Les envies ${esc(ofName(sel.name))}`;
   let actions = '';
+  if (tab === 'wishes' && !manage && parentsOf(sel).length) actions = `<button class="btn ghost" data-act="claim-parent" data-id="${sel.id}">Je suis aussi son parent</button>`;
   if (tab === 'wishes' && manage) actions = `<button class="btn ghost" data-act="edit-profile" data-id="${sel.id}">${isOwner ? 'Mon profil' : 'Modifier le profil'}</button><button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter une envie' : 'Ajouter une envie'}</button>`;
   if (tab === 'family' && props.length) actions = `<button class="btn" data-act="new-prop">+ Proposer un cadeau</button>`;
   if (tab === 'mine' && ideas.length) actions = `<button class="btn" data-act="new-idea">+ Ajouter une idée</button>`;
@@ -1737,9 +1782,9 @@ function openProfile(flow, id) {
   pd.self = flow === 'onboard' || (p && p.id === S.me);
   pd.lock = flow === 'onboard';
   // Relatives without the app: either the whole family looks after the list, or only the child's parents
-  pd.parents = (p && Array.isArray(p.parents)) ? p.parents.slice() : [];
-  pd.who = pd.parents.length ? 'parents' : 'family';
-  pd.wasParent = pd.parents.includes(S.me);
+  // Whoever adds a relative becomes their parent; on older profiles anyone can switch it on
+  pd.parents = p ? (Array.isArray(p.parents) ? p.parents.slice() : []) : [S.me];
+  pd.wasParent = !!p && pd.parents.includes(S.me);
   const title = flow === 'onboard' ? 'Bienvenue sur KDO !' : flow === 'relative' ? 'Ajouter un proche' : pd.self ? 'Mon profil' : 'Modifier le profil';
   const intro = flow === 'onboard'
     ? `<p class="hint intro">Crée ton profil, puis choisis ton code secret à 6 chiffres. Avec ce code, tu retrouves ton profil sur n'importe quel ordi ou téléphone. Sans lui, personne ne peut entrer à ta place : c'est ce qui garde les cadeaux secrets.</p>`
@@ -1763,17 +1808,18 @@ function openProfile(flow, id) {
 }
 function refreshParents() {
   const box = $('#pparents'); if (!box || !pd) return;
-  const members = S.profiles.filter(p => !p.managed);
-  const hint = pd.who === 'family'
-    ? "Tout le monde peut remplir sa liste et voit ce qui est déjà pris. Pratique pour un grand-parent ou un animal."
-    : `<b>Compte enfant :</b> seuls ses parents remplissent sa liste. Ils ne voient pas qui prend quoi, ni les idées de la famille. ${pd.wasParent ? 'Tu ne peux pas te retirer toi-même : ça te dévoilerait les surprises.' : ''}`;
-  box.innerHTML = `<div class="field parents"><span class="glabel">Qui s'occupe de sa liste ?</span>
-    <div class="seg"><button data-act="pwho" data-v="family" class="${pd.who === 'family' ? 'on' : ''}" ${pd.wasParent ? 'disabled' : ''}>Toute la famille</button><button data-act="pwho" data-v="parents" class="${pd.who === 'parents' ? 'on' : ''}">Ses parents</button></div>
-    ${pd.who === 'parents' ? `<div class="people">${members.map(p => {
-      const on = pd.parents.includes(p.id), locked = pd.wasParent && p.id === S.me;
-      return `<button class="pp ${on ? 'on' : ''}" data-act="ppar" data-id="${p.id}" aria-pressed="${on}" ${locked ? 'disabled' : ''}>${face(p, 'sm')}<span>${p.id === S.me ? 'Moi' : esc(p.name)}</span></button>`;
-    }).join('')}</div>` : ''}
-    <p class="hint">${hint}</p></div>`;
+  const others = S.profiles.filter(p => !p.managed && p.id !== S.me), iam = pd.parents.includes(S.me);
+  const name = esc(($('#pname')?.value || pd.name || '').trim()) || 'ce proche';
+  box.innerHTML = `<div class="field parents"><span class="glabel">Ses parents</span>
+    <button class="switch ${iam ? 'on' : ''}" data-act="pme" role="switch" aria-checked="${iam}"><span class="knob" aria-hidden="true"></span><span>Je suis son parent</span></button>
+    ${pd.parents.length ? `<p class="hint">Ses parents remplissent sa liste, mais ne voient pas qui prend quoi : la surprise est aussi pour eux. Les autres ne peuvent plus modifier sa liste.</p>
+      ${others.length ? `<span class="glabel small">L'autre parent</span><div class="people">${others.map(p => {
+        const on = pd.parents.includes(p.id);
+        return `<button class="pp ${on ? 'on' : ''}" data-act="ppar" data-id="${p.id}" aria-pressed="${on}">${face(p, 'sm')}<span>${esc(p.name)}</span></button>`;
+      }).join('')}</div>` : ''}`
+    : `<p class="hint">Personne n'est indiqué comme parent : toute la famille peut remplir sa liste et voit ce qui est pris. Pratique pour un grand-parent sans l'appli ou l'animal de la famille.</p>`}
+    ${pd.wasParent && !iam ? `<p class="hint warn">En te retirant, tu verras de nouveau qui prend quoi pour ${name}.</p>` : ''}
+  </div>`;
 }
 function swatches(key, list, label) {
   return `<div class="group"><span class="glabel">${label}</span><div class="opts">${list.map(c => `<button class="sw ${pd.avatar[key] === c ? 'on' : ''}" style="background:${c}" data-act="pset" data-k="${key}" data-v="${c}" aria-label="${label} ${c}" aria-pressed="${pd.avatar[key] === c}"></button>`).join('')}</div></div>`;
@@ -1839,10 +1885,9 @@ function saveProfile() {
   if (!name) { toast('Donne un prénom à ce profil.'); $('#pname').focus(); return; }
   if (pd.mode === 'photo' && !pd.photo) { toast("Choisis une photo, ou reviens sur l'avatar."); return; }
   if (pd.self && !SELF_KINDS.includes(pd.avatar.kind)) pd.avatar.kind = 'adulte';
-  if (!pd.self && pd.who === 'parents' && !pd.parents.length) { toast('Choisis au moins un parent, ou « Toute la famille ».'); return; }
   // Only name, photo and avatar can change. Who the profile belongs to never does.
   const data = { name, photo: pd.mode === 'photo' ? pd.photo : null, avatar: pd.avatar };
-  if (!pd.self) data.parents = pd.who === 'parents' ? pd.parents.filter(pid => prof(pid)) : [];
+  if (!pd.self) data.parents = pd.parents.filter(pid => prof(pid));
   const flow = pd.flow, id = pd.id;
   if (flow === 'onboard') {
     if (S.me) return;
@@ -2224,6 +2269,14 @@ function renderStoryComments(first) {
   const fresh = list.filter(c => !viewerState.shown.has(c.id));
   box.innerHTML = list.map(c => commentHTML(c, story.by, fresh.includes(c))).join('');
   box.classList.toggle('empty', !list.length);
+  if (story.by === S.me && list.length) {
+    DEV.cmSeen = DEV.cmSeen || {};
+    const top = Math.max(...list.map(c => c.createdAt || 0));
+    if ((DEV.cmSeen[story.id] || 0) < top) {
+      for (const k of Object.keys(DEV.cmSeen)) if (!S.stories.some(x => x.id === k)) delete DEV.cmSeen[k];
+      DEV.cmSeen[story.id] = top; saveDevice(); if (!first) renderFamily();
+    }
+  }
   // Someone else's emoji arriving live floats up too (mine already did when I tapped it)
   fresh.forEach(c => { viewerState.shown.add(c.id); if (c.by !== S.me && isReaction(c.text)) flyEmoji(c.text); });
   if (stick) box.scrollTop = box.scrollHeight;
@@ -2650,11 +2703,12 @@ document.addEventListener('click', e => {
     case 'edit-profile': openProfile('edit', id); break;
     case 'ptab': pd.tab = v; refreshProfile(); break;
     case 'pmode': pd.mode = v; refreshProfile(); break;
-    case 'pwho': pd.who = v; if (v === 'parents' && !pd.parents.length) pd.parents = [S.me]; refreshParents(); break;
-    case 'ppar': {
-      if (pd.wasParent && id === S.me) break;
-      const k = pd.parents.indexOf(id); if (k >= 0) pd.parents.splice(k, 1); else pd.parents.push(id);
-      refreshParents(); break;
+    case 'pme': { const k = pd.parents.indexOf(S.me); if (k >= 0) pd.parents.splice(k, 1); else pd.parents.unshift(S.me); refreshParents(); break; }
+    case 'ppar': { const k = pd.parents.indexOf(id); if (k >= 0) pd.parents.splice(k, 1); else pd.parents.push(id); refreshParents(); break; }
+    case 'claim-parent': {
+      const p = prof(id); if (!p) break;
+      if (!el.classList.contains('armed')) { el.classList.add('armed'); el.textContent = 'Confirmer (tu ne verras plus les surprises)'; break; }
+      run(backend.updateProfile(DEV.fid, id, { parents: [...parentsOf(p), S.me] }), `Tu es indiqué comme parent de ${p.name}`); break;
     }
     case 'pset': setAvatar(el.dataset.k, v); refreshProfile(); break;
     case 'prandom': pd.avatar = randomAvatar(pd.avatar.kind, pd.avatar.bg); pd.mode = 'avatar'; refreshProfile(); break;

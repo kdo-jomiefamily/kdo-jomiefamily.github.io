@@ -112,11 +112,15 @@ service cloud.firestore {
               && !('login' in request.resource.data))
           );
         // Name, photo and avatar can change. Who the profile belongs to never does.
-        // A child's profile can only be changed by their parents, and a parent can't step out (that would reveal the surprises).
+        // A child's profile is changed by their parents; anyone else can only add or remove themselves as a parent.
         allow update: if signedIn()
-          && (pid == request.auth.uid || (member(fid) && resource.data.managed == true
-            && (resource.data.get('parents', []).size() == 0 || request.auth.uid in resource.data.get('parents', []))))
-          && (resource.data.get('parents', []).size() == 0 || request.auth.uid in request.resource.data.get('parents', []))
+          && (pid == request.auth.uid || (member(fid) && resource.data.managed == true && (
+            resource.data.get('parents', []).size() == 0
+            || request.auth.uid in resource.data.get('parents', [])
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['parents'])
+              && request.resource.data.get('parents', []).toSet().difference(resource.data.get('parents', []).toSet())
+                .union(resource.data.get('parents', []).toSet().difference(request.resource.data.get('parents', []).toSet()))
+                == [request.auth.uid].toSet()))))
           && validProfile(request.resource.data)
           && request.resource.data.managed == resource.data.managed
           && request.resource.data.get('login', null) == resource.data.get('login', null)
