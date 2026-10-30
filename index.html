@@ -409,6 +409,27 @@ button.h-ring{cursor:pointer}
 .sv-x{width:34px;height:34px;padding:0;font-size:16px}
 #pparents .field.parents{margin-top:22px;padding-top:16px;border-top:1.5px dashed var(--line, rgba(0,0,0,.08))}
 #pparents .people{margin-top:10px}
+.rp{margin-top:14px;border:2px solid var(--line, rgba(0,0,0,.08));border-radius:18px;overflow:hidden;background:var(--surface, #fff)}
+.rp-story{display:flex;align-items:center;gap:12px;width:100%;padding:10px;border:0;background:var(--surface-2, #fff4f7);text-align:left;font:inherit;color:inherit;cursor:pointer}
+.rp-story img{width:52px;height:68px;object-fit:cover;border-radius:10px;flex:none;background:#000}
+.rp-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rp-meta b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-meta small{opacity:.7;font-size:12.5px}
+.rp-count{flex:none;font-weight:900;font-size:14px;background:#fff;border-radius:999px;padding:4px 10px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.rp-list{list-style:none;margin:0;padding:6px 10px 10px;display:flex;flex-direction:column;gap:4px}
+.rp-item{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:14px}
+.rp-item.new{background:#FFE3EB}
+.rp-body{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.rp-body b{font-weight:900}
+.rp-text{overflow-wrap:anywhere}
+.rp-item.emo .rp-text{font-size:22px;line-height:1}
+.rp-body small{opacity:.6;font-size:12px;flex-basis:100%}
+.rp-dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--brand)}
+.rp-none{padding:10px 14px;margin:0}
+.notif{display:flex;align-items:center;gap:12px;margin-top:10px;padding:12px 14px;border-radius:16px;background:#FFF1F5;border:1.5px solid #FFC2D3;font-size:14px;font-weight:700}
+.notif span{flex:1}
+.notif.on{background:#EFFAF4;border-color:#BFE8D0}
+#pnotif .notif{margin-top:18px}
 .cmbadge{position:absolute;left:0;top:-2px;padding:2px 6px;border-radius:999px;background:#fff;color:var(--brand-deep);font-size:11px;font-weight:900;line-height:1.3;box-shadow:0 2px 8px rgba(0,0,0,.25);animation:bump .5s cubic-bezier(.2,1.8,.4,1)}
 .switch{display:flex;align-items:center;gap:12px;width:100%;border:2px solid var(--line, rgba(0,0,0,.1));background:var(--surface, #fff);border-radius:16px;padding:12px 14px;font:inherit;font-weight:800;font-size:15px;color:inherit;cursor:pointer;text-align:left}
 .switch .knob{flex:none;position:relative;width:46px;height:28px;border-radius:999px;background:#d9cfd4;transition:background .2s}
@@ -968,6 +989,10 @@ async function familyIdFor(code) {
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
 }
 const clean = o => JSON.parse(JSON.stringify(o));
+async function tokenId(token) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 40);
+}
 
 async function createFirebaseBackend() {
   const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}`;
@@ -1012,6 +1037,16 @@ async function createFirebaseBackend() {
       catch (e) { throw new Error(authError(e)); }
     },
     async signOut() { await A.signOut(auth); },
+    // Phone notifications go through Firebase Cloud Messaging: this device gets an address, saved for the server
+    async pushToken() {
+      const M = await import(`${base}/firebase-messaging.js`);
+      if (!(await M.isSupported())) throw new Error('unsupported');
+      const reg = await navigator.serviceWorker.register('sw.js');
+      await navigator.serviceWorker.ready;
+      return M.getToken(M.getMessaging(app), { serviceWorkerRegistration: reg });
+    },
+    async savePushToken(fid, token, uid) { await F.setDoc(ref(fid, 'pushTokens', await tokenId(token)), { uid, token, createdAt: Date.now() }); },
+    async deletePushToken(fid, token) { await F.deleteDoc(ref(fid, 'pushTokens', await tokenId(token))); },
     async checkPin({ code, profile, pin }) {
       try { await A.reauthenticateWithCredential(auth.currentUser, A.EmailAuthProvider.credential(emailOf(profile), passwordFor(code, pin))); }
       catch (e) { throw new Error(authError(e)); }
@@ -1134,6 +1169,9 @@ function createMockBackend() {
       D.fails[profile.login] = 0; D.session = u.uid; persist(); return u.uid;
     },
     async signOut() { await tick(); D.session = null; persist(); },
+    async pushToken() { await tick(); return 'mock-token-' + Math.random().toString(36).slice(2, 8); },
+    async savePushToken(fid, token, uid) { await tick(); if (!member(fid, me()) || uid !== me()) deny(); D.pushTokens = D.pushTokens || {}; D.pushTokens[token] = { uid, token }; persist(); },
+    async deletePushToken(fid, token) { await tick(); const t = (D.pushTokens || {})[token]; if (!t || t.uid !== me()) deny(); delete D.pushTokens[token]; persist(); },
     async checkPin({ code, profile, pin }) { await tick(); if (D.users[profile.login]?.pw !== passwordFor(code, pin)) throw new Error('wrong'); },
     async changePin({ code, newPin }) {
       await tick();
@@ -1306,7 +1344,7 @@ function startSession(me) {
       S.comments = list.filter(c => c.expiresAt > now).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
       renderStoryComments();
       tidyComments();
-      announceComments(); queueRender();
+      announceComments(); queueRender(); renderReplies(); repliesFromNotification();
     },
     error: e => { console.error(e); if (!rulesHint(e)) toast('La synchronisation a échoué. Vérifie ta connexion internet.'); },
   });
@@ -1346,7 +1384,7 @@ function announceComments() {
     const last = fresh[fresh.length - 1];
     if (last) {
       const who = prof(last.by)?.name || "Quelqu'un";
-      toast(fresh.length > 1 ? `${fresh.length} nouveaux messages sur ta story` : `${who} sur ta story : ${last.text}`, 'Voir', () => openStory(S.me));
+      toast(fresh.length > 1 ? `${fresh.length} nouveaux messages sur ta story` : `${who} sur ta story : ${last.text}`, 'Voir', () => openReplies());
       if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
         try { new Notification('KDO', { body: `${who} : ${last.text}`, icon: 'icons/icon-192.png', tag: 'kdo-story' }); } catch (e) {}
       }
@@ -1354,6 +1392,16 @@ function announceComments() {
   }
   knownComments = now;
 }
+let openRepliesOnStart = new URLSearchParams(location.search).has('story');
+function repliesFromNotification() {
+  if (!openRepliesOnStart || !S.me || !storiesBy(S.me).length || !$('#modal').hidden) return;
+  openRepliesOnStart = false;
+  try { history.replaceState(null, '', location.pathname + location.search.replace(/([?&])story=[^&]*&?/, '$1').replace(/[?&]$/, '')); } catch (e) {}
+  openReplies();
+}
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
+  if (e.data?.kdo === 'open-replies' && S.me) { if (viewerState) closeStory(); openReplies(); }
+});
 function endSession() {
   stopSync?.(); stopSync = null;
   closeStory();
@@ -1802,6 +1850,7 @@ function openProfile(flow, id) {
     </div>
     <div id="pbody"></div>
     ${pd.self ? '' : '<div id="pparents"></div>'}
+    ${pd.self && flow === 'edit' ? `<div id="pnotif">${notifHTML()}</div>` : ''}
     <div class="m-foot">${canDelete ? `<button class="btn danger" data-act="pdelete">Supprimer le profil</button>` : ''}${pd.self && flow === 'edit' ? '<button class="btn danger" data-act="pchangepin">Changer mon code</button><button class="btn danger" data-act="logout">Me déconnecter</button>' : ''}<span class="sp"></span>${pd.lock ? '<button class="btn ghost" data-act="towho">Retour</button>' : '<button class="btn ghost" data-act="close">Annuler</button>'}<button class="btn" data-act="psave">${flow === 'onboard' ? 'Suivant' : 'Enregistrer'}</button></div>`, pd.lock);
   refreshProfile();
   refreshParents();
@@ -2239,7 +2288,7 @@ function refreshStory() {
   el.innerHTML = `<div class="sv-frame">
     <div class="sv-bars">${list.map((x, k) => `<span class="${k < viewerState.i ? 'done' : k === viewerState.i ? 'run' : ''}"><i${k === viewerState.i ? ` style="animation-duration:${ms}ms"` : ''}></i></span>`).join('')}</div>
     <div class="sv-head">${face(p, 'sm')}<b>${esc(pid === S.me ? 'Ma story' : p.name)}</b><span>${ago(s.createdAt)}</span><span class="sp"></span>
-      ${pid === S.me ? `<button class="sv-btn" data-act="story-del" data-id="${s.id}">Supprimer</button>` : ''}<button class="sv-x" data-act="story-close" aria-label="Fermer">✕</button></div>
+      ${pid === S.me ? `<button class="sv-btn" data-act="story-replies">💬 ${S.comments.filter(c => c.storyId === s.id).length}</button><button class="sv-btn" data-act="story-del" data-id="${s.id}">Supprimer</button>` : ''}<button class="sv-x" data-act="story-close" aria-label="Fermer">✕</button></div>
     <img class="sv-img" src="${s.photo}" alt="${esc(s.caption || 'Story de ' + p.name)}">
     <button class="sv-nav prev" data-act="story-prev" aria-label="Story précédente"></button><button class="sv-nav next" data-act="story-next" aria-label="Story suivante"></button>
     <div class="sv-bottom">
@@ -2342,6 +2391,87 @@ function closeStory() {
   const el = $('#storyview'); if (el) { el.hidden = true; el.innerHTML = ''; }
   if (S.me) render();
 }
+// ---- Notifications on this device ----
+function pushState() {
+  if (MOCK) return DEV.pushToken ? 'on' : 'off';
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return isIOS() && !isStandalone() ? 'ios-install' : 'unsupported';
+  if (Notification.permission === 'denied') return 'denied';
+  return DEV.pushToken && Notification.permission === 'granted' ? 'on' : 'off';
+}
+function notifHTML() {
+  const st = pushState();
+  if (st === 'on') return `<div class="notif on"><span>🔔 Tu es prévenu ici quand quelqu'un réagit à ta story.</span><button class="btn small ghost" data-act="push-off">Couper</button></div>`;
+  if (st === 'off') return `<div class="notif"><span>Reçois une notification quand quelqu'un réagit à ta story, même appli fermée.</span><button class="btn small" data-act="push-on">🔔 Activer</button></div>`;
+  if (st === 'ios-install') return `<div class="notif"><span>Pour les notifications sur iPhone : installe d'abord KDO sur l'écran d'accueil (bouton Partager de Safari, puis « Sur l'écran d'accueil »), puis ouvre-le depuis l'icône.</span></div>`;
+  if (st === 'denied') return `<div class="notif"><span>Les notifications sont bloquées pour KDO dans les réglages de ce téléphone ou de ce navigateur.</span></div>`;
+  return '';
+}
+function refreshNotif() { renderReplies(); const b = $('#pnotif'); if (b) b.innerHTML = notifHTML(); }
+async function enablePush() {
+  try {
+    // The permission question must come right away, straight from the tap (iPhone requires it)
+    const perm = MOCK ? 'granted' : await Notification.requestPermission();
+    if (perm !== 'granted') { toast("Sans ton accord, KDO ne peut pas t'envoyer de notifications."); refreshNotif(); return; }
+    const token = await backend.pushToken();
+    await backend.savePushToken(DEV.fid, token, S.me);
+    DEV.pushToken = token; saveDevice();
+    toast("C'est activé : tu seras prévenu quand on réagit à ta story.");
+  } catch (e) {
+    console.error(e);
+    toast(/unsupported/.test(String(e?.message)) ? "Ce navigateur ne permet pas les notifications." : "Les notifications n'ont pas pu être activées. Réessaie dans un moment.");
+  }
+  refreshNotif();
+}
+async function disablePush() {
+  const tok = DEV.pushToken; DEV.pushToken = null; saveDevice();
+  if (tok) await backend.deletePushToken(DEV.fid, tok).catch(err => console.error(err));
+  toast('Notifications coupées sur cet appareil.'); refreshNotif();
+}
+// ---- "Ta story": who reacted to my stories, with every emoji and message ----
+let repliesOpen = false;
+function openReplies() {
+  if (!storiesBy(S.me).length) { openStoryComposer(); return; }
+  showModal('<div id="replies"></div>');
+  repliesOpen = true; renderReplies();
+}
+function renderReplies() {
+  if (!repliesOpen || $('#modal').hidden || !$('#replies')) return;
+  const mine = storiesBy(S.me).slice().sort((a, b) => b.createdAt - a.createdAt);
+  if (!mine.length) { closeModal(); return; }
+  const seen = DEV.cmSeen || {};
+  const total = S.comments.filter(c => mine.some(x => x.id === c.storyId)).length;
+  $('#replies').innerHTML = `<h2>Ta story</h2>
+    <p class="hint intro">${total ? `${pl(total, 'réaction', 'réactions')} de la famille.` : 'Pas encore de réaction.'} Tout disparaît avec la story, au bout de 48 h.</p>
+    ${notifHTML()}
+    ${mine.map(st => {
+      const list = S.comments.filter(c => c.storyId === st.id).slice().reverse();
+      const left = Math.max(1, Math.ceil((st.expiresAt - Date.now()) / 3600000));
+      return `<section class="rp">
+        <button class="rp-story" data-act="rp-view" data-id="${st.id}" aria-label="Revoir cette story">
+          <img src="${st.photo}" alt=""><span class="rp-meta"><b>${esc(st.caption || 'Ta story')}</b><small>${esc(ago(st.createdAt))} · encore ${left} h</small></span><span class="rp-count">💬 ${list.length}</span>
+        </button>
+        ${list.length ? `<ul class="rp-list">${list.map(c => {
+          const p = prof(c.by), isNew = c.by !== S.me && (c.createdAt || 0) > (seen[st.id] || 0);
+          return `<li class="rp-item ${isNew ? 'new' : ''} ${isReaction(c.text) ? 'emo' : ''}">${p ? face(p, 'sm') : ''}<div class="rp-body"><b>${esc(c.by === S.me ? 'Moi' : p?.name || "Quelqu'un")}</b><span class="rp-text">${esc(c.text)}</span><small>${esc(ago(c.createdAt))}</small></div>${isNew ? '<span class="rp-dot" aria-label="Nouveau"></span>' : ''}</li>`;
+        }).join('')}</ul>` : `<p class="hint rp-none">Personne n'a encore réagi à celle-ci.</p>`}
+      </section>`;
+    }).join('')}
+    <div class="m-foot"><span class="sp"></span><button class="btn ghost" data-act="close">Fermer</button><button class="btn" data-act="story-new">+ Nouvelle story</button></div>`;
+  // Opening this window counts as reading the new reactions (they stay highlighted until it closes)
+  DEV.cmSeen = DEV.cmSeen || {};
+  let changed = false;
+  for (const st of mine) {
+    const top = Math.max(0, ...S.comments.filter(c => c.storyId === st.id).map(c => c.createdAt || 0));
+    if (top > (DEV.cmSeen[st.id] || 0)) { DEV.cmSeen[st.id] = top; changed = true; }
+  }
+  if (changed) { saveDevice(); renderFamily(); }
+}
+function openStoryAt(pid, sid) {
+  const order = storyAuthors(), list = storiesBy(pid), i = list.findIndex(x => x.id === sid);
+  if (!order.includes(pid) || i < 0) return;
+  viewerState = { order, a: order.indexOf(pid), i, hold: new Set() };
+  refreshStory();
+}
 function openStoryComposer() { sd = { photo: null, caption: '' }; renderStoryComposer(); }
 function renderStoryComposer() {
   showModal(`<h2>Ma story</h2><p class="hint intro">Une photo de ton cadeau, de la fête, du sapin… Toute la famille peut la voir pendant 48 heures, puis elle disparaît pour de bon.</p>
@@ -2363,7 +2493,11 @@ async function postStory(btn) {
   const now = Date.now();
   const id = await run(backend.addStory(DEV.fid, { by: S.me, photo, caption, createdAt: now, expiresAt: now + STORY_LIFE }), 'Story publiée pour 48 h');
   closeModal(true);
-  if (id) { DEV.seen = DEV.seen || {}; DEV.seen[id] = now + STORY_LIFE; saveDevice(); render(); burst(innerWidth / 2, 120, 60); }
+  if (id) {
+    DEV.seen = DEV.seen || {}; DEV.seen[id] = now + STORY_LIFE; saveDevice(); render(); burst(innerWidth / 2, 120, 60);
+    // Good moment to offer notifications for the reactions to come
+    if (pushState() === 'off' && !DEV.pushAsked) { DEV.pushAsked = true; saveDevice(); setTimeout(() => toast('Story publiée ! Être prévenu quand on y réagit ?', '🔔 Oui', enablePush), 2700); }
+  }
 }
 
 // ================= Modal / toast =================
@@ -2371,6 +2505,7 @@ let lastFocus = null;
 let modalLocked = false;
 // lock = the screen can't be dismissed (welcome, "who are you", code entry before sign-in)
 function showModal(html, lock = false) {
+  repliesOpen = false;
   lastFocus = document.activeElement;
   modalLocked = lock;
   $('#panel').innerHTML = html; $('#modal').hidden = false;
@@ -2379,7 +2514,7 @@ function showModal(html, lock = false) {
 function closeModal(force) {
   if (modalLocked && !force) return;
   modalLocked = false;
-  $('#modal').hidden = true; $('#panel').innerHTML = ''; pd = null; idr = null; pin = null; sd = null; lastFocus?.focus?.();
+  $('#modal').hidden = true; $('#panel').innerHTML = ''; pd = null; idr = null; pin = null; sd = null; repliesOpen = false; lastFocus?.focus?.();
 }
 
 // ================= Family code, "who are you", 6-digit code =================
@@ -2587,6 +2722,8 @@ document.addEventListener('click', e => {
       S.selected = id; save(); render();
       // Like Instagram: a new story plays when you tap someone, then you land on their list
       if (id !== S.me && storyState(id) === 'st-new') openStory(id);
+      // Tapping "Moi" while my story is up shows who reacted to it
+      if (id === S.me && e.target.closest('.fam') && storiesBy(S.me).length) openReplies();
       break;
     }
     case 'tab': S.tab = v; renderMain(); break;
@@ -2628,6 +2765,10 @@ document.addEventListener('click', e => {
     case 'ipick': { const k = idr.visibleTo.indexOf(id); if (k >= 0) idr.visibleTo.splice(k, 1); else idr.visibleTo.push(id); renderItemModal(); break; }
     // ---- stories ----
     case 'story-new': e.stopPropagation(); openStoryComposer(); break;
+    case 'story-replies': closeStory(); openReplies(); break;
+    case 'rp-view': { const sid = id; closeModal(); openStoryAt(S.me, sid); break; }
+    case 'push-on': enablePush(); break;
+    case 'push-off': disablePush(); break;
     case 'story-open': openStory(id); break;
     case 'story-close': closeStory(); break;
     case 'story-next': if (!swallowTap) storyNext(); break;
@@ -2671,7 +2812,9 @@ document.addEventListener('click', e => {
     case 'pchangepin': { const me = S.me; closeModal(true); openPin({ mode: 'verify', pid: me }); break; }
     case 'logout': {
       closeModal(true);
-      backend.signOut().catch(err => console.error(err)).finally(() => { S.selected = null; save(); endSession(); openWho(); });
+      const tok = DEV.pushToken; DEV.pushToken = null; saveDevice();
+      (tok ? backend.deletePushToken(DEV.fid, tok).catch(err => console.error(err)) : Promise.resolve())
+      .then(() => backend.signOut()).catch(err => console.error(err)).finally(() => { S.selected = null; save(); endSession(); openWho(); });
       break;
     }
     case 'toggle': {

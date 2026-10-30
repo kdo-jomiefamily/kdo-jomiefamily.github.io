@@ -217,6 +217,16 @@ service cloud.firestore {
         allow update: if false;
       }
 
+      // Each device's notification address. Only the server reads them; people can only save or remove their own.
+      match /pushTokens/{tid} {
+        allow read: if false;
+        allow create, update: if member(fid)
+          && request.resource.data.keys().hasOnly(['uid', 'token', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.token is string && request.resource.data.token.size() < 4096;
+        allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      }
+
       // Emojis and short messages left on a story. They expire with it and leave when it is deleted.
       match /storyComments/{cid} {
         allow read: if member(fid);
