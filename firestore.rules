@@ -54,13 +54,18 @@ service cloud.firestore {
         || request.auth.uid in d.get('visibleTo', []);
     }
     function validProposal(d) {
-      return d.keys().hasOnly(['forId', 'by', 'title', 'url', 'price', 'note', 'photo', 'imageUrl', 'status', 'votes', 'createdAt', 'decidedAt'])
+      return d.keys().hasOnly(['forId', 'by', 'title', 'url', 'price', 'note', 'photo', 'imageUrl', 'status', 'votes', 'joiners', 'createdAt', 'decidedAt'])
         && d.forId is string && d.by is string
         && d.title is string && d.title.size() > 0 && d.title.size() <= 120
         && optString(d, 'url', 2000) && optString(d, 'price', 20) && optString(d, 'note', 300) && optString(d, 'imageUrl', 2000)
         && optPhoto(d, 600000)
         && d.status in ['question', 'decided']
-        && d.votes is map && d.votes.size() <= 60;
+        && d.votes is map && d.votes.size() <= 60
+        && d.get('joiners', {}) is map && d.get('joiners', {}).size() <= 60;
+    }
+    // Someone else changing only their own entry in a map (a vote, or joining a group gift)
+    function onlyMyKey(after, before) {
+      return after.diff(before).affectedKeys().hasOnly([request.auth.uid]);
     }
     function validIdea(d) {
       return d.keys().hasOnly(['forId', 'by', 'title', 'url', 'price', 'note', 'photo', 'imageUrl', 'createdAt'])
@@ -134,7 +139,14 @@ service cloud.firestore {
           && canSeeItem(get(itemPath(fid, iid)).data);
         // Only the person who reserved can release it. No overwriting someone else's reservation.
         allow delete: if member(fid) && resource.data.by == request.auth.uid;
-        allow update: if false;
+        // Group gift: others can only add or remove themselves as participants
+        allow update: if member(fid)
+          && resource.data.ownerId != request.auth.uid
+          && resource.data.by != request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joiners'])
+          && request.resource.data.joiners is map && request.resource.data.joiners.size() <= 40
+          && onlyMyKey(request.resource.data.joiners, resource.data.get('joiners', {}))
+          && canSeeItem(get(itemPath(fid, iid)).data);
       }
 
       match /proposals/{pid} {
@@ -153,9 +165,10 @@ service cloud.firestore {
           && (
             // The person who proposed it can change it
             resource.data.by == request.auth.uid
-            // Everyone else can only add, change or remove their own vote
-            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
-              && request.resource.data.votes.diff(resource.data.votes).affectedKeys().hasOnly([request.auth.uid]))
+            // Everyone else can only change their own vote, or join / leave the group gift themselves
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes', 'joiners'])
+              && onlyMyKey(request.resource.data.votes, resource.data.votes)
+              && onlyMyKey(request.resource.data.get('joiners', {}), resource.data.get('joiners', {})))
           );
         allow delete: if member(fid) && resource.data.by == request.auth.uid;
       }

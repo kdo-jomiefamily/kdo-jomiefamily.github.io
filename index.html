@@ -296,6 +296,18 @@ input:focus,textarea:focus{outline:none;border-color:var(--brand)}
 .toast button{background:none;border:0;color:var(--brand);font-weight:900;padding:0}
 @keyframes toast{from{transform:translateX(-50%) translateY(20px)}}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:70}
+/* Group gifts */
+.gang{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;padding:10px 12px;border-radius:14px;background:var(--surface-2)}
+.card .gang{margin:0;border-radius:0;border-top:2px dashed var(--line)}
+.g-avs{display:flex;flex:none}
+.g-avs .av{border:2px solid var(--surface);margin-left:-7px}
+.g-avs .av:first-child{margin-left:0}
+.g-more{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:10px;font-weight:900;margin-left:-7px}
+.g-txt{flex:1 1 150px;min-width:0;font-size:13px;line-height:1.35;color:var(--ink-2)}
+.g-txt b{color:var(--ink);font-weight:900}
+.mbtn.join{flex:1 0 140px;border-color:var(--grape);color:var(--grape)}
+.mbtn.join.on{background:var(--grape);color:#fff}
+.reserve.armed{color:var(--brand)}
 /* Card footers: big, separated buttons that are hard to tap by mistake */
 .bi{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .c-foot{display:flex;flex-direction:column;gap:10px;margin-top:auto;padding-top:10px}
@@ -994,6 +1006,9 @@ async function createFirebaseBackend() {
       catch (e) { throw new Error('already'); }
     },
     release: (fid, itemId) => F.deleteDoc(ref(fid, 'reservations', itemId)),
+    // Group gifts: each person can only add or remove themselves
+    joinReservation: (fid, itemId, me, on) => F.updateDoc(ref(fid, 'reservations', itemId), { [`joiners.${me}`]: on ? true : F.deleteField() }),
+    joinProposal: (fid, id, me, on) => F.updateDoc(ref(fid, 'proposals', id), { [`joiners.${me}`]: on ? true : F.deleteField() }),
     async addProposal(fid, data) { const r = await F.addDoc(col(fid, 'proposals'), clean(data)); return r.id; },
     updateProposal: (fid, id, data) => F.updateDoc(ref(fid, 'proposals', id), clean(data)),
     vote: (fid, id, me, value) => F.updateDoc(ref(fid, 'proposals', id), { [`votes.${me}`]: value ? value : F.deleteField() }),
@@ -1109,6 +1124,16 @@ function createMockBackend() {
       await tick(); const p = bag('proposals', fid)[id];
       if (!p || p.by !== me() || 'by' in data || 'forId' in data) deny();
       Object.assign(p, clean(data)); emit();
+    },
+    async joinReservation(fid, itemId, who, on) {
+      await tick(); const r = bag('reservations', fid)[itemId], it = bag('items', fid)[itemId];
+      if (!r || !member(fid, who) || who !== me() || r.ownerId === who || r.by === who || !it || !canSee(it, who)) deny();
+      r.joiners = r.joiners || {}; if (on) r.joiners[who] = true; else delete r.joiners[who]; emit();
+    },
+    async joinProposal(fid, id, who, on) {
+      await tick(); const p = bag('proposals', fid)[id];
+      if (!p || !member(fid, who) || who !== me() || p.forId === who) deny();
+      p.joiners = p.joiners || {}; if (on) p.joiners[who] = true; else delete p.joiners[who]; emit();
     },
     async vote(fid, id, who, value) {
       await tick(); const p = bag('proposals', fid)[id];
@@ -1413,8 +1438,10 @@ function cardHTML(it, i, settled) {
   }
   let reserve = '';
   if (!isOwner) {
-    if (taken) reserve = `<button class="reserve" disabled>${face(by, 'xs')}<span>Réservé par ${esc(by ? by.name : "quelqu'un")}</span></button>`;
-    else reserve = `<button class="reserve" data-act="toggle" data-id="${it.id}" aria-pressed="${mine}"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span>${mine ? "Tu t'en occupes" : "Je m'en occupe"}</span></button>`;
+    const res = S.res[it.id], joined = Object.keys(res?.joiners || {}).length;
+    const gang = res ? gangHTML({ leadId: it.reservedBy, joiners: res.joiners, price: it.price, act: 'join-res', id: it.id }) : '';
+    if (taken) reserve = `<button class="reserve" disabled>${face(by, 'xs')}<span>Réservé par ${esc(by ? by.name : "quelqu'un")}</span></button>${gang}`;
+    else reserve = `<button class="reserve" data-act="toggle" data-id="${it.id}" aria-pressed="${mine}"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span>${mine ? "Tu t'en occupes" : "Je m'en occupe"}</span></button>${mine && joined ? gang : ''}`;
   }
   return `<article class="card ${mine ? 'mine' : ''} ${taken ? 'taken' : ''} ${settled ? 'settled' : ''}" style="--i:${i}" data-card="${it.id}">
     <div class="thumb">${thumbHTML(it)}${dom ? `<span class="domain">${esc(dom)}</span>` : ''}${vis}${mine ? '<span class="ribbon">Réservé</span>' : ''}</div>
@@ -1439,6 +1466,30 @@ function subline(sel) {
 }
 
 // ---- Family proposals ----
+// Group gifts: the person who took it, plus everyone who joined
+function splitPrice(price, n) {
+  if (!price || n < 2) return '';
+  const m = String(price).replace(/\s/g, '').match(/(\d+(?:[.,]\d+)?)/);
+  if (!m) return '';
+  const v = parseFloat(m[1].replace(',', '.')) / n;
+  if (!isFinite(v) || v <= 0) return '';
+  const cur = /€|eur/i.test(price) ? ' €' : /\$/.test(price) ? ' $' : /£/.test(price) ? ' £' : '';
+  return String(v >= 10 ? Math.round(v) : Math.round(v * 10) / 10).replace('.', ',') + cur;
+}
+function gangHTML({ leadId, joiners, price, act, id }) {
+  const ids = [leadId, ...Object.keys(joiners || {}).filter(k => joiners[k] && k !== leadId)];
+  const people = ids.map(prof).filter(Boolean), n = people.length;
+  const meIn = ids.includes(S.me), lead = leadId === S.me;
+  const share = splitPrice(price, n);
+  const names = people.map(p => p.id === S.me ? 'toi' : p.name);
+  const label = n > 1 ? `<b>${n} personnes sur ce cadeau</b>${share ? ` · ≈ ${esc(share)} chacun` : ''}<br><span>${esc(names.join(', '))}</span>`
+    : `<b>1 personne sur ce cadeau pour l'instant</b><br><span>${lead ? 'Les autres peuvent se joindre à toi' : 'Tu peux te joindre à ' + esc(people[0]?.name || 'elle')}</span>`;
+  return `<div class="gang">
+    <span class="g-avs">${people.slice(0, 4).map(p => face(p, 'xs')).join('')}${n > 4 ? `<span class="g-more">+${n - 4}</span>` : ''}</span>
+    <span class="g-txt">${label}</span>
+    ${lead ? '' : `<button class="mbtn join ${meIn ? 'on' : ''}" data-act="${act}" data-id="${id}" aria-pressed="${meIn}">${meIn ? CHECK + 'Tu participes' : '+ Je participe'}</button>`}
+  </div>`;
+}
 function propHTML(p) {
   const by = prof(p.by), mine = p.by === S.me, votes = p.votes || {};
   const ups = Object.values(votes).filter(x => x > 0).length, downs = Object.values(votes).filter(x => x < 0).length;
@@ -1457,6 +1508,7 @@ function propHTML(p) {
         ${decided ? '' : `<button class="vote ${myVote > 0 ? 'on' : ''}" data-act="vote" data-id="${p.id}" data-v="1" aria-pressed="${myVote > 0}" aria-label="J'aime l'idée">${thumbIcon(false)}<b>${ups}</b></button>
           <button class="vote down ${myVote < 0 ? 'on' : ''}" data-act="vote" data-id="${p.id}" data-v="-1" aria-pressed="${myVote < 0}" aria-label="Je n'aime pas l'idée">${thumbIcon(true)}<b>${downs}</b></button>`}
       </div>
+      ${gangHTML({ leadId: p.by, joiners: p.joiners, price: p.price, act: 'join-prop', id: p.id })}
       ${mine ? `<div class="manage">${decided ? `<button class="mbtn" data-act="prop-undecide" data-id="${p.id}">Plutôt en discuter</button>` : `<button class="mbtn got" data-act="prop-decide" data-id="${p.id}">${CHECK}Je lui prends</button>`}<button class="mbtn del" data-act="prop-delete" data-id="${p.id}">${TRASH}Supprimer</button></div>` : ''}
     </div>
   </article>`;
@@ -1504,7 +1556,7 @@ function renderMain() {
   const props = isOwner ? [] : S.proposals.filter(p => p.forId === sel.id);
   const ideas = isOwner ? [] : S.ideas.filter(i => i.forId === sel.id);
   // Removed items that I had reserved: tell me so I don't buy them
-  const notices = isOwner ? [] : S.items.filter(i => i.ownerId === sel.id && i.removed && i.reservedBy === v.id);
+  const notices = isOwner ? [] : S.items.filter(i => i.ownerId === sel.id && i.removed && (i.reservedBy === v.id || S.res[i.id]?.joiners?.[v.id]));
   const title = isOwner ? 'Mes envies' : `Les envies ${esc(ofName(sel.name))}`;
   let actions = '';
   if (tab === 'wishes' && manage) actions = `<button class="btn ghost" data-act="edit-profile" data-id="${sel.id}">${isOwner ? 'Mon profil' : 'Modifier le profil'}</button><button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter une envie' : 'Ajouter une envie'}</button>`;
@@ -1519,7 +1571,7 @@ function renderMain() {
   if (tab === 'wishes') {
     body = (notices.length ? `<div class="notices">${notices.map(it => {
       const by = prof(it.removedBy);
-      return `<div class="notice"><p><b>${esc(it.title)}</b> a été retiré de la liste${by ? ' par ' + esc(by.name) : ''} : reçu ou déjà acheté. Tu l'avais réservé, alors ne l'achète pas (ou garde bien le ticket).</p><button class="btn small ghost" data-act="ack" data-id="${it.id}">Compris</button></div>`;
+      return `<div class="notice"><p><b>${esc(it.title)}</b> a été retiré de la liste${by ? ' par ' + esc(by.name) : ''} : reçu ou déjà acheté. Tu étais sur ce cadeau, alors ne l'achète pas (ou garde bien le ticket).</p><button class="btn small ghost" data-act="ack" data-id="${it.id}">Compris</button></div>`;
     }).join('')}</div>` : '')
     + (list.length ? `<div class="grid">${list.map((it, i) => cardHTML(it, i, settled)).join('')}</div>`
       : `<div class="empty">${GIFT}<h2>${isOwner ? 'Ta liste est vide' : "Rien pour l'instant"}</h2><p>${isOwner ? "Colle le lien d'un article ou écris simplement ce qui te ferait plaisir." : manage ? `Ajoute des envies pour ${esc(sel.name)}.` : `${esc(sel.name)} n'a encore rien ajouté. Tu peux noter tes idées dans « Mes idées » ou en proposer une à la famille.`}</p>${manage ? `<button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter ma première envie' : 'Ajouter une envie'}</button>` : ''}</div>`);
@@ -2353,6 +2405,9 @@ document.addEventListener('click', e => {
     case 'toggle': {
       const it = S.items.find(i => i.id === id), me = S.me;
       if (!it || it.ownerId === me || (it.reservedBy && it.reservedBy !== me)) return;
+      if (it.reservedBy === me && Object.keys(S.res[id]?.joiners || {}).length && !el.classList.contains('armed')) {
+        el.classList.add('armed'); el.querySelector('span:last-child').textContent = "Confirmer : les autres participants seront retirés"; break;
+      }
       el.disabled = true;
       if (it.reservedBy === me) {
         backend.release(DEV.fid, it.id).then(() => toast("Libéré. Quelqu'un d'autre peut le prendre."), err => { el.disabled = false; toast(errorText(err)); });
@@ -2364,7 +2419,14 @@ document.addEventListener('click', e => {
       break;
     }
     case 'got': removeItem(id); break;
-    case 'ack': run(backend.release(DEV.fid, id)); break;
+    case 'ack': run(S.res[id]?.by === S.me ? backend.release(DEV.fid, id) : backend.joinReservation(DEV.fid, id, S.me, false)); break;
+    case 'join-res': case 'join-prop': {
+      const doc = act === 'join-res' ? S.res[id] : S.proposals.find(x => x.id === id); if (!doc) break;
+      const on = !(doc.joiners || {})[S.me];
+      if (on) { const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top, 40); }
+      run(act === 'join-res' ? backend.joinReservation(DEV.fid, id, S.me, on) : backend.joinProposal(DEV.fid, id, S.me, on), on ? 'Tu participes à ce cadeau' : 'Tu ne participes plus');
+      break;
+    }
     case 'new-relative': openProfile('relative'); break;
     case 'edit-profile': openProfile('edit', id); break;
     case 'ptab': pd.tab = v; refreshProfile(); break;
