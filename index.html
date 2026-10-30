@@ -285,6 +285,104 @@ input:focus,textarea:focus{outline:none;border-color:var(--brand)}
 .toast button{background:none;border:0;color:var(--brand);font-weight:900;padding:0}
 @keyframes toast{from{transform:translateX(-50%) translateY(20px)}}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:70}
+.vh{position:absolute;width:1px;height:1px;opacity:0}
+.list-head .lh-text{flex:1 1 260px}
+@media (max-width:560px){
+  .list-head{gap:12px}
+  .list-head .av.lg{width:68px;height:68px}
+  .list-head .lh-text{flex:1 1 180px}
+  .lh-actions{width:100%}
+  .lh-actions .btn{flex:1;justify-content:center}
+  .ptabs button{padding:7px 10px;font-size:12.5px}
+}
+.lk{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* Stories row (in the pink band) */
+.story-row{display:flex;gap:14px;overflow-x:auto;padding:4px 4px 2px;scrollbar-width:none}
+.story-row::-webkit-scrollbar{display:none}
+.story{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;padding:0;color:#fff;font-weight:800;font-size:11.5px;min-width:60px}
+.sring{padding:3px;border-radius:50%;background:rgba(255,255,255,.35);transition:transform .2s cubic-bezier(.2,1.6,.4,1)}
+.story:hover .sring{transform:scale(1.06)}
+.story.new .sring{background:conic-gradient(from 200deg,#FFE08A,#FFB627,#fff,#8E5BFF,#FFE08A);animation:spinring 6s linear infinite}
+@keyframes spinring{to{filter:hue-rotate(40deg)}}
+.story.add .sring{background:none;border:2px dashed rgba(255,255,255,.7);padding:2px}
+.av.st{width:48px;height:48px;border:2.5px solid var(--brand)}
+.splus{position:absolute;right:2px;top:34px;width:20px;height:20px;border-radius:50%;background:#fff;color:var(--brand-deep);display:grid;place-items:center;font-weight:900;font-size:15px;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.sname{max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.95}
+
+/* Story viewer */
+.storyview{position:fixed;inset:0;z-index:65;background:#140810;display:grid;place-items:center;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);animation:fadein .2s ease-out}
+@keyframes fadein{from{opacity:0}}
+.sv-frame{position:relative;width:min(100%,460px);height:min(100%,820px);background:#000;border-radius:18px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.sv-img{width:100%;height:100%;object-fit:contain}
+.sv-bars{position:absolute;left:10px;right:10px;top:10px;display:flex;gap:4px;z-index:3}
+.sv-bars span{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.35);overflow:hidden}
+.sv-bars i{display:block;height:100%;width:0;background:#fff}
+.sv-bars .done i{width:100%}
+.sv-bars .run i{animation:fillbar 5.5s linear forwards}
+@keyframes fillbar{to{width:100%}}
+.sv-head{position:absolute;left:10px;right:10px;top:22px;display:flex;align-items:center;gap:8px;color:#fff;z-index:4;font-size:13px}
+.sv-head span{opacity:.8}
+.sv-head .sp{flex:1}
+.sv-btn,.sv-x{background:rgba(0,0,0,.35);border:0;color:#fff;border-radius:999px;padding:6px 12px;font-weight:800;font-size:12.5px}
+.sv-btn.armed{background:var(--brand)}
+.sv-x{width:34px;height:34px;padding:0;font-size:16px}
+.sv-cap{position:absolute;left:14px;right:14px;bottom:20px;margin:0;color:#fff;font-weight:800;font-size:17px;text-align:center;text-shadow:0 2px 10px rgba(0,0,0,.6);z-index:3}
+.sv-nav{position:absolute;top:70px;bottom:0;width:35%;background:none;border:0;z-index:2;cursor:pointer}
+.sv-nav.prev{left:0}.sv-nav.next{right:0;width:65%}
+.sc{border-radius:20px;overflow:hidden;background:var(--surface-2);max-height:52vh;display:flex;justify-content:center;margin-bottom:10px}
+.sc-img{max-height:52vh;width:auto;max-width:100%;display:block}
+.sc-drop{cursor:pointer}
+
+/* Tabs on someone else's page */
+.ptabs{display:flex;gap:6px;overflow-x:auto;margin:-4px 0 18px;padding:4px;background:var(--surface-2);border-radius:999px;width:max-content;max-width:100%}
+.ptabs button{display:inline-flex;align-items:center;gap:7px;border:0;background:none;border-radius:999px;padding:8px 14px;font-weight:900;font-size:13.5px;color:var(--ink-2);white-space:nowrap}
+.ptabs button b{font-size:11px;background:var(--surface);color:var(--ink-2);border-radius:999px;padding:1px 7px;min-width:20px;text-align:center}
+.ptabs button.on{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(120,20,60,.15)}
+.ptabs button.on b{background:var(--brand);color:#fff}
+.secret{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:10px 14px;margin:0 0 16px;font-size:14px;font-weight:600;color:var(--ink-2);max-width:760px}
+.secret .lk{margin-top:3px;color:var(--brand)}
+.secret b{color:var(--ink);font-weight:900}
+h2.sec{font-family:var(--f-display);font-weight:400;font-size:22px;margin:22px 0 10px}
+
+/* Proposals */
+.props{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.prop{display:flex;gap:14px;background:var(--surface);border-radius:20px;padding:12px;box-shadow:var(--shadow);min-width:0}
+.prop.decided{outline:2.5px solid var(--mint);outline-offset:-2.5px}
+.p-thumb{position:relative;width:92px;height:92px;flex:none;border-radius:14px;overflow:hidden;background:var(--surface-2)}
+.p-thumb img{width:100%;height:100%;object-fit:cover}
+.p-thumb .gen span{font-size:42px}
+.p-body{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.p-who{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--ink-2)}
+.prop.decided .p-who{color:var(--mint)}
+.p-body h3{margin:0;font-size:16px;font-weight:900;line-height:1.25;overflow-wrap:anywhere}
+.p-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.p-actions .c-link{margin-right:4px}
+.p-actions .sp{flex:1}
+.vote{display:inline-flex;align-items:center;gap:5px;border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;font-weight:900;font-size:13px;color:var(--ink-2);transition:transform .15s cubic-bezier(.2,1.8,.4,1)}
+.vote svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.vote:active{transform:scale(.9)}
+.vote.on{border-color:var(--mint);color:var(--mint);background:var(--surface-2)}
+.vote.down.on{border-color:var(--brand);color:var(--brand)}
+.icon-btn.armed{background:var(--brand);color:#fff}
+
+/* Private ideas */
+.quick{display:flex;gap:10px;margin-bottom:16px;max-width:760px}
+.quick input{flex:1;min-width:0;background:var(--surface);border:2px solid var(--line);border-radius:999px;padding:11px 18px;font:inherit;font-weight:700;color:var(--ink)}
+.quick input:focus{outline:none;border-color:var(--brand)}
+.ideas{display:flex;flex-direction:column;gap:8px;max-width:760px}
+.idea{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface);border-radius:16px;padding:10px 12px 10px 16px;border-left:4px solid var(--grape)}
+.i-body{display:flex;flex-direction:column;min-width:0;flex:1 1 220px}
+.i-body b{font-weight:900;overflow-wrap:anywhere}
+.i-when{font-size:12px;color:var(--ink-2)}
+.i-actions{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.empty-line{padding:6px 2px}
+
+/* Item visibility */
+.people{display:flex;flex-wrap:wrap;gap:8px}
+.pp{display:inline-flex;align-items:center;gap:7px;border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 12px 3px 3px;font-weight:800;font-size:13px;color:var(--ink-2)}
+.pp.on{border-color:var(--brand);color:var(--ink);background:var(--surface-2)}
+.vis{position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:5px;background:var(--ink);color:var(--bg);font-size:11px;font-weight:900;border-radius:999px;padding:3px 10px;max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 @media (max-width:560px){
   .it-grid{grid-template-columns:1fr}
@@ -309,12 +407,14 @@ input:focus,textarea:focus{outline:none;border-color:var(--brand)}
       </div>
       <div class="whoami" id="whoami"></div>
     </div>
+    <div class="story-row" id="stories" aria-label="Stories" hidden></div>
     <div class="fam-row" id="family" role="tablist" aria-label="La famille"></div>
   </div>
 </header>
 <div class="wrap banner" id="banner" hidden></div>
 <main class="wrap" id="main"></main>
 <div class="modal" id="modal" hidden><div class="panel" id="panel" role="dialog" aria-modal="true"></div></div>
+<div class="storyview" id="storyview" role="dialog" aria-modal="true" aria-label="Story" hidden></div>
 <canvas id="confetti" aria-hidden="true"></canvas>
 
 <script type="module">
@@ -714,15 +814,14 @@ function avatarSVG(input) {
 }
 const face = (p, cls = '') => p ? `<span class="av ${cls}">${p.photo ? `<img src="${p.photo}" alt="">` : avatarSVG(p.avatar)}</span>` : '';
 
-// ================= Sample data =================
 // ================= Device + shared state =================
-// DEV stays on this device only: family code, last opened list, failed code attempts
+// DEV stays on this device only: family code, last opened list, failed code attempts, stories already seen
 const DEVICE_KEY = MOCK ? 'kdo-device-mock' : 'kdo-device';
 let DEV = {};
 try { DEV = JSON.parse(localStorage.getItem(DEVICE_KEY)) || {}; } catch (e) { DEV = {}; }
 function saveDevice() { try { localStorage.setItem(DEVICE_KEY, JSON.stringify(DEV)); } catch (e) {} }
 // S mirrors the family data, kept up to date in real time by the backend
-const S = { me: null, profiles: [], items: [], res: {}, selected: DEV.selected || null, locks: DEV.locks || {} };
+const S = { me: null, profiles: [], items: [], res: {}, proposals: [], ideas: [], stories: [], tab: 'wishes', selected: DEV.selected || null, locks: DEV.locks || {} };
 function save() { DEV.selected = S.selected; DEV.locks = S.locks; saveDevice(); }
 const prof = id => S.profiles.find(p => p.id === id);
 const viewer = () => prof(S.me);
@@ -730,6 +829,7 @@ const selected = () => prof(S.selected) || viewer() || S.profiles[0];
 // I can manage my own list and the lists of relatives without the app (baby, kids, pets...)
 const canManage = owner => !!owner && (owner.id === S.me || !!owner.managed);
 const ofName = n => (/^[aeiouyàâäéèêëîïôöûüh]/i.test(n) ? "d'" : 'de ') + n;
+const STORY_LIFE = 48 * 3600 * 1000;
 
 // ================= Backend =================
 // The 6-digit code is combined with the family code; the result is only ever sent to Firebase, never stored
@@ -752,6 +852,7 @@ async function createFirebaseBackend() {
   catch (e) { db = F.getFirestore(app); }
   const famDoc = fid => F.doc(db, 'families', fid);
   const col = (fid, name) => F.collection(db, 'families', fid, name);
+  const ref = (fid, name, id) => F.doc(col(fid, name), id);
   const emailOf = p => `${p.login}@${LOGIN_DOMAIN}`;
   const authError = e => {
     const c = String(e?.code || e?.message || '');
@@ -774,7 +875,7 @@ async function createFirebaseBackend() {
         try { await F.setDoc(famDoc(fid), { createdAt: Date.now(), createdBy: me }); }
         catch (e) { if (!(await this.familyExists(fid))) throw e; }
       }
-      await F.setDoc(F.doc(col(fid, 'profiles'), me), clean({ name: profile.name, avatar: profile.avatar, photo: profile.photo || null, managed: false, login, createdAt: Date.now() }));
+      await F.setDoc(ref(fid, 'profiles', me), clean({ name: profile.name, avatar: profile.avatar, photo: profile.photo || null, managed: false, login, createdAt: Date.now() }));
       return me;
     },
     async signIn({ profile, code, pin }) {
@@ -788,32 +889,50 @@ async function createFirebaseBackend() {
     },
     async changePin({ code, newPin }) { await A.updatePassword(auth.currentUser, passwordFor(code, newPin)); },
     subscribe(fid, me, on) {
-      const offs = [], resOffs = new Map();
-      // One listener per other person: the rules refuse any request that could return my own reservations
-      const track = ownerId => {
-        if (ownerId === me || resOffs.has(ownerId)) return;
-        resOffs.set(ownerId, F.onSnapshot(F.query(col(fid, 'reservations'), F.where('ownerId', '==', ownerId)), s => on.reservations(ownerId, rows(s)), on.error));
+      const offs = [], perPerson = new Map();
+      // Each query only asks for what the rules allow me to see, so nothing hidden is ever sent to me
+      const itemSets = { everyone: [], shared: [], mine: [] };
+      const pushItems = () => { const m = new Map(); Object.values(itemSets).flat().forEach(i => m.set(i.id, i)); on.items([...m.values()]); };
+      const q = (name, ...w) => F.query(col(fid, name), ...w);
+      const track = pid => {
+        if (pid === me || perPerson.has(pid)) return;
+        perPerson.set(pid, [
+          F.onSnapshot(q('reservations', F.where('ownerId', '==', pid)), s => on.reservations(pid, rows(s)), on.error),
+          F.onSnapshot(q('proposals', F.where('forId', '==', pid)), s => on.proposals(pid, rows(s)), on.error),
+        ]);
       };
       offs.push(F.onSnapshot(col(fid, 'profiles'), s => { const list = rows(s); list.forEach(p => track(p.id)); on.profiles(list); }, on.error));
-      offs.push(F.onSnapshot(col(fid, 'items'), s => on.items(rows(s)), on.error));
-      return () => { offs.forEach(f => f()); resOffs.forEach(f => f()); };
+      offs.push(F.onSnapshot(q('items', F.where('everyone', '==', true)), s => { itemSets.everyone = rows(s); pushItems(); }, on.error));
+      offs.push(F.onSnapshot(q('items', F.where('visibleTo', 'array-contains', me)), s => { itemSets.shared = rows(s); pushItems(); }, on.error));
+      offs.push(F.onSnapshot(q('items', F.where('ownerId', '==', me)), s => { itemSets.mine = rows(s); pushItems(); }, on.error));
+      offs.push(F.onSnapshot(q('ideas', F.where('by', '==', me)), s => on.ideas(rows(s)), on.error));
+      offs.push(F.onSnapshot(col(fid, 'stories'), s => on.stories(rows(s)), on.error));
+      return () => { offs.forEach(f => f()); perPerson.forEach(list => list.forEach(f => f())); };
     },
     async addProfile(fid, data) { const r = await F.addDoc(col(fid, 'profiles'), clean(data)); return r.id; },
-    updateProfile: (fid, id, data) => F.updateDoc(F.doc(col(fid, 'profiles'), id), clean(data)),
+    updateProfile: (fid, id, data) => F.updateDoc(ref(fid, 'profiles', id), clean(data)),
     async deleteProfile(fid, id, itemIds) {
       const b = F.writeBatch(db);
-      itemIds.forEach(i => b.delete(F.doc(col(fid, 'items'), i)));
-      b.delete(F.doc(col(fid, 'profiles'), id));
+      itemIds.forEach(i => b.delete(ref(fid, 'items', i)));
+      b.delete(ref(fid, 'profiles', id));
       await b.commit();
     },
     async addItem(fid, data) { const r = await F.addDoc(col(fid, 'items'), clean(data)); return r.id; },
-    updateItem: (fid, id, data) => F.updateDoc(F.doc(col(fid, 'items'), id), clean(data)),
+    updateItem: (fid, id, data) => F.updateDoc(ref(fid, 'items', id), clean(data)),
     // Creating the reservation fails if someone already holds it (the rules forbid overwriting)
     async reserve(fid, item, me) {
-      try { await F.setDoc(F.doc(col(fid, 'reservations'), item.id), { ownerId: item.ownerId, by: me, at: Date.now() }); }
+      try { await F.setDoc(ref(fid, 'reservations', item.id), { ownerId: item.ownerId, by: me, at: Date.now() }); }
       catch (e) { throw new Error('already'); }
     },
-    release: (fid, itemId) => F.deleteDoc(F.doc(col(fid, 'reservations'), itemId)),
+    release: (fid, itemId) => F.deleteDoc(ref(fid, 'reservations', itemId)),
+    async addProposal(fid, data) { const r = await F.addDoc(col(fid, 'proposals'), clean(data)); return r.id; },
+    updateProposal: (fid, id, data) => F.updateDoc(ref(fid, 'proposals', id), clean(data)),
+    vote: (fid, id, me, value) => F.updateDoc(ref(fid, 'proposals', id), { [`votes.${me}`]: value ? value : F.deleteField() }),
+    deleteProposal: (fid, id) => F.deleteDoc(ref(fid, 'proposals', id)),
+    async addIdea(fid, data) { const r = await F.addDoc(col(fid, 'ideas'), clean(data)); return r.id; },
+    deleteIdea: (fid, id) => F.deleteDoc(ref(fid, 'ideas', id)),
+    async addStory(fid, data) { const r = await F.addDoc(col(fid, 'stories'), clean(data)); return r.id; },
+    deleteStory: (fid, id) => F.deleteDoc(ref(fid, 'stories', id)),
   };
 }
 
@@ -822,29 +941,33 @@ function createMockBackend() {
   const KEY = 'kdo-mock-db';
   let D = null;
   try { D = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
-  D = D || { families: {}, profiles: {}, items: {}, reservations: {}, users: {}, session: null, fails: {} };
+  D = D || {};
+  for (const k of ['families', 'profiles', 'items', 'reservations', 'proposals', 'ideas', 'stories', 'users', 'fails']) D[k] = D[k] || {};
   const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} };
   const subs = new Set();
   const tick = () => new Promise(r => setTimeout(r, 5));
   const deny = () => { throw new Error('permission-denied'); };
   const bag = (kind, fid) => (D[kind][fid] = D[kind][fid] || {});
-  const all = (kind, fid) => Object.values(bag(kind, fid)).map(x => ({ ...x }));
+  const all = (kind, fid) => Object.values(bag(kind, fid)).map(x => JSON.parse(JSON.stringify(x)));
   const member = (fid, me) => !!bag('profiles', fid)[me] && !bag('profiles', fid)[me].managed;
   const manages = (fid, me, ownerId) => ownerId === me || !!bag('profiles', fid)[ownerId]?.managed;
+  const canSee = (it, me) => it.ownerId === me || it.everyone === true || (it.visibleTo || []).includes(me);
   const emit = () => { persist(); subs.forEach(f => f()); };
   const nid = () => uid() + uid();
+  const me = () => D.session;
+  const put = (kind, fid, data) => { const id = nid(); bag(kind, fid)[id] = { ...clean(data), id }; emit(); return id; };
   return {
     async familyExists(fid) { await tick(); return !!D.families[fid]; },
     async listProfiles(fid) { await tick(); return all('profiles', fid); },
     async waitForAuth() { await tick(); return D.session; },
     async signUp({ fid, code, pin, profile, newFamily }) {
       await tick();
-      const login = nid(), me = nid();
-      if (newFamily && !D.families[fid]) D.families[fid] = { createdAt: Date.now(), createdBy: me };
+      const login = nid(), id = nid();
+      if (newFamily && !D.families[fid]) D.families[fid] = { createdAt: Date.now(), createdBy: id };
       if (!D.families[fid]) deny();
-      D.users[login] = { pw: passwordFor(code, pin), uid: me }; D.session = me;
-      bag('profiles', fid)[me] = { id: me, name: profile.name, avatar: profile.avatar, photo: profile.photo || null, managed: false, login, createdAt: Date.now() };
-      emit(); return me;
+      D.users[login] = { pw: passwordFor(code, pin), uid: id }; D.session = id;
+      bag('profiles', fid)[id] = { id, name: profile.name, avatar: profile.avatar, photo: profile.photo || null, managed: false, login, createdAt: Date.now() };
+      emit(); return id;
     },
     async signIn({ profile, code, pin }) {
       await tick();
@@ -860,65 +983,92 @@ function createMockBackend() {
       const u = Object.values(D.users).find(x => x.uid === D.session); if (!u) deny();
       u.pw = passwordFor(code, newPin); persist();
     },
-    subscribe(fid, me, on) {
+    subscribe(fid, uidMe, on) {
       const f = () => {
-        if (D.session !== me) return;
-        on.profiles(all('profiles', fid));
-        on.items(all('items', fid));
-        const byOwner = {};
-        all('profiles', fid).forEach(p => { if (p.id !== me) byOwner[p.id] = []; });
-        // Same as the server rules: my own reservations are never sent to me
-        all('reservations', fid).forEach(r => { if (r.ownerId !== me && byOwner[r.ownerId]) byOwner[r.ownerId].push(r); });
-        Object.entries(byOwner).forEach(([o, list]) => on.reservations(o, list));
+        if (D.session !== uidMe) return;
+        const people = all('profiles', fid);
+        on.profiles(people);
+        // Same as the server rules: hidden items, my own reservations and proposals for me are never sent
+        on.items(all('items', fid).filter(i => canSee(i, uidMe)));
+        people.forEach(p => {
+          if (p.id === uidMe) return;
+          on.reservations(p.id, all('reservations', fid).filter(r => r.ownerId === p.id));
+          on.proposals(p.id, all('proposals', fid).filter(r => r.forId === p.id));
+        });
+        on.ideas(all('ideas', fid).filter(i => i.by === uidMe));
+        on.stories(all('stories', fid));
       };
       subs.add(f); setTimeout(f, 0);
       return () => subs.delete(f);
     },
-    async addProfile(fid, data) {
-      await tick(); const me = D.session;
-      if (!member(fid, me) || data.managed !== true) deny();
-      const id = nid(); bag('profiles', fid)[id] = { ...clean(data), id }; emit(); return id;
-    },
+    async addProfile(fid, data) { await tick(); if (!member(fid, me()) || data.managed !== true) deny(); return put('profiles', fid, data); },
     async updateProfile(fid, id, data) {
-      await tick(); const me = D.session, p = bag('profiles', fid)[id];
-      if (!p || !(id === me || (member(fid, me) && p.managed))) deny();
+      await tick(); const p = bag('profiles', fid)[id];
+      if (!p || !(id === me() || (member(fid, me()) && p.managed))) deny();
       if ('managed' in data || 'login' in data) deny();
       Object.assign(p, clean(data)); emit();
     },
     async deleteProfile(fid, id, itemIds) {
-      await tick(); const me = D.session, p = bag('profiles', fid)[id];
-      if (!p || !p.managed || !member(fid, me)) deny();
+      await tick(); const p = bag('profiles', fid)[id];
+      if (!p || !p.managed || !member(fid, me())) deny();
       itemIds.forEach(i => delete bag('items', fid)[i]); delete bag('profiles', fid)[id]; emit();
     },
-    async addItem(fid, data) {
-      await tick(); const me = D.session;
-      if (!member(fid, me) || !manages(fid, me, data.ownerId)) deny();
-      const id = nid(); bag('items', fid)[id] = { ...clean(data), id }; emit(); return id;
-    },
+    async addItem(fid, data) { await tick(); if (!member(fid, me()) || !manages(fid, me(), data.ownerId)) deny(); return put('items', fid, data); },
     async updateItem(fid, id, data) {
-      await tick(); const me = D.session, it = bag('items', fid)[id];
-      if (!it || !member(fid, me) || !manages(fid, me, it.ownerId) || ('ownerId' in data && data.ownerId !== it.ownerId)) deny();
+      await tick(); const it = bag('items', fid)[id];
+      if (!it || !member(fid, me()) || !manages(fid, me(), it.ownerId) || ('ownerId' in data && data.ownerId !== it.ownerId)) deny();
       Object.assign(it, clean(data)); emit();
     },
-    async reserve(fid, item, me) {
+    async reserve(fid, item, by) {
       await tick(); const it = bag('items', fid)[item.id];
-      if (!member(fid, me) || !it || it.ownerId === me || it.removed) deny();
+      if (!member(fid, by) || !it || it.ownerId === by || it.removed || !canSee(it, by)) deny();
       if (bag('reservations', fid)[item.id]) throw new Error('already');
-      bag('reservations', fid)[item.id] = { id: item.id, ownerId: it.ownerId, by: me, at: Date.now() }; emit();
+      bag('reservations', fid)[item.id] = { id: item.id, ownerId: it.ownerId, by, at: Date.now() }; emit();
     },
     async release(fid, itemId) {
       await tick(); const r = bag('reservations', fid)[itemId];
-      if (!r || r.by !== D.session) deny();
+      if (!r || r.by !== me()) deny();
       delete bag('reservations', fid)[itemId]; emit();
     },
-    // Test helper: lets a test act as someone else in the same browser
+    async addProposal(fid, data) {
+      await tick();
+      if (!member(fid, me()) || data.by !== me() || data.forId === me() || !bag('profiles', fid)[data.forId]) deny();
+      return put('proposals', fid, data);
+    },
+    async updateProposal(fid, id, data) {
+      await tick(); const p = bag('proposals', fid)[id];
+      if (!p || p.by !== me() || 'by' in data || 'forId' in data) deny();
+      Object.assign(p, clean(data)); emit();
+    },
+    async vote(fid, id, who, value) {
+      await tick(); const p = bag('proposals', fid)[id];
+      if (!p || !member(fid, who) || who !== me() || p.forId === who) deny();
+      p.votes = p.votes || {};
+      if (value) p.votes[who] = value; else delete p.votes[who];
+      emit();
+    },
+    async deleteProposal(fid, id) { await tick(); const p = bag('proposals', fid)[id]; if (!p || p.by !== me()) deny(); delete bag('proposals', fid)[id]; emit(); },
+    async addIdea(fid, data) { await tick(); if (!member(fid, me()) || data.by !== me()) deny(); return put('ideas', fid, data); },
+    async deleteIdea(fid, id) { await tick(); const i = bag('ideas', fid)[id]; if (!i || i.by !== me()) deny(); delete bag('ideas', fid)[id]; emit(); },
+    async addStory(fid, data) {
+      await tick();
+      if (!member(fid, me()) || data.by !== me() || (data.photo || '').length >= 950000 || data.expiresAt > Date.now() + STORY_LIFE + 60000) deny();
+      return put('stories', fid, data);
+    },
+    async deleteStory(fid, id) {
+      await tick(); const s = bag('stories', fid)[id];
+      if (!s || !member(fid, me()) || !(s.by === me() || s.expiresAt < Date.now())) deny();
+      delete bag('stories', fid)[id]; emit();
+    },
+    // Test helpers
     _db: () => D, _emit: emit,
   };
 }
 
 // ================= Session =================
 let backend = null, stopSync = null, whoList = [];
-const resByOwner = {};
+const resByOwner = {}, propsByOwner = {};
+const migrated = new Set(), cleaned = new Set();
 function mergeReservations() {
   S.res = {};
   Object.values(resByOwner).flat().forEach(r => { S.res[r.id] = r; });
@@ -933,15 +1083,31 @@ function startSession(me) {
   save();
   stopSync = backend.subscribe(DEV.fid, me, {
     profiles: list => { S.profiles = list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); mergeReservations(); queueRender(); },
-    items: list => { S.items = list; mergeReservations(); queueRender(); },
+    items: list => {
+      S.items = list; mergeReservations(); queueRender();
+      // Wishes made before visibility existed become visible to the whole family
+      list.filter(i => i.ownerId === me && typeof i.everyone !== 'boolean' && !migrated.has(i.id)).forEach(i => {
+        migrated.add(i.id); backend.updateItem(DEV.fid, i.id, { everyone: true, visibleTo: [] }).catch(err => console.error(err));
+      });
+    },
     reservations: (owner, list) => { resByOwner[owner] = list; mergeReservations(); queueRender(); },
+    proposals: (owner, list) => { propsByOwner[owner] = list; S.proposals = Object.values(propsByOwner).flat(); queueRender(); },
+    ideas: list => { S.ideas = list; queueRender(); },
+    stories: list => {
+      const now = Date.now();
+      S.stories = list.filter(s => s.expiresAt > now).sort((a, b) => a.createdAt - b.createdAt);
+      queueRender(); if (viewerState) refreshStory();
+      // Anyone can tidy up stories older than 48 h; they then disappear from the database
+      list.filter(s => s.expiresAt <= now && !cleaned.has(s.id)).forEach(s => { cleaned.add(s.id); backend.deleteStory(DEV.fid, s.id).catch(() => {}); });
+    },
     error: e => { console.error(e); toast('La synchronisation a échoué. Vérifie ta connexion internet.'); },
   });
 }
 function endSession() {
   stopSync?.(); stopSync = null;
-  S.me = null; S.profiles = []; S.items = []; S.res = {};
-  Object.keys(resByOwner).forEach(k => delete resByOwner[k]);
+  closeStory();
+  Object.assign(S, { me: null, profiles: [], items: [], res: {}, proposals: [], ideas: [], stories: [], tab: 'wishes' });
+  for (const o of [resByOwner, propsByOwner]) Object.keys(o).forEach(k => delete o[k]);
   render();
 }
 function errorText(e) {
@@ -955,7 +1121,15 @@ async function run(promise, okMessage) {
   catch (e) { console.error(e); toast(errorText(e)); return undefined; }
 }
 // ================= Render =================
-function render() { renderWho(); renderFamily(); renderBanner(); renderMain(); }
+function render() { renderWho(); renderStories(); renderFamily(); renderBanner(); renderMain(); }
+const LOCK = `<svg class="lk" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
+const thumbIcon = down => `<svg viewBox="0 0 24 24" aria-hidden="true"${down ? ' style="transform:rotate(180deg)"' : ''}><path d="M7 11v9H4v-9zM7 11l4-8c1.7 0 2.6 1 2.3 2.7L13 9h5.5a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.3 20H7"/></svg>`;
+function ago(ts) {
+  const m = Math.max(0, Math.round((Date.now() - ts) / 60000));
+  if (m < 1) return "à l'instant";
+  if (m < 60) return `il y a ${m} min`;
+  return `il y a ${Math.round(m / 60)} h`;
+}
 
 function renderWho() {
   const v = viewer(), box = $('#whoami');
@@ -964,6 +1138,24 @@ function renderWho() {
     <span class="lbl">Tu es</span>
     <button class="who" data-act="me" title="Modifier mon prénom ou mon avatar">${face(v, 'sm')}<span>${esc(v.name)}</span></button>`;
 }
+
+// ---- Stories row ----
+const seenStory = id => !!(DEV.seen || {})[id];
+const storiesBy = pid => S.stories.filter(s => s.by === pid);
+function renderStories() {
+  const box = $('#stories'), v = viewer();
+  if (!v) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  const authors = [...new Set(S.stories.map(s => s.by))].filter(id => id !== S.me && prof(id));
+  const allSeen = id => storiesBy(id).every(s => seenStory(s.id));
+  authors.sort((a, b) => (allSeen(a) ? 1 : 0) - (allSeen(b) ? 1 : 0));
+  const mine = storiesBy(S.me);
+  const bubble = (p, list) => `<button class="story ${list.some(s => !seenStory(s.id)) ? 'new' : 'seen'}" data-act="story-open" data-id="${p.id}"><span class="sring">${face(p, 'st')}</span><span class="sname">${esc(p.name)}</span></button>`;
+  box.innerHTML = `<button class="story ${mine.length ? (mine.some(s => !seenStory(s.id)) ? 'new' : 'seen') : 'add'}" data-act="${mine.length ? 'story-open' : 'story-new'}" data-id="${S.me}">
+      <span class="sring">${face(v, 'st')}</span><span class="splus" data-act="story-new" aria-label="Ajouter une story">+</span><span class="sname">Ma story</span></button>` +
+    authors.map(id => bubble(prof(id), storiesBy(id))).join('');
+}
+
 function renderFamily() {
   const sel = selected(), v = viewer();
   $('#family').innerHTML = S.profiles.map(p => `
@@ -1011,13 +1203,19 @@ function cardHTML(it, i, settled) {
   const taken = !isOwner && !!it.reservedBy && it.reservedBy !== v?.id;
   const by = taken ? prof(it.reservedBy) : null;
   const dom = domainOf(it.url);
+  let vis = '';
+  if (it.everyone === false) {
+    vis = isOwner
+      ? `<span class="vis">${LOCK}${esc((it.visibleTo || []).map(id => prof(id)?.name).filter(Boolean).join(', ') || 'Personne')}</span>`
+      : `<span class="vis">${LOCK}Choisi pour toi</span>`;
+  }
   let reserve = '';
   if (!isOwner) {
     if (taken) reserve = `<button class="reserve" disabled>${face(by, 'xs')}<span>Réservé par ${esc(by ? by.name : "quelqu'un")}</span></button>`;
     else reserve = `<button class="reserve" data-act="toggle" data-id="${it.id}" aria-pressed="${mine}"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span>${mine ? "Tu t'en occupes" : "Je m'en occupe"}</span></button>`;
   }
   return `<article class="card ${mine ? 'mine' : ''} ${taken ? 'taken' : ''} ${settled ? 'settled' : ''}" style="--i:${i}" data-card="${it.id}">
-    <div class="thumb">${thumbHTML(it)}${dom ? `<span class="domain">${esc(dom)}</span>` : ''}${mine ? '<span class="ribbon">Réservé</span>' : ''}</div>
+    <div class="thumb">${thumbHTML(it)}${dom ? `<span class="domain">${esc(dom)}</span>` : ''}${vis}${mine ? '<span class="ribbon">Réservé</span>' : ''}</div>
     <div class="c-body">
       ${it.price ? `<span class="price">${esc(it.price)}</span>` : ''}
       <h3>${esc(it.title)}</h3>
@@ -1037,32 +1235,87 @@ function subline(sel) {
   const r = all.filter(i => i.reservedBy).length;
   return `${pl(all.length, 'envie', 'envies')} · ${pl(r, 'déjà réservée', 'déjà réservées')}${sel.managed ? ' · Liste gérée par la famille' : ''}`;
 }
+
+// ---- Family proposals ----
+function propHTML(p) {
+  const by = prof(p.by), mine = p.by === S.me, votes = p.votes || {};
+  const ups = Object.values(votes).filter(x => x > 0).length, downs = Object.values(votes).filter(x => x < 0).length;
+  const myVote = votes[S.me] || 0, decided = p.status === 'decided';
+  const name = mine ? 'Tu' : esc(by?.name || "Quelqu'un");
+  const who = decided ? (mine ? 'Tu lui offres ça' : `${name} lui offre ça`) : (mine ? "Tu demandes l'avis de la famille" : `${name} demande ton avis`);
+  const info = [p.price && `<b class="price">${esc(p.price)}</b>`, p.note && esc(p.note)].filter(Boolean).join(' · ');
+  return `<article class="prop ${decided ? 'decided' : ''}" data-prop="${p.id}">
+    <div class="p-thumb">${thumbHTML(p)}</div>
+    <div class="p-body">
+      <div class="p-who">${face(by, 'xs')}<span>${who}</span></div>
+      <h3>${esc(p.title)}</h3>
+      ${info ? `<p class="c-note">${info}</p>` : ''}
+      <div class="p-actions">
+        ${p.url ? `<a class="c-link" href="${esc(p.url)}" target="_blank" rel="noopener">Voir l'article ↗</a>` : ''}
+        ${decided ? '' : `<button class="vote ${myVote > 0 ? 'on' : ''}" data-act="vote" data-id="${p.id}" data-v="1" aria-pressed="${myVote > 0}" aria-label="J'aime l'idée">${thumbIcon(false)}<b>${ups}</b></button>
+          <button class="vote down ${myVote < 0 ? 'on' : ''}" data-act="vote" data-id="${p.id}" data-v="-1" aria-pressed="${myVote < 0}" aria-label="Je n'aime pas l'idée">${thumbIcon(true)}<b>${downs}</b></button>`}
+        ${mine ? `<span class="sp"></span>${decided ? `<button class="icon-btn" data-act="prop-undecide" data-id="${p.id}">Finalement, on en discute</button>` : `<button class="btn small" data-act="prop-decide" data-id="${p.id}">Je lui prends ✓</button>`}<button class="icon-btn" data-act="prop-delete" data-id="${p.id}">Supprimer</button>` : ''}
+      </div>
+    </div>
+  </article>`;
+}
+function familyTab(sel, props) {
+  const intro = `<p class="secret">${LOCK}<span><b>${esc(sel.name)} ne voit rien de cet onglet.</b> Proposez-vous des cadeaux, donnez votre avis, et annoncez qui offre quoi pour éviter les doublons.</span></p>`;
+  if (!props.length) return intro + `<div class="empty">${GIFT}<h2>Aucune idée pour l'instant</h2><p>Tu penses à un cadeau pour ${esc(sel.name)} ? Propose-le : la famille donne son avis, ou tu annonces directement que tu t'en occupes.</p><button class="btn" data-act="new-prop">+ Proposer un cadeau</button></div>`;
+  const decided = props.filter(p => p.status === 'decided'), asks = props.filter(p => p.status !== 'decided');
+  const newest = (a, b) => b.createdAt - a.createdAt;
+  return intro + (asks.length ? `<h2 class="sec">On en discute</h2><div class="props">${asks.sort(newest).map(propHTML).join('')}</div>` : '')
+    + (decided.length ? `<h2 class="sec">C'est décidé</h2><div class="props">${decided.sort(newest).map(propHTML).join('')}</div>` : '');
+}
+// ---- My private ideas ----
+function ideasTab(sel, ideas) {
+  return `<p class="secret">${LOCK}<span><b>Rien que pour toi.</b> Ni ${esc(sel.name)}, ni le reste de la famille ne voient tes idées. Note-les vite avant de les oublier.</span></p>
+    <form class="quick" id="ideaform"><input type="text" id="ideain" maxlength="200" placeholder="Une idée pour ${esc(sel.name)} : un nom ou un lien" autocomplete="off"><button class="btn" type="submit">Noter</button></form>
+    ${ideas.length ? `<div class="ideas">${ideas.sort((a, b) => b.createdAt - a.createdAt).map(i => `<div class="idea">
+        <div class="i-body"><b>${esc(i.title)}</b>${i.url ? `<a class="c-link" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(domainOf(i.url))} ↗</a>` : ''}<span class="i-when">${ago(i.createdAt).replace('il y a', 'noté il y a')}</span></div>
+        <div class="i-actions"><button class="icon-btn" data-act="idea-propose" data-id="${i.id}">Proposer à la famille</button><button class="btn small" data-act="idea-take" data-id="${i.id}">Je lui offre</button><button class="icon-btn" data-act="idea-delete" data-id="${i.id}" aria-label="Supprimer l'idée">✕</button></div>
+      </div>`).join('')}</div>` : `<p class="hint empty-line">Aucune idée notée pour ${esc(sel.name)} pour l'instant.</p>`}`;
+}
+
 let lastAnimated = null;
 function renderMain() {
   const m = $('#main');
   if (!viewer()) { m.innerHTML = ''; return; }
   const sel = selected(), v = viewer(), isOwner = v.id === sel.id, manage = canManage(sel);
+  const tab = isOwner ? 'wishes' : S.tab;
   // Cards pop in only when a list is first opened, not on every live update
-  const settled = lastAnimated === sel.id; lastAnimated = sel.id;
+  const key = sel.id + tab, settled = lastAnimated === key; lastAnimated = key;
   const list = S.items.filter(i => i.ownerId === sel.id && !i.removed).sort((a, b) => b.createdAt - a.createdAt);
+  const props = isOwner ? [] : S.proposals.filter(p => p.forId === sel.id);
+  const ideas = isOwner ? [] : S.ideas.filter(i => i.forId === sel.id);
   // Removed items that I had reserved: tell me so I don't buy them
   const notices = isOwner ? [] : S.items.filter(i => i.ownerId === sel.id && i.removed && i.reservedBy === v.id);
   const title = isOwner ? 'Mes envies' : `Les envies ${esc(ofName(sel.name))}`;
+  let actions = '';
+  if (tab === 'wishes' && manage) actions = `<button class="btn ghost" data-act="edit-profile" data-id="${sel.id}">${isOwner ? 'Mon avatar' : 'Modifier le profil'}</button><button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter une envie' : 'Ajouter une idée'}</button>`;
+  if (tab === 'family' && props.length) actions = `<button class="btn" data-act="new-prop">+ Proposer un cadeau</button>`;
+  const tabs = isOwner ? '' : `<div class="ptabs" role="tablist">
+      <button role="tab" aria-selected="${tab === 'wishes'}" class="${tab === 'wishes' ? 'on' : ''}" data-act="tab" data-v="wishes">${sel.managed ? 'Sa liste' : 'Ses envies'}<b>${list.length}</b></button>
+      <button role="tab" aria-selected="${tab === 'family'}" class="${tab === 'family' ? 'on' : ''}" data-act="tab" data-v="family">Idées de la famille<b>${props.length}</b></button>
+      <button role="tab" aria-selected="${tab === 'mine'}" class="${tab === 'mine' ? 'on' : ''}" data-act="tab" data-v="mine">${LOCK}Mes idées<b>${ideas.length}</b></button>
+    </div>`;
+  let body = '';
+  if (tab === 'wishes') {
+    body = (notices.length ? `<div class="notices">${notices.map(it => {
+      const by = prof(it.removedBy);
+      return `<div class="notice"><p><b>${esc(it.title)}</b> a été retiré de la liste${by ? ' par ' + esc(by.name) : ''} : reçu ou déjà acheté. Tu l'avais réservé, alors ne l'achète pas (ou garde bien le ticket).</p><button class="btn small ghost" data-act="ack" data-id="${it.id}">Compris</button></div>`;
+    }).join('')}</div>` : '')
+    + (list.length ? `<div class="grid">${list.map((it, i) => cardHTML(it, i, settled)).join('')}</div>`
+      : `<div class="empty">${GIFT}<h2>${isOwner ? 'Ta liste est vide' : "Rien pour l'instant"}</h2><p>${isOwner ? "Colle le lien d'un article ou écris simplement ce qui te ferait plaisir." : manage ? `Ajoute des idées pour ${esc(sel.name)}.` : `${esc(sel.name)} n'a encore rien ajouté. Tu peux noter tes idées dans « Mes idées » ou en proposer une à la famille.`}</p>${manage ? `<button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter ma première envie' : 'Ajouter une idée'}</button>` : ''}</div>`);
+  }
+  if (tab === 'family') body = familyTab(sel, props);
+  if (tab === 'mine') body = ideasTab(sel, ideas);
   m.innerHTML = `
     <div class="list-head">
       ${face(sel, 'lg')}
       <div class="lh-text"><h1>${title}</h1><p id="subline">${esc(subline(sel))}</p></div>
-      <div class="lh-actions">
-        ${manage ? `<button class="btn ghost" data-act="edit-profile" data-id="${sel.id}">${isOwner ? 'Mon avatar' : 'Modifier le profil'}</button>
-        <button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter une envie' : 'Ajouter une idée'}</button>` : ''}
-      </div>
-    </div>
-    ${notices.length ? `<div class="notices">${notices.map(it => {
-      const by = prof(it.removedBy);
-      return `<div class="notice"><p><b>${esc(it.title)}</b> a été retiré de la liste${by ? ' par ' + esc(by.name) : ''} : reçu ou déjà acheté. Tu l'avais réservé, alors ne l'achète pas (ou garde bien le ticket).</p><button class="btn small ghost" data-act="ack" data-id="${it.id}">Compris</button></div>`;
-    }).join('')}</div>` : ''}
-    ${list.length ? `<div class="grid">${list.map((it, i) => cardHTML(it, i, settled)).join('')}</div>`
-      : `<div class="empty">${GIFT}<h2>${isOwner ? 'Ta liste est vide' : "Rien pour l'instant"}</h2><p>${isOwner ? "Colle le lien d'un article ou écris simplement ce qui te ferait plaisir." : manage ? `Ajoute des idées pour ${esc(sel.name)}.` : `${esc(sel.name)} n'a encore rien ajouté.`}</p>${manage ? `<button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter ma première envie' : 'Ajouter une idée'}</button>` : ''}</div>`}`;
+      <div class="lh-actions">${actions}</div>
+    </div>${tabs}${body}`;
 }
 
 // ================= Profile modal =================
@@ -1201,33 +1454,55 @@ function deleteProfile(btn) {
   run(backend.deleteProfile(DEV.fid, id, itemIds), 'Profil supprimé');
 }
 
-// ================= Item modal =================
+// ================= Item / proposal modal =================
+// One window for two things: a wish on a list (kind "item") or a gift proposed to the family (kind "prop")
 let idr = null;
 function openItem(id) {
   const it = id ? S.items.find(i => i.id === id) : null;
-  idr = it ? { ...it } : { id: null, ownerId: selected().id, title: '', url: '', price: '', note: '', photo: null };
+  idr = it ? { ...it, visibleTo: [...(it.visibleTo || [])], everyone: it.everyone !== false }
+    : { id: null, ownerId: selected().id, title: '', url: '', price: '', note: '', photo: null, everyone: true, visibleTo: [] };
+  idr.kind = 'item';
   idr.tab = it && !it.url ? 'name' : 'link';
   idr.autoTitle = !it;
   renderItemModal();
 }
+function openProposal(pre = {}) {
+  idr = { kind: 'prop', id: null, forId: pre.forId || selected().id, title: pre.title || '', url: pre.url || '', price: '', note: '', photo: null, status: pre.status || 'question', fromIdea: pre.fromIdea || null };
+  idr.tab = idr.url || !idr.title ? 'link' : 'name';
+  idr.autoTitle = !idr.title;
+  renderItemModal();
+}
 function renderItemModal() {
-  const owner = prof(idr.ownerId), isOwner = viewer().id === idr.ownerId;
-  const title = idr.id ? "Modifier l'envie" : (isOwner ? 'Nouvelle envie' : `Une idée pour ${esc(owner.name)}`);
+  const prop = idr.kind === 'prop';
+  const owner = prof(prop ? idr.forId : idr.ownerId), isOwner = viewer().id === owner.id;
+  const title = prop ? `Un cadeau pour ${esc(owner.name)}` : idr.id ? "Modifier l'envie" : (isOwner ? 'Nouvelle envie' : `Une idée pour ${esc(owner.name)}`);
+  const others = S.profiles.filter(p => !p.managed && p.id !== S.me);
+  const visibility = (!prop && isOwner && !owner.managed) ? `<div class="field"><span class="glabel">Qui peut te l'offrir ?</span>
+      <div class="seg"><button data-act="ivis" data-v="all" class="${idr.everyone ? 'on' : ''}">Toute la famille</button><button data-act="ivis" data-v="some" class="${idr.everyone ? '' : 'on'}">Seulement certaines personnes</button></div>
+      ${idr.everyone ? '' : others.length
+        ? `<div class="people">${others.map(p => `<button class="pp ${idr.visibleTo.includes(p.id) ? 'on' : ''}" data-act="ipick" data-id="${p.id}" aria-pressed="${idr.visibleTo.includes(p.id)}">${face(p, 'sm')}<span>${esc(p.name)}</span></button>`).join('')}</div><p class="hint">Les autres ne verront pas du tout cet article.</p>`
+        : `<p class="hint">Personne d'autre n'a encore rejoint KDO. Invite ta famille pour pouvoir choisir.</p>`}
+    </div>` : '';
+  const status = prop ? `<div class="field"><span class="glabel">Ce que tu veux faire</span>
+      <div class="seg"><button data-act="pstatus" data-v="question" class="${idr.status === 'question' ? 'on' : ''}">Demander l'avis de la famille</button><button data-act="pstatus" data-v="decided" class="${idr.status === 'decided' ? 'on' : ''}">C'est décidé, je lui offre</button></div>
+      <p class="hint">${LOCK} ${esc(owner.name)} ne verra jamais cette proposition.</p></div>` : '';
+  const saveLabel = prop ? (idr.status === 'decided' ? "C'est noté" : 'Proposer à la famille') : idr.id ? 'Enregistrer' : 'Ajouter à la liste';
   showModal(`<h2>${title}</h2>
     <div class="seg"><button data-act="itab" data-v="link" class="${idr.tab === 'link' ? 'on' : ''}">Coller un lien</button><button data-act="itab" data-v="name" class="${idr.tab === 'name' ? 'on' : ''}">Écrire un nom</button></div>
     <div class="it-grid">
       <div class="stack"><div class="it-thumb" id="ithumb"></div>
-        <label class="filebtn"><input type="file" id="iphoto" accept="image/*">${idr.photo ? 'Changer la photo' : '+ Ajouter ta photo'}</label>
+        <label class="filebtn"><input type="file" id="iphoto" accept="image/*">${idr.photo ? 'Changer la photo' : '+ Ajouter une photo'}</label>
         ${idr.photo ? '<button class="linkbtn" data-act="inophoto">Retirer la photo</button>' : ''}
       </div>
       <div class="stack">
-        ${idr.tab === 'link' ? `<div class="field"><label for="iurl">Lien de l'article</label><input type="url" id="iurl" placeholder="https://www.boutique.fr/l-article-qui-te-plait" value="${esc(idr.url)}"><p class="hint">Dans l'appli de bureau, KDO ira chercher la vraie photo et le nom sur la page. Ici, l'aperçu lit seulement le nom dans l'adresse.</p></div>` : ''}
-        <div class="field"><label for="ititle">${idr.tab === 'link' ? 'Nom' : 'Qu’est-ce qui te ferait plaisir ?'}</label><input type="text" id="ititle" maxlength="90" placeholder="Ex. Un grand plaid tout doux" value="${esc(idr.title)}"></div>
+        ${idr.tab === 'link' ? `<div class="field"><label for="iurl">Lien de l'article</label><input type="url" id="iurl" placeholder="https://www.boutique.fr/l-article-qui-te-plait" value="${esc(idr.url)}"><p class="hint">KDO lit le nom de l'article dans le lien. Tu peux le corriger, et ajouter ta propre photo.</p></div>` : ''}
+        <div class="field"><label for="ititle">${idr.tab === 'link' ? 'Nom' : prop ? 'Quel cadeau ?' : 'Qu’est-ce qui te ferait plaisir ?'}</label><input type="text" id="ititle" maxlength="90" placeholder="Ex. Un grand plaid tout doux" value="${esc(idr.title)}"></div>
         <div class="field"><label for="iprice">Prix (facultatif)</label><input type="text" id="iprice" maxlength="16" placeholder="40 €" value="${esc(idr.price)}"></div>
-        <div class="field"><label for="inote">Précisions (taille, couleur, où l'acheter…)</label><textarea id="inote" maxlength="240" placeholder="Taille M, toutes les couleurs sauf le jaune">${esc(idr.note)}</textarea></div>
+        <div class="field"><label for="inote">${prop ? 'Un mot pour la famille (facultatif)' : "Précisions (taille, couleur, où l'acheter…)"}</label><textarea id="inote" maxlength="240" placeholder="${prop ? 'On pourrait le lui offrir à plusieurs ?' : 'Taille M, toutes les couleurs sauf le jaune'}">${esc(idr.note)}</textarea></div>
+        ${visibility}${status}
       </div>
     </div>
-    <div class="m-foot">${idr.id ? '<button class="btn danger" data-act="idelete">Retirer de la liste</button>' : ''}<span class="sp"></span><button class="btn ghost" data-act="close">Annuler</button><button class="btn" data-act="isave">${idr.id ? 'Enregistrer' : 'Ajouter à la liste'}</button></div>`);
+    <div class="m-foot">${!prop && idr.id ? '<button class="btn danger" data-act="idelete">Retirer de la liste</button>' : ''}<span class="sp"></span><button class="btn ghost" data-act="close">Annuler</button><button class="btn" data-act="isave">${saveLabel}</button></div>`);
   refreshThumb();
 }
 function refreshThumb() {
@@ -1241,11 +1516,27 @@ function saveItem(btn) {
     url = normalizeUrl(idr.url);
     if (!url) { toast('Ce lien ne semble pas valide. Vérifie qu’il commence par https://'); return; }
   }
-  const title = (idr.title || '').trim() || (url ? titleFromUrl(url) : '');
-  if (!title) { toast('Donne un nom à cette envie.'); $('#ititle')?.focus(); return; }
+  const title = (idr.title || '').trim() || (url ? titleFromUrl(url) || domainOf(url) : '');
+  if (!title) { toast('Donne un nom à ce cadeau.'); $('#ititle')?.focus(); return; }
   const data = { title, url, price: (idr.price || '').trim(), note: (idr.note || '').trim(), photo: idr.photo || null };
-  const id = idr.id, ownerId = idr.ownerId;
-  if (!id) { const r = btn.getBoundingClientRect(); burst(r.left + r.width / 2, r.top, 40); }
+  const r = btn.getBoundingClientRect();
+  if (idr.kind === 'prop') {
+    const { forId, status, fromIdea } = idr, name = prof(forId)?.name || '';
+    closeModal(true);
+    if (status === 'decided') burst(r.left + r.width / 2, r.top, 50);
+    S.tab = 'family';
+    run(backend.addProposal(DEV.fid, { ...data, forId, by: S.me, status, votes: {}, createdAt: Date.now() }),
+      status === 'decided' ? `C'est noté : tu lui offres ça. ${name} n'en saura rien.` : 'Proposé à la famille')
+      .then(id => { if (id && fromIdea) backend.deleteIdea(DEV.fid, fromIdea).catch(err => console.error(err)); });
+    return;
+  }
+  const id = idr.id, ownerId = idr.ownerId, owner = prof(ownerId);
+  if (owner && !owner.managed && ownerId === S.me) {
+    if (!idr.everyone && !idr.visibleTo.length) { toast('Choisis au moins une personne, ou « Toute la famille ».'); return; }
+    data.everyone = !!idr.everyone;
+    data.visibleTo = idr.everyone ? [] : idr.visibleTo.filter(pid => prof(pid));
+  } else if (!id) { data.everyone = true; data.visibleTo = []; }
+  if (!id) burst(r.left + r.width / 2, r.top, 40);
   closeModal(true);
   if (id) run(backend.updateItem(DEV.fid, id, data), 'Envie enregistrée');
   else run(backend.addItem(DEV.fid, { ...data, ownerId, createdBy: S.me, createdAt: Date.now(), removed: false, removedBy: null, removedAt: null }), 'Ajouté à la liste');
@@ -1255,6 +1546,95 @@ async function removeItem(id) {
   const it = S.items.find(i => i.id === id); if (!it) return;
   const ok = await run(backend.updateItem(DEV.fid, id, { removed: true, removedBy: S.me, removedAt: Date.now() }).then(() => true));
   if (ok) toast('Retiré de la liste', 'Annuler', () => run(backend.updateItem(DEV.fid, id, { removed: false, removedBy: null, removedAt: null })));
+}
+// Quick private idea: a name or a link
+function addIdea(text) {
+  text = (text || '').trim(); if (!text) return;
+  const looksLikeLink = /^(https?:\/\/|www\.)\S+$/i.test(text) || /^[\w-]+(\.[\w-]+)+\/\S*$/.test(text);
+  const url = looksLikeLink ? normalizeUrl(text) : '';
+  const title = url ? (titleFromUrl(url) || domainOf(url)) : text;
+  run(backend.addIdea(DEV.fid, { forId: selected().id, by: S.me, title: title.slice(0, 120), url: url || '', createdAt: Date.now() }), 'Idée notée, rien que pour toi');
+}
+
+// ================= Stories =================
+let viewerState = null, storyTimer = null, sd = null;
+const STORY_MS = 5500;
+function storyAuthors() {
+  const ids = [...new Set(S.stories.map(s => s.by))].filter(id => prof(id));
+  return [S.me, ...ids.filter(id => id !== S.me)].filter(id => storiesBy(id).length);
+}
+function openStory(pid) {
+  const order = storyAuthors(); if (!order.includes(pid)) return;
+  const list = storiesBy(pid), firstNew = list.findIndex(s => !seenStory(s.id));
+  viewerState = { order, a: order.indexOf(pid), i: firstNew < 0 ? 0 : firstNew };
+  refreshStory();
+}
+function refreshStory() {
+  const el = $('#storyview');
+  if (!viewerState) { el.hidden = true; el.innerHTML = ''; return; }
+  const pid = viewerState.order[viewerState.a], list = storiesBy(pid), p = prof(pid);
+  if (!list.length || !p) return storyNextAuthor();
+  viewerState.i = Math.min(viewerState.i, list.length - 1);
+  const s = list[viewerState.i];
+  DEV.seen = DEV.seen || {};
+  for (const k of Object.keys(DEV.seen)) if (DEV.seen[k] < Date.now()) delete DEV.seen[k];
+  DEV.seen[s.id] = s.expiresAt; saveDevice();
+  el.hidden = false;
+  el.innerHTML = `<div class="sv-frame">
+    <div class="sv-bars">${list.map((x, k) => `<span class="${k < viewerState.i ? 'done' : k === viewerState.i ? 'run' : ''}"><i></i></span>`).join('')}</div>
+    <div class="sv-head">${face(p, 'sm')}<b>${esc(pid === S.me ? 'Ma story' : p.name)}</b><span>${ago(s.createdAt)}</span><span class="sp"></span>
+      ${pid === S.me ? `<button class="sv-btn" data-act="story-del" data-id="${s.id}">Supprimer</button>` : ''}<button class="sv-x" data-act="story-close" aria-label="Fermer">✕</button></div>
+    <img class="sv-img" src="${s.photo}" alt="${esc(s.caption || 'Story de ' + p.name)}">
+    ${s.caption ? `<p class="sv-cap">${esc(s.caption)}</p>` : ''}
+    <button class="sv-nav prev" data-act="story-prev" aria-label="Story précédente"></button><button class="sv-nav next" data-act="story-next" aria-label="Story suivante"></button>
+  </div>`;
+  clearTimeout(storyTimer);
+  if (!reduceMotion.matches) storyTimer = setTimeout(storyNext, STORY_MS);
+  renderStories();
+}
+function storyNext() {
+  if (!viewerState) return;
+  const list = storiesBy(viewerState.order[viewerState.a]);
+  if (viewerState.i + 1 < list.length) { viewerState.i++; refreshStory(); } else storyNextAuthor();
+}
+function storyNextAuthor() {
+  if (!viewerState) return;
+  viewerState.a++; viewerState.i = 0;
+  if (viewerState.a >= viewerState.order.length) closeStory(); else refreshStory();
+}
+function storyPrev() {
+  if (!viewerState) return;
+  if (viewerState.i > 0) viewerState.i--;
+  else if (viewerState.a > 0) { viewerState.a--; viewerState.i = storiesBy(viewerState.order[viewerState.a]).length - 1; }
+  refreshStory();
+}
+function closeStory() {
+  clearTimeout(storyTimer); viewerState = null;
+  const el = $('#storyview'); if (el) { el.hidden = true; el.innerHTML = ''; }
+  if (S.me) renderStories();
+}
+function openStoryComposer() { sd = { photo: null, caption: '' }; renderStoryComposer(); }
+function renderStoryComposer() {
+  showModal(`<h2>Ma story</h2><p class="hint intro">Une photo de ton cadeau, de la fête, du sapin… Toute la famille peut la voir pendant 48 heures, puis elle disparaît pour de bon.</p>
+    ${sd.photo ? `<div class="sc"><img class="sc-img" src="${sd.photo}" alt="Aperçu de ta story"></div><label class="filebtn"><input type="file" id="sphoto" accept="image/*">Changer de photo</label>`
+      : `<label class="drop sc-drop"><input type="file" id="sphoto" accept="image/*" class="vh">${GIFT}<span class="btn">Choisir une photo</span><span class="hint">Sur ton téléphone, tu peux aussi la prendre tout de suite.</span></label>`}
+    <div class="field" style="margin-top:14px"><label for="scap">Légende (facultatif)</label><input type="text" id="scap" maxlength="120" placeholder="Merci Mamie !" value="${esc(sd.caption)}"></div>
+    <div class="m-foot"><span class="sp"></span><button class="btn ghost" data-act="close">Annuler</button><button class="btn" data-act="story-post" ${sd.photo ? '' : 'disabled'}>Publier pour 48 h</button></div>`);
+}
+async function storyPhoto(file) {
+  let data = await readImage(file, 1280, false, .8);
+  if (data.length > 900000) data = await readImage(file, 1080, false, .7);
+  if (data.length > 900000) data = await readImage(file, 860, false, .6);
+  return data;
+}
+async function postStory(btn) {
+  if (!sd?.photo) return;
+  const caption = ($('#scap')?.value || '').trim().slice(0, 120), photo = sd.photo;
+  btn.disabled = true; btn.textContent = 'Envoi…';
+  const now = Date.now();
+  const id = await run(backend.addStory(DEV.fid, { by: S.me, photo, caption, createdAt: now, expiresAt: now + STORY_LIFE }), 'Story publiée pour 48 h');
+  closeModal(true);
+  if (id) burst(innerWidth / 2, 120, 60);
 }
 
 // ================= Modal / toast =================
@@ -1270,7 +1650,7 @@ function showModal(html, lock = false) {
 function closeModal(force) {
   if (modalLocked && !force) return;
   modalLocked = false;
-  $('#modal').hidden = true; $('#panel').innerHTML = ''; pd = null; idr = null; pin = null; lastFocus?.focus?.();
+  $('#modal').hidden = true; $('#panel').innerHTML = ''; pd = null; idr = null; pin = null; sd = null; lastFocus?.focus?.();
 }
 
 // ================= Family code, "who are you", 6-digit code =================
@@ -1409,7 +1789,7 @@ function toast(msg, action, fn) {
 }
 
 // ================= Image files =================
-function readImage(file, max, square) {
+function readImage(file, max, square, quality = .82) {
   return new Promise((res, rej) => {
     const fr = new FileReader();
     fr.onerror = rej;
@@ -1422,7 +1802,7 @@ function readImage(file, max, square) {
         const s = Math.min(1, max / Math.max(sw, sh));
         const c = document.createElement('canvas'); c.width = Math.round(sw * s); c.height = Math.round(sh * s);
         c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
-        res(c.toDataURL('image/jpeg', .82));
+        res(c.toDataURL('image/jpeg', quality));
       };
       img.src = fr.result;
     };
@@ -1463,7 +1843,53 @@ document.addEventListener('click', e => {
   const act = el.dataset.act, id = el.dataset.id, v = el.dataset.v;
   switch (act) {
     case 'me': openProfile('edit', S.me); break;
-    case 'select': S.selected = id; save(); render(); break;
+    case 'select': if (S.selected !== id) S.tab = 'wishes'; S.selected = id; save(); render(); break;
+    case 'tab': S.tab = v; renderMain(); if (v === 'mine') setTimeout(() => $('#ideain')?.focus(), 30); break;
+    // ---- family proposals ----
+    case 'new-prop': openProposal(); break;
+    case 'pstatus': idr.status = v; renderItemModal(); break;
+    case 'vote': {
+      const p = S.proposals.find(x => x.id === id); if (!p) break;
+      const cur = (p.votes || {})[S.me] || 0, val = Number(v);
+      run(backend.vote(DEV.fid, id, S.me, cur === val ? 0 : val));
+      break;
+    }
+    case 'prop-decide': {
+      const p = S.proposals.find(x => x.id === id); if (!p) break;
+      const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top, 50);
+      run(backend.updateProposal(DEV.fid, id, { status: 'decided', decidedAt: Date.now() }), `C'est noté : tu lui offres ça. ${prof(p.forId)?.name || ''} n'en saura rien.`);
+      break;
+    }
+    case 'prop-undecide': run(backend.updateProposal(DEV.fid, id, { status: 'question' })); break;
+    case 'prop-delete': {
+      if (!el.classList.contains('armed')) { el.classList.add('armed'); el.textContent = 'Confirmer'; break; }
+      run(backend.deleteProposal(DEV.fid, id), 'Proposition supprimée'); break;
+    }
+    // ---- private ideas ----
+    case 'idea-delete': run(backend.deleteIdea(DEV.fid, id)); break;
+    case 'idea-propose': { const i = S.ideas.find(x => x.id === id); if (i) openProposal({ forId: i.forId, title: i.title, url: i.url, status: 'question', fromIdea: i.id }); break; }
+    case 'idea-take': {
+      const i = S.ideas.find(x => x.id === id); if (!i) break;
+      const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top, 50);
+      run(backend.addProposal(DEV.fid, { forId: i.forId, by: S.me, title: i.title, url: i.url || '', price: '', note: '', photo: null, status: 'decided', votes: {}, createdAt: Date.now() }),
+        `C'est noté : tu lui offres ça. La famille le voit, ${prof(i.forId)?.name || ''} non.`)
+        .then(pid => { if (pid) backend.deleteIdea(DEV.fid, i.id).catch(err => console.error(err)); });
+      break;
+    }
+    // ---- item visibility ----
+    case 'ivis': idr.everyone = v === 'all'; renderItemModal(); break;
+    case 'ipick': { const k = idr.visibleTo.indexOf(id); if (k >= 0) idr.visibleTo.splice(k, 1); else idr.visibleTo.push(id); renderItemModal(); break; }
+    // ---- stories ----
+    case 'story-new': e.stopPropagation(); openStoryComposer(); break;
+    case 'story-open': openStory(id); break;
+    case 'story-close': closeStory(); break;
+    case 'story-next': storyNext(); break;
+    case 'story-prev': storyPrev(); break;
+    case 'story-del': {
+      if (!el.classList.contains('armed')) { el.classList.add('armed'); el.textContent = 'Confirmer'; clearTimeout(storyTimer); break; }
+      run(backend.deleteStory(DEV.fid, id), 'Story supprimée'); break;
+    }
+    case 'story-post': postStory(el); break;
     case 'hide-invite': DEV.inviteHidden = true; saveDevice(); renderBanner(); break;
     case 'hide-install': DEV.installHidden = true; saveDevice(); renderBanner(); break;
     case 'install': if (installEvt) { installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; renderBanner(); }); } break;
@@ -1535,6 +1961,7 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   const t = e.target;
   if (t.id === 'pname' && pd) pd.name = t.value;
+  if (t.id === 'scap' && sd) sd.caption = t.value;
   if (!idr) return;
   if (t.id === 'iurl') {
     idr.url = t.value;
@@ -1553,8 +1980,20 @@ document.addEventListener('change', async e => {
       else { idr.photo = await readImage(t.files[0], 480, false); renderItemModal(); }
     } catch (err) { toast("Ce fichier n'a pas pu être lu comme une image."); }
   }
+  if (t.id === 'sphoto' && t.files && t.files[0] && sd) {
+    try { sd.caption = $('#scap')?.value || sd.caption; sd.photo = await storyPhoto(t.files[0]); renderStoryComposer(); }
+    catch (err) { toast("Ce fichier n'a pas pu être lu comme une image."); }
+  }
+});
+document.addEventListener('submit', e => {
+  if (e.target.id === 'ideaform') { e.preventDefault(); const inp = $('#ideain'); addIdea(inp.value); inp.value = ''; inp.focus(); }
 });
 document.addEventListener('keydown', e => {
+  if (viewerState) {
+    if (e.key === 'Escape') { closeStory(); return; }
+    if (e.key === 'ArrowRight') { storyNext(); return; }
+    if (e.key === 'ArrowLeft') { storyPrev(); return; }
+  }
   if (pin && !$('#modal').hidden) {
     if (/^\d$/.test(e.key)) { e.preventDefault(); pinKey(e.key); return; }
     if (e.key === 'Backspace' && !pin.busy) { e.preventDefault(); pin.value = pin.value.slice(0, -1); updateDots(); return; }

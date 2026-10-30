@@ -1,6 +1,7 @@
 rules_version = '2';
 // KDO security rules.
-// Core promise: the owner of a list can never read who reserved what on it, not even how many.
+// Promises: the owner of a list never sees reservations or proposals made for them,
+// wishes limited to some people are never sent to anyone else, and private ideas are only readable by their author.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -22,23 +23,50 @@ service cloud.firestore {
     function canManage(fid, ownerId) {
       return ownerId == request.auth.uid || isManaged(fid, ownerId);
     }
+    function optString(d, key, max) {
+      return d.get(key, '') == '' || (d[key] is string && d[key].size() <= max);
+    }
+    function optPhoto(d, max) {
+      return d.get('photo', null) == null || (d.photo is string && d.photo.size() < max);
+    }
 
     function validProfile(d) {
       return d.keys().hasOnly(['name', 'avatar', 'photo', 'managed', 'login', 'createdAt', 'createdBy'])
         && d.name is string && d.name.size() > 0 && d.name.size() <= 30
         && d.avatar is map
-        && (d.get('photo', null) == null || (d.photo is string && d.photo.size() < 400000))
+        && optPhoto(d, 400000)
         && d.managed is bool;
     }
     function validItem(d) {
-      return d.keys().hasOnly(['ownerId', 'title', 'url', 'price', 'note', 'photo', 'createdAt', 'createdBy', 'removed', 'removedBy', 'removedAt'])
+      return d.keys().hasOnly(['ownerId', 'title', 'url', 'price', 'note', 'photo', 'createdAt', 'createdBy', 'removed', 'removedBy', 'removedAt', 'everyone', 'visibleTo'])
         && d.ownerId is string
         && d.title is string && d.title.size() > 0 && d.title.size() <= 120
-        && (d.get('url', '') == '' || (d.url is string && d.url.size() <= 2000))
-        && (d.get('price', '') == '' || (d.price is string && d.price.size() <= 20))
-        && (d.get('note', '') == '' || (d.note is string && d.note.size() <= 300))
-        && (d.get('photo', null) == null || (d.photo is string && d.photo.size() < 600000))
-        && d.get('removed', false) is bool;
+        && optString(d, 'url', 2000) && optString(d, 'price', 20) && optString(d, 'note', 300)
+        && optPhoto(d, 600000)
+        && d.get('removed', false) is bool
+        && d.get('everyone', true) is bool
+        && d.get('visibleTo', []) is list && d.get('visibleTo', []).size() <= 40;
+    }
+    // Who may see a wish: its owner, everyone if shared with the whole family, or the people it was limited to
+    function canSeeItem(d) {
+      return d.ownerId == request.auth.uid
+        || d.get('everyone', false) == true
+        || request.auth.uid in d.get('visibleTo', []);
+    }
+    function validProposal(d) {
+      return d.keys().hasOnly(['forId', 'by', 'title', 'url', 'price', 'note', 'photo', 'status', 'votes', 'createdAt', 'decidedAt'])
+        && d.forId is string && d.by is string
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 120
+        && optString(d, 'url', 2000) && optString(d, 'price', 20) && optString(d, 'note', 300)
+        && optPhoto(d, 600000)
+        && d.status in ['question', 'decided']
+        && d.votes is map && d.votes.size() <= 60;
+    }
+    function validIdea(d) {
+      return d.keys().hasOnly(['forId', 'by', 'title', 'url', 'createdAt'])
+        && d.forId is string && d.by == request.auth.uid
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 120
+        && optString(d, 'url', 2000);
     }
 
     match /families/{fid} {
@@ -75,22 +103,25 @@ service cloud.firestore {
       }
 
       match /items/{iid} {
-        allow read: if member(fid);
+        allow read: if member(fid) && canSeeItem(resource.data);
         allow create: if member(fid)
           && validItem(request.resource.data)
           && canManage(fid, request.resource.data.ownerId)
-          && request.resource.data.createdBy == request.auth.uid;
+          && request.resource.data.createdBy == request.auth.uid
+          // Wishes of relatives without the app are always visible to the whole family
+          && (request.resource.data.ownerId == request.auth.uid || request.resource.data.get('everyone', true) == true);
         allow update: if member(fid)
           && canManage(fid, resource.data.ownerId)
           && validItem(request.resource.data)
           && request.resource.data.ownerId == resource.data.ownerId
-          && request.resource.data.createdBy == resource.data.createdBy;
+          && request.resource.data.createdBy == resource.data.createdBy
+          && (resource.data.ownerId == request.auth.uid || request.resource.data.get('everyone', true) == true);
         // Normally items are only marked "removed" so reservers get told; real deletion is for removed relatives
         allow delete: if member(fid) && canManage(fid, resource.data.ownerId);
       }
 
       match /reservations/{iid} {
-        // THE secret: nobody can read the reservations made on their own list
+        // Nobody can read the reservations made on their own list
         allow read: if member(fid) && resource.data.ownerId != request.auth.uid;
         allow create: if member(fid)
           && request.resource.data.keys().hasOnly(['ownerId', 'by', 'at'])
@@ -98,9 +129,54 @@ service cloud.firestore {
           && request.resource.data.ownerId != request.auth.uid
           && exists(itemPath(fid, iid))
           && get(itemPath(fid, iid)).data.ownerId == request.resource.data.ownerId
-          && get(itemPath(fid, iid)).data.get('removed', false) == false;
+          && get(itemPath(fid, iid)).data.get('removed', false) == false
+          && canSeeItem(get(itemPath(fid, iid)).data);
         // Only the person who reserved can release it. No overwriting someone else's reservation.
         allow delete: if member(fid) && resource.data.by == request.auth.uid;
+        allow update: if false;
+      }
+
+      match /proposals/{pid} {
+        // Gifts the family discusses for someone: that person can never read them
+        allow read: if member(fid) && resource.data.forId != request.auth.uid;
+        allow create: if member(fid)
+          && validProposal(request.resource.data)
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.forId != request.auth.uid
+          && exists(profilePath(fid, request.resource.data.forId));
+        allow update: if member(fid)
+          && resource.data.forId != request.auth.uid
+          && validProposal(request.resource.data)
+          && request.resource.data.by == resource.data.by
+          && request.resource.data.forId == resource.data.forId
+          && (
+            // The person who proposed it can change it
+            resource.data.by == request.auth.uid
+            // Everyone else can only add, change or remove their own vote
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes'])
+              && request.resource.data.votes.diff(resource.data.votes).affectedKeys().hasOnly([request.auth.uid]))
+          );
+        allow delete: if member(fid) && resource.data.by == request.auth.uid;
+      }
+
+      match /ideas/{iid} {
+        // Private ideas: only their author can read or change them
+        allow read, delete: if signedIn() && resource.data.by == request.auth.uid;
+        allow create: if member(fid) && validIdea(request.resource.data);
+        allow update: if signedIn() && resource.data.by == request.auth.uid && validIdea(request.resource.data);
+      }
+
+      match /stories/{sid} {
+        allow read: if member(fid);
+        allow create: if member(fid)
+          && request.resource.data.keys().hasOnly(['by', 'photo', 'caption', 'createdAt', 'expiresAt'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.photo is string && request.resource.data.photo.size() < 950000
+          && request.resource.data.caption is string && request.resource.data.caption.size() <= 150
+          && request.resource.data.expiresAt is number
+          && request.resource.data.expiresAt <= request.time.toMillis() + 172920000;
+        // The author can delete it anytime; after 48 h, anyone in the family can clear it out
+        allow delete: if member(fid) && (resource.data.by == request.auth.uid || resource.data.expiresAt < request.time.toMillis());
         allow update: if false;
       }
     }
