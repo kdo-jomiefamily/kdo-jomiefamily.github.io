@@ -129,7 +129,14 @@ button{font:inherit;color:inherit;cursor:pointer}
 .fam .ring{padding:4px;border-radius:50%;border:3px solid transparent;transition:transform .25s cubic-bezier(.2,1.6,.4,1),border-color .2s}
 .fam:hover .ring{transform:translateY(-3px) rotate(-4deg)}
 .fam.on .ring{border-color:#fff;transform:translateY(-3px)}
-.fam > span:last-child{opacity:.85} .fam.on > span:last-child{opacity:1}
+.fam{position:relative}
+.fname{opacity:.9;border-radius:999px;padding:0 8px;max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fam.on .fname{opacity:1;background:#fff;color:var(--brand-deep)}
+/* story ring on avatars */
+.ring.st-new{border-color:transparent;background:conic-gradient(from 200deg,#FFE08A,#FFB627,#fff,#C9A7FF,#FFE08A) border-box}
+.fam.on .ring.st-new{border-color:#fff}
+.ring.st-seen{background:rgba(255,255,255,.4)}
+.fam .splus{position:absolute;left:54px;top:52px;width:22px;height:22px;border-radius:50%;background:#fff;color:var(--brand-deep);display:grid;place-items:center;font-weight:900;font-size:16px;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.25);z-index:2}
 .fam .you{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:var(--sun);color:#2B1430;border-radius:999px;padding:0 7px;margin-top:-15px;position:relative}
 .add-ring{width:74px;height:74px;border-radius:50%;border:3px dashed rgba(255,255,255,.6);display:grid;place-items:center;font-size:30px;font-weight:900;transition:border-color .2s,transform .25s}
 .fam:hover .add-ring{border-color:#fff;transform:rotate(90deg)}
@@ -167,6 +174,9 @@ main{padding-block:20px 64px}
 @keyframes rise{from{transform:translateY(18px) scale(.96)}}
 .thumb{position:relative;aspect-ratio:4/3;max-width:100%;overflow:hidden;background:var(--surface-2)}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb img.remote,.it-thumb img.remote,.p-thumb img.remote{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;padding:6%}
+.loading{position:absolute;left:8px;right:8px;bottom:8px;text-align:center;background:var(--ink);color:var(--bg);font-size:11px;font-weight:900;border-radius:999px;padding:3px 8px;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55}}
 .gen{position:absolute;inset:0;background:radial-gradient(circle at 18% 24%,rgba(255,255,255,.45) 0 6px,transparent 7px),radial-gradient(circle at 82% 70%,rgba(255,255,255,.35) 0 9px,transparent 10px),radial-gradient(circle at 70% 18%,rgba(255,255,255,.3) 0 4px,transparent 5px),linear-gradient(135deg,var(--a),var(--b));display:grid;place-items:center}
 .gen span{font-family:var(--f-display);font-size:78px;color:#fff;line-height:1;text-shadow:0 6px 0 rgba(0,0,0,.14);transform:rotate(-6deg)}
 .domain{position:absolute;left:10px;top:10px;background:var(--surface);color:var(--ink);font-size:11px;font-weight:900;border-radius:999px;padding:3px 10px;box-shadow:0 2px 8px rgba(0,0,0,.12);max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -287,13 +297,34 @@ input:focus,textarea:focus{outline:none;border-color:var(--brand)}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:70}
 .vh{position:absolute;width:1px;height:1px;opacity:0}
 .list-head .lh-text{flex:1 1 260px}
+.head-av{position:relative;flex:none}
+.h-ring{display:block;padding:4px;border-radius:50%;border:0;background:none;line-height:0}
+.h-ring.st-new{background:conic-gradient(from 200deg,#FFE08A,#FFB627,var(--brand),#8E5BFF,#FFE08A)}
+.h-ring.st-seen{background:var(--line)}
+button.h-ring{cursor:pointer}
+.splus.big{position:absolute;right:0;bottom:2px;width:30px;height:30px;border-radius:50%;border:3px solid var(--bg);background:var(--brand);color:#fff;font-weight:900;font-size:18px;line-height:1;display:grid;place-items:center;padding:0;box-shadow:0 3px 8px rgba(120,20,60,.3)}
+.idea-card{border:2px dashed var(--line);box-shadow:none}
+.idea-card .vis{background:var(--grape);color:#fff}
+.idea-go{display:grid;grid-template-columns:1fr 1fr;border-top:2px dashed var(--line)}
+.idea-go button{border:0;background:none;padding:12px 8px;font-weight:900;font-size:13px;color:var(--ink-2)}
+.idea-go button:hover{background:var(--surface-2);color:var(--ink)}
+.idea-go button.main{color:var(--mint);border-left:2px dashed var(--line)}
+.seg.dest{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-radius:18px;margin-bottom:2px}
+.seg.dest button{display:inline-flex;align-items:center;justify-content:center;gap:5px;border-radius:14px;padding:8px 6px;line-height:1.2;white-space:normal}
 @media (max-width:560px){
   .list-head{gap:12px}
   .list-head .av.lg{width:68px;height:68px}
   .list-head .lh-text{flex:1 1 180px}
   .lh-actions{width:100%}
   .lh-actions .btn{flex:1;justify-content:center}
-  .ptabs button{padding:7px 10px;font-size:12.5px}
+  .ptabs button{padding:7px 4px;font-size:12.5px;gap:4px}
+  .ptabs button .long{display:none}
+  .ptabs button .short{display:inline}
+  .ptabs button .lk{display:none}
+  .top-row{flex-wrap:nowrap}
+  .brand .tag{display:none}
+  .ptabs button b{padding:1px 5px;min-width:18px}
+  .fam .splus{left:50px;top:48px}
 }
 .lk{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
@@ -335,8 +366,10 @@ input:focus,textarea:focus{outline:none;border-color:var(--brand)}
 .sc-drop{cursor:pointer}
 
 /* Tabs on someone else's page */
-.ptabs{display:flex;gap:6px;overflow-x:auto;margin:-4px 0 18px;padding:4px;background:var(--surface-2);border-radius:999px;width:max-content;max-width:100%}
-.ptabs button{display:inline-flex;align-items:center;gap:7px;border:0;background:none;border-radius:999px;padding:8px 14px;font-weight:900;font-size:13.5px;color:var(--ink-2);white-space:nowrap}
+.ptabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:-4px 0 18px;padding:4px;background:var(--surface-2);border-radius:999px;max-width:600px}
+.ptabs button{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;background:none;border-radius:999px;padding:8px 6px;font-weight:900;font-size:13.5px;color:var(--ink-2);white-space:nowrap;min-width:0}
+.ptabs button span{overflow:hidden;text-overflow:ellipsis}
+.ptabs .short{display:none}
 .ptabs button b{font-size:11px;background:var(--surface);color:var(--ink-2);border-radius:999px;padding:1px 7px;min-width:20px;text-align:center}
 .ptabs button.on{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(120,20,60,.15)}
 .ptabs button.on b{background:var(--brand);color:#fff}
@@ -407,7 +440,6 @@ h2.sec{font-family:var(--f-display);font-weight:400;font-size:22px;margin:22px 0
       </div>
       <div class="whoami" id="whoami"></div>
     </div>
-    <div class="story-row" id="stories" aria-label="Stories" hidden></div>
     <div class="fam-row" id="family" role="tablist" aria-label="La famille"></div>
   </div>
 </header>
@@ -930,6 +962,7 @@ async function createFirebaseBackend() {
     vote: (fid, id, me, value) => F.updateDoc(ref(fid, 'proposals', id), { [`votes.${me}`]: value ? value : F.deleteField() }),
     deleteProposal: (fid, id) => F.deleteDoc(ref(fid, 'proposals', id)),
     async addIdea(fid, data) { const r = await F.addDoc(col(fid, 'ideas'), clean(data)); return r.id; },
+    updateIdea: (fid, id, data) => F.updateDoc(ref(fid, 'ideas', id), clean(data)),
     deleteIdea: (fid, id) => F.deleteDoc(ref(fid, 'ideas', id)),
     async addStory(fid, data) { const r = await F.addDoc(col(fid, 'stories'), clean(data)); return r.id; },
     deleteStory: (fid, id) => F.deleteDoc(ref(fid, 'stories', id)),
@@ -1049,6 +1082,7 @@ function createMockBackend() {
     },
     async deleteProposal(fid, id) { await tick(); const p = bag('proposals', fid)[id]; if (!p || p.by !== me()) deny(); delete bag('proposals', fid)[id]; emit(); },
     async addIdea(fid, data) { await tick(); if (!member(fid, me()) || data.by !== me()) deny(); return put('ideas', fid, data); },
+    async updateIdea(fid, id, data) { await tick(); const i = bag('ideas', fid)[id]; if (!i || i.by !== me() || 'by' in data || 'forId' in data) deny(); Object.assign(i, clean(data)); emit(); },
     async deleteIdea(fid, id) { await tick(); const i = bag('ideas', fid)[id]; if (!i || i.by !== me()) deny(); delete bag('ideas', fid)[id]; emit(); },
     async addStory(fid, data) {
       await tick();
@@ -1084,15 +1118,15 @@ function startSession(me) {
   stopSync = backend.subscribe(DEV.fid, me, {
     profiles: list => { S.profiles = list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); mergeReservations(); queueRender(); },
     items: list => {
-      S.items = list; mergeReservations(); queueRender();
+      S.items = list; mergeReservations(); queueRender(); backfillImages(list, 'items');
       // Wishes made before visibility existed become visible to the whole family
       list.filter(i => i.ownerId === me && typeof i.everyone !== 'boolean' && !migrated.has(i.id)).forEach(i => {
         migrated.add(i.id); backend.updateItem(DEV.fid, i.id, { everyone: true, visibleTo: [] }).catch(err => console.error(err));
       });
     },
     reservations: (owner, list) => { resByOwner[owner] = list; mergeReservations(); queueRender(); },
-    proposals: (owner, list) => { propsByOwner[owner] = list; S.proposals = Object.values(propsByOwner).flat(); queueRender(); },
-    ideas: list => { S.ideas = list; queueRender(); },
+    proposals: (owner, list) => { propsByOwner[owner] = list; S.proposals = Object.values(propsByOwner).flat(); queueRender(); backfillImages(list, 'proposals'); },
+    ideas: list => { S.ideas = list; queueRender(); backfillImages(list, 'ideas'); },
     stories: list => {
       const now = Date.now();
       S.stories = list.filter(s => s.expiresAt > now).sort((a, b) => a.createdAt - b.createdAt);
@@ -1121,50 +1155,43 @@ async function run(promise, okMessage) {
   catch (e) { console.error(e); toast(errorText(e)); return undefined; }
 }
 // ================= Render =================
-function render() { renderWho(); renderStories(); renderFamily(); renderBanner(); renderMain(); }
+function render() { renderWho(); renderFamily(); renderBanner(); renderMain(); }
 const LOCK = `<svg class="lk" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
 const thumbIcon = down => `<svg viewBox="0 0 24 24" aria-hidden="true"${down ? ' style="transform:rotate(180deg)"' : ''}><path d="M7 11v9H4v-9zM7 11l4-8c1.7 0 2.6 1 2.3 2.7L13 9h5.5a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.3 20H7"/></svg>`;
 function ago(ts) {
   const m = Math.max(0, Math.round((Date.now() - ts) / 60000));
   if (m < 1) return "à l'instant";
   if (m < 60) return `il y a ${m} min`;
-  return `il y a ${Math.round(m / 60)} h`;
+  if (m < 60 * 24) return `il y a ${Math.round(m / 60)} h`;
+  return `il y a ${Math.round(m / 1440)} j`;
 }
 
+// Top right: only the invite button. My profile lives in the "Moi" bubble and on my own page.
 function renderWho() {
   const v = viewer(), box = $('#whoami');
   if (!v) { box.innerHTML = ''; return; }
-  box.innerHTML = `<button class="invite" data-act="copy-invite" title="Envoyer le lien et le code famille"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg><span>Inviter la famille</span></button>
-    <span class="lbl">Tu es</span>
-    <button class="who" data-act="me" title="Modifier mon prénom ou mon avatar">${face(v, 'sm')}<span>${esc(v.name)}</span></button>`;
+  box.innerHTML = `<button class="invite" data-act="copy-invite" title="Envoyer le lien et le code famille"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg><span>Inviter la famille</span></button>`;
 }
 
-// ---- Stories row ----
+// ---- One row for everyone: tap to open their list; a colored ring means a story to watch ----
 const seenStory = id => !!(DEV.seen || {})[id];
 const storiesBy = pid => S.stories.filter(s => s.by === pid);
-function renderStories() {
-  const box = $('#stories'), v = viewer();
-  if (!v) { box.hidden = true; box.innerHTML = ''; return; }
-  box.hidden = false;
-  const authors = [...new Set(S.stories.map(s => s.by))].filter(id => id !== S.me && prof(id));
-  const allSeen = id => storiesBy(id).every(s => seenStory(s.id));
-  authors.sort((a, b) => (allSeen(a) ? 1 : 0) - (allSeen(b) ? 1 : 0));
-  const mine = storiesBy(S.me);
-  const bubble = (p, list) => `<button class="story ${list.some(s => !seenStory(s.id)) ? 'new' : 'seen'}" data-act="story-open" data-id="${p.id}"><span class="sring">${face(p, 'st')}</span><span class="sname">${esc(p.name)}</span></button>`;
-  box.innerHTML = `<button class="story ${mine.length ? (mine.some(s => !seenStory(s.id)) ? 'new' : 'seen') : 'add'}" data-act="${mine.length ? 'story-open' : 'story-new'}" data-id="${S.me}">
-      <span class="sring">${face(v, 'st')}</span><span class="splus" data-act="story-new" aria-label="Ajouter une story">+</span><span class="sname">Ma story</span></button>` +
-    authors.map(id => bubble(prof(id), storiesBy(id))).join('');
+function storyState(pid) {
+  const list = storiesBy(pid);
+  if (!list.length) return '';
+  return list.some(s => !seenStory(s.id)) ? 'st-new' : 'st-seen';
 }
-
 function renderFamily() {
-  const sel = selected(), v = viewer();
-  $('#family').innerHTML = S.profiles.map(p => `
+  const sel = selected(), v = viewer(), box = $('#family');
+  if (!v) { box.innerHTML = ''; return; }
+  const bubble = (p, isMe) => `
     <button class="fam ${sel && p.id === sel.id ? 'on' : ''}" data-act="select" data-id="${p.id}" role="tab" aria-selected="${!!sel && p.id === sel.id}">
-      <span class="ring">${face(p, 'md')}</span>
-      ${v && p.id === v.id ? '<span class="you">Moi</span>' : ''}
-      <span>${esc(p.name)}</span>
-    </button>`).join('') + `
-    <button class="fam" data-act="new-relative"><span class="add-ring" aria-hidden="true">+</span><span>Un proche</span></button>`;
+      <span class="ring ${storyState(p.id)}">${face(p, 'md')}</span>
+      ${isMe ? '<span class="splus" data-act="story-new" role="button" aria-label="Ajouter une story">+</span>' : ''}
+      <span class="fname">${isMe ? 'Moi' : esc(p.name)}</span>
+    </button>`;
+  box.innerHTML = bubble(v, true) + S.profiles.filter(p => p.id !== S.me).map(p => bubble(p, false)).join('') + `
+    <button class="fam" data-act="new-relative"><span class="add-ring" aria-hidden="true">+</span><span class="fname">Un proche</span></button>`;
 }
 let installEvt = null;
 const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -1189,11 +1216,14 @@ function renderBanner() {
   b.hidden = !parts.length;
   b.innerHTML = parts.join('<div style="height:10px"></div>');
 }
+// Thumbnail: my own photo, else the product photo found on the shop page, else a colored letter
 function thumbHTML(it) {
   if (it.photo) return `<img src="${it.photo}" alt="">`;
   const [a, b] = THUMB_PALETTES[hash(it.title || '?') % THUMB_PALETTES.length];
   const letter = ((it.title || '').trim()[0] || '?').toUpperCase();
-  return `<div class="gen" style="--a:${a};--b:${b}"><span>${esc(letter)}</span></div>`;
+  const gen = `<div class="gen" style="--a:${a};--b:${b}"><span>${esc(letter)}</span></div>`;
+  if (it.imageUrl) return gen + `<img class="remote" src="${esc(it.imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`;
+  return gen;
 }
 function cardHTML(it, i, settled) {
   const v = viewer(), owner = prof(it.ownerId), isOwner = v && v.id === it.ownerId;
@@ -1241,7 +1271,7 @@ function propHTML(p) {
   const by = prof(p.by), mine = p.by === S.me, votes = p.votes || {};
   const ups = Object.values(votes).filter(x => x > 0).length, downs = Object.values(votes).filter(x => x < 0).length;
   const myVote = votes[S.me] || 0, decided = p.status === 'decided';
-  const name = mine ? 'Tu' : esc(by?.name || "Quelqu'un");
+  const name = esc(by?.name || "Quelqu'un");
   const who = decided ? (mine ? 'Tu lui offres ça' : `${name} lui offre ça`) : (mine ? "Tu demandes l'avis de la famille" : `${name} demande ton avis`);
   const info = [p.price && `<b class="price">${esc(p.price)}</b>`, p.note && esc(p.note)].filter(Boolean).join(' · ');
   return `<article class="prop ${decided ? 'decided' : ''}" data-prop="${p.id}">
@@ -1267,14 +1297,27 @@ function familyTab(sel, props) {
   return intro + (asks.length ? `<h2 class="sec">On en discute</h2><div class="props">${asks.sort(newest).map(propHTML).join('')}</div>` : '')
     + (decided.length ? `<h2 class="sec">C'est décidé</h2><div class="props">${decided.sort(newest).map(propHTML).join('')}</div>` : '');
 }
-// ---- My private ideas ----
-function ideasTab(sel, ideas) {
-  return `<p class="secret">${LOCK}<span><b>Rien que pour toi.</b> Ni ${esc(sel.name)}, ni le reste de la famille ne voient tes idées. Note-les vite avant de les oublier.</span></p>
-    <form class="quick" id="ideaform"><input type="text" id="ideain" maxlength="200" placeholder="Une idée pour ${esc(sel.name)} : un nom ou un lien" autocomplete="off"><button class="btn" type="submit">Noter</button></form>
-    ${ideas.length ? `<div class="ideas">${ideas.sort((a, b) => b.createdAt - a.createdAt).map(i => `<div class="idea">
-        <div class="i-body"><b>${esc(i.title)}</b>${i.url ? `<a class="c-link" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(domainOf(i.url))} ↗</a>` : ''}<span class="i-when">${ago(i.createdAt).replace('il y a', 'noté il y a')}</span></div>
-        <div class="i-actions"><button class="icon-btn" data-act="idea-propose" data-id="${i.id}">Proposer à la famille</button><button class="btn small" data-act="idea-take" data-id="${i.id}">Je lui offre</button><button class="icon-btn" data-act="idea-delete" data-id="${i.id}" aria-label="Supprimer l'idée">✕</button></div>
-      </div>`).join('')}</div>` : `<p class="hint empty-line">Aucune idée notée pour ${esc(sel.name)} pour l'instant.</p>`}`;
+// ---- My private ideas: real product cards, with direct actions ----
+function ideaCardHTML(i, k, settled) {
+  const dom = domainOf(i.url);
+  return `<article class="card idea-card ${settled ? 'settled' : ''}" style="--i:${k}" data-idea="${i.id}">
+    <div class="thumb">${thumbHTML(i)}${dom ? `<span class="domain">${esc(dom)}</span>` : ''}<span class="vis">${LOCK}Rien que pour toi</span></div>
+    <div class="c-body">
+      ${i.price ? `<span class="price">${esc(i.price)}</span>` : ''}
+      <h3>${esc(i.title)}</h3>
+      ${i.note ? `<p class="c-note">${esc(i.note)}</p>` : ''}
+      <div class="c-actions">
+        ${i.url ? `<a class="c-link" href="${esc(i.url)}" target="_blank" rel="noopener">Voir l'article ↗</a>` : ''}
+        <button class="icon-btn" data-act="idea-edit" data-id="${i.id}">Modifier</button><button class="icon-btn" data-act="idea-delete" data-id="${i.id}">Supprimer</button>
+      </div>
+    </div>
+    <div class="idea-go"><button data-act="idea-propose" data-id="${i.id}">Proposer à la famille</button><button class="main" data-act="idea-take" data-id="${i.id}">Je lui offre</button></div>
+  </article>`;
+}
+function ideasTab(sel, ideas, settled) {
+  const intro = `<p class="secret">${LOCK}<span><b>Rien que pour toi.</b> Ni ${esc(sel.name)}, ni le reste de la famille ne voient tes idées. Quand tu es décidé, propose-la à la famille ou annonce que tu lui offres.</span></p>`;
+  if (!ideas.length) return intro + `<div class="empty">${GIFT}<h2>Pas encore d'idée</h2><p>Une idée de cadeau pour ${esc(sel.name)} qui te passe par la tête ? Note-la ici avant de l'oublier : un lien ou juste un nom.</p><button class="btn" data-act="new-idea">+ Ajouter une idée</button></div>`;
+  return intro + `<div class="grid">${ideas.sort((a, b) => b.createdAt - a.createdAt).map((i, k) => ideaCardHTML(i, k, settled)).join('')}</div>`;
 }
 
 let lastAnimated = null;
@@ -1292,12 +1335,13 @@ function renderMain() {
   const notices = isOwner ? [] : S.items.filter(i => i.ownerId === sel.id && i.removed && i.reservedBy === v.id);
   const title = isOwner ? 'Mes envies' : `Les envies ${esc(ofName(sel.name))}`;
   let actions = '';
-  if (tab === 'wishes' && manage) actions = `<button class="btn ghost" data-act="edit-profile" data-id="${sel.id}">${isOwner ? 'Mon avatar' : 'Modifier le profil'}</button><button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter une envie' : 'Ajouter une idée'}</button>`;
+  if (tab === 'wishes' && manage) actions = `<button class="btn ghost" data-act="edit-profile" data-id="${sel.id}">${isOwner ? 'Mon profil' : 'Modifier le profil'}</button><button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter une envie' : 'Ajouter une envie'}</button>`;
   if (tab === 'family' && props.length) actions = `<button class="btn" data-act="new-prop">+ Proposer un cadeau</button>`;
+  if (tab === 'mine' && ideas.length) actions = `<button class="btn" data-act="new-idea">+ Ajouter une idée</button>`;
   const tabs = isOwner ? '' : `<div class="ptabs" role="tablist">
-      <button role="tab" aria-selected="${tab === 'wishes'}" class="${tab === 'wishes' ? 'on' : ''}" data-act="tab" data-v="wishes">${sel.managed ? 'Sa liste' : 'Ses envies'}<b>${list.length}</b></button>
-      <button role="tab" aria-selected="${tab === 'family'}" class="${tab === 'family' ? 'on' : ''}" data-act="tab" data-v="family">Idées de la famille<b>${props.length}</b></button>
-      <button role="tab" aria-selected="${tab === 'mine'}" class="${tab === 'mine' ? 'on' : ''}" data-act="tab" data-v="mine">${LOCK}Mes idées<b>${ideas.length}</b></button>
+      <button role="tab" aria-selected="${tab === 'wishes'}" class="${tab === 'wishes' ? 'on' : ''}" data-act="tab" data-v="wishes"><span class="long">${sel.managed ? 'Sa liste' : 'Ses envies'}</span><span class="short">${sel.managed ? 'Liste' : 'Envies'}</span><b>${list.length}</b></button>
+      <button role="tab" aria-selected="${tab === 'family'}" class="${tab === 'family' ? 'on' : ''}" data-act="tab" data-v="family"><span class="long">Idées de la famille</span><span class="short">Famille</span><b>${props.length}</b></button>
+      <button role="tab" aria-selected="${tab === 'mine'}" class="${tab === 'mine' ? 'on' : ''}" data-act="tab" data-v="mine">${LOCK}<span>Mes idées</span><b>${ideas.length}</b></button>
     </div>`;
   let body = '';
   if (tab === 'wishes') {
@@ -1306,13 +1350,16 @@ function renderMain() {
       return `<div class="notice"><p><b>${esc(it.title)}</b> a été retiré de la liste${by ? ' par ' + esc(by.name) : ''} : reçu ou déjà acheté. Tu l'avais réservé, alors ne l'achète pas (ou garde bien le ticket).</p><button class="btn small ghost" data-act="ack" data-id="${it.id}">Compris</button></div>`;
     }).join('')}</div>` : '')
     + (list.length ? `<div class="grid">${list.map((it, i) => cardHTML(it, i, settled)).join('')}</div>`
-      : `<div class="empty">${GIFT}<h2>${isOwner ? 'Ta liste est vide' : "Rien pour l'instant"}</h2><p>${isOwner ? "Colle le lien d'un article ou écris simplement ce qui te ferait plaisir." : manage ? `Ajoute des idées pour ${esc(sel.name)}.` : `${esc(sel.name)} n'a encore rien ajouté. Tu peux noter tes idées dans « Mes idées » ou en proposer une à la famille.`}</p>${manage ? `<button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter ma première envie' : 'Ajouter une idée'}</button>` : ''}</div>`);
+      : `<div class="empty">${GIFT}<h2>${isOwner ? 'Ta liste est vide' : "Rien pour l'instant"}</h2><p>${isOwner ? "Colle le lien d'un article ou écris simplement ce qui te ferait plaisir." : manage ? `Ajoute des envies pour ${esc(sel.name)}.` : `${esc(sel.name)} n'a encore rien ajouté. Tu peux noter tes idées dans « Mes idées » ou en proposer une à la famille.`}</p>${manage ? `<button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter ma première envie' : 'Ajouter une envie'}</button>` : ''}</div>`);
   }
   if (tab === 'family') body = familyTab(sel, props);
-  if (tab === 'mine') body = ideasTab(sel, ideas);
+  if (tab === 'mine') body = ideasTab(sel, ideas, settled);
+  // The big avatar shows the story ring too: tap it to watch, or "+" on my own page to post one
+  const st = storyState(sel.id);
+  const head = `<div class="head-av">${st ? `<button class="h-ring ${st}" data-act="story-open" data-id="${sel.id}" aria-label="Voir la story">${face(sel, 'lg')}</button>` : `<span class="h-ring">${face(sel, 'lg')}</span>`}${isOwner ? '<button class="splus big" data-act="story-new" aria-label="Ajouter une story">+</button>' : ''}</div>`;
   m.innerHTML = `
     <div class="list-head">
-      ${face(sel, 'lg')}
+      ${head}
       <div class="lh-text"><h1>${title}</h1><p id="subline">${esc(subline(sel))}</p></div>
       <div class="lh-actions">${actions}</div>
     </div>${tabs}${body}`;
@@ -1454,61 +1501,145 @@ function deleteProfile(btn) {
   run(backend.deleteProfile(DEV.fid, id, itemIds), 'Profil supprimé');
 }
 
-// ================= Item / proposal modal =================
-// One window for two things: a wish on a list (kind "item") or a gift proposed to the family (kind "prop")
-let idr = null;
+// ================= Link preview: product name and photo, read from the shop page =================
+// Browsers can't read shop pages directly, so a free preview service (Microlink) reads it for us
+const previewCache = new Map();
+function cleanTitle(t, publisher) {
+  t = (t || '').replace(/\s+/g, ' ').trim();
+  if (!t) return '';
+  t = t.replace(/\s*[:|–—-]\s*Amazon\.[a-z.]+.*$/i, '');
+  const parts = t.split(/\s+[|–—]\s+|\s+-\s+/);
+  if (parts.length > 1) {
+    const last = parts[parts.length - 1], rest = parts.slice(0, -1).join(' - ');
+    if (last.length <= 40 && rest.length >= 6) t = rest;
+  }
+  if (publisher && t.toLowerCase() === String(publisher).toLowerCase()) return '';
+  if (/^(amazon|fnac|cdiscount|zalando|ikea|darty|boulanger|decathlon|leboncoin)(\.[a-z.]+)?$/i.test(t)) return '';
+  if (/robot|captcha|access denied|page not found|page introuvable|\b404\b/i.test(t)) return '';
+  return t.slice(0, 110);
+}
+function linkPreview(url) {
+  if (!url) return Promise.resolve(null);
+  if (previewCache.has(url)) return previewCache.get(url);
+  const p = (async () => {
+    if (MOCK) return window.KDO_PREVIEW ? window.KDO_PREVIEW(url) : null;
+    const api = `https://api.microlink.io/?url=${encodeURIComponent(url)}&palette=false&audio=false&video=false&iframe=false`;
+    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 10000);
+    try {
+      const r = await fetch(api, { signal: ctrl.signal });
+      const j = await r.json();
+      if (j.status !== 'success' || !j.data) return null;
+      const image = j.data.image?.url || '';
+      return { title: cleanTitle(j.data.title, j.data.publisher), image: /^https:\/\//.test(image) ? image : '' };
+    } catch (e) { return null; }
+    finally { clearTimeout(timer); }
+  })();
+  previewCache.set(url, p);
+  return p;
+}
+// Older entries saved before this existed: fetch their product photo once, in the background
+let backfillBudget = 6;
+function backfillImages(list, kind) {
+  for (const x of list) {
+    if (backfillBudget <= 0) return;
+    if (!x.url || x.imageUrl || x.photo || x.removed) continue;
+    const mineToEdit = kind === 'items' ? canManage(prof(x.ownerId)) : x.by === S.me;
+    DEV.tried = DEV.tried || {};
+    if (!mineToEdit || DEV.tried[x.id]) continue;
+    DEV.tried[x.id] = 1; saveDevice(); backfillBudget--;
+    linkPreview(x.url).then(res => {
+      if (!res?.image) return;
+      const fn = kind === 'items' ? backend.updateItem : kind === 'proposals' ? backend.updateProposal : backend.updateIdea;
+      fn(DEV.fid, x.id, { imageUrl: res.image }).catch(err => console.error(err));
+    });
+  }
+}
+
+// ================= Item / gift modal =================
+// One window for two things: a wish on a list (kind "item"), or a gift I'm thinking of for someone (kind "gift").
+// For a gift I choose right away: keep it to myself, ask the family, or say I'm giving it.
+let idr = null, previewToken = 0;
 function openItem(id) {
   const it = id ? S.items.find(i => i.id === id) : null;
-  idr = it ? { ...it, visibleTo: [...(it.visibleTo || [])], everyone: it.everyone !== false }
-    : { id: null, ownerId: selected().id, title: '', url: '', price: '', note: '', photo: null, everyone: true, visibleTo: [] };
+  idr = it ? { ...it, visibleTo: [...(it.visibleTo || [])], everyone: it.everyone !== false, imageUrl: it.imageUrl || '' }
+    : { id: null, ownerId: selected().id, title: '', url: '', price: '', note: '', photo: null, imageUrl: '', everyone: true, visibleTo: [] };
   idr.kind = 'item';
   idr.tab = it && !it.url ? 'name' : 'link';
   idr.autoTitle = !it;
   renderItemModal();
 }
-function openProposal(pre = {}) {
-  idr = { kind: 'prop', id: null, forId: pre.forId || selected().id, title: pre.title || '', url: pre.url || '', price: '', note: '', photo: null, status: pre.status || 'question', fromIdea: pre.fromIdea || null };
+function openGift({ forId, dest = 'keep', idea = null } = {}) {
+  const src = idea || {};
+  idr = { kind: 'gift', id: null, ideaId: idea?.id || null, forId: forId || idea?.forId || selected().id,
+    title: src.title || '', url: src.url || '', price: src.price || '', note: src.note || '', photo: src.photo || null, imageUrl: src.imageUrl || '', dest };
   idr.tab = idr.url || !idr.title ? 'link' : 'name';
   idr.autoTitle = !idr.title;
   renderItemModal();
 }
+const DEST_HINT = {
+  keep: n => `Rien que pour toi. Tu pourras la proposer à la famille plus tard.`,
+  question: n => `La famille donne son avis avec 👍 ou 👎. ${n} ne le verra jamais.`,
+  decided: n => `La famille saura que tu t'en occupes, pour éviter les doublons. ${n} ne le verra jamais.`,
+};
 function renderItemModal() {
-  const prop = idr.kind === 'prop';
-  const owner = prof(prop ? idr.forId : idr.ownerId), isOwner = viewer().id === owner.id;
-  const title = prop ? `Un cadeau pour ${esc(owner.name)}` : idr.id ? "Modifier l'envie" : (isOwner ? 'Nouvelle envie' : `Une idée pour ${esc(owner.name)}`);
+  const gift = idr.kind === 'gift';
+  const owner = prof(gift ? idr.forId : idr.ownerId), isOwner = viewer().id === owner.id;
+  const title = gift ? (idr.ideaId ? "Modifier l'idée" : `Un cadeau pour ${esc(owner.name)}`) : idr.id ? "Modifier l'envie" : (isOwner ? 'Nouvelle envie' : `Une envie pour ${esc(owner.name)}`);
   const others = S.profiles.filter(p => !p.managed && p.id !== S.me);
-  const visibility = (!prop && isOwner && !owner.managed) ? `<div class="field"><span class="glabel">Qui peut te l'offrir ?</span>
+  const visibility = (!gift && isOwner && !owner.managed) ? `<div class="field"><span class="glabel">Qui peut te l'offrir ?</span>
       <div class="seg"><button data-act="ivis" data-v="all" class="${idr.everyone ? 'on' : ''}">Toute la famille</button><button data-act="ivis" data-v="some" class="${idr.everyone ? '' : 'on'}">Seulement certaines personnes</button></div>
       ${idr.everyone ? '' : others.length
         ? `<div class="people">${others.map(p => `<button class="pp ${idr.visibleTo.includes(p.id) ? 'on' : ''}" data-act="ipick" data-id="${p.id}" aria-pressed="${idr.visibleTo.includes(p.id)}">${face(p, 'sm')}<span>${esc(p.name)}</span></button>`).join('')}</div><p class="hint">Les autres ne verront pas du tout cet article.</p>`
         : `<p class="hint">Personne d'autre n'a encore rejoint KDO. Invite ta famille pour pouvoir choisir.</p>`}
     </div>` : '';
-  const status = prop ? `<div class="field"><span class="glabel">Ce que tu veux faire</span>
-      <div class="seg"><button data-act="pstatus" data-v="question" class="${idr.status === 'question' ? 'on' : ''}">Demander l'avis de la famille</button><button data-act="pstatus" data-v="decided" class="${idr.status === 'decided' ? 'on' : ''}">C'est décidé, je lui offre</button></div>
-      <p class="hint">${LOCK} ${esc(owner.name)} ne verra jamais cette proposition.</p></div>` : '';
-  const saveLabel = prop ? (idr.status === 'decided' ? "C'est noté" : 'Proposer à la famille') : idr.id ? 'Enregistrer' : 'Ajouter à la liste';
+  const dest = gift ? `<div class="field"><span class="glabel">Ce que tu en fais</span>
+      <div class="seg dest"><button data-act="gdest" data-v="keep" class="${idr.dest === 'keep' ? 'on' : ''}">${LOCK}Garder pour moi</button><button data-act="gdest" data-v="question" class="${idr.dest === 'question' ? 'on' : ''}">Demander l'avis</button><button data-act="gdest" data-v="decided" class="${idr.dest === 'decided' ? 'on' : ''}">Je lui offre</button></div>
+      <p class="hint">${DEST_HINT[idr.dest](esc(owner.name))}</p></div>` : '';
+  const saveLabel = gift ? (idr.dest === 'keep' ? (idr.ideaId ? 'Enregistrer' : 'Garder pour moi') : idr.dest === 'question' ? 'Proposer à la famille' : "C'est noté") : idr.id ? 'Enregistrer' : 'Ajouter à la liste';
   showModal(`<h2>${title}</h2>
     <div class="seg"><button data-act="itab" data-v="link" class="${idr.tab === 'link' ? 'on' : ''}">Coller un lien</button><button data-act="itab" data-v="name" class="${idr.tab === 'name' ? 'on' : ''}">Écrire un nom</button></div>
     <div class="it-grid">
       <div class="stack"><div class="it-thumb" id="ithumb"></div>
-        <label class="filebtn"><input type="file" id="iphoto" accept="image/*">${idr.photo ? 'Changer la photo' : '+ Ajouter une photo'}</label>
-        ${idr.photo ? '<button class="linkbtn" data-act="inophoto">Retirer la photo</button>' : ''}
+        <label class="filebtn"><input type="file" id="iphoto" accept="image/*">${idr.photo ? 'Changer la photo' : '+ Ma propre photo'}</label>
+        ${idr.photo ? '<button class="linkbtn" data-act="inophoto">Retirer ma photo</button>' : ''}
       </div>
       <div class="stack">
-        ${idr.tab === 'link' ? `<div class="field"><label for="iurl">Lien de l'article</label><input type="url" id="iurl" placeholder="https://www.boutique.fr/l-article-qui-te-plait" value="${esc(idr.url)}"><p class="hint">KDO lit le nom de l'article dans le lien. Tu peux le corriger, et ajouter ta propre photo.</p></div>` : ''}
-        <div class="field"><label for="ititle">${idr.tab === 'link' ? 'Nom' : prop ? 'Quel cadeau ?' : 'Qu’est-ce qui te ferait plaisir ?'}</label><input type="text" id="ititle" maxlength="90" placeholder="Ex. Un grand plaid tout doux" value="${esc(idr.title)}"></div>
+        ${idr.tab === 'link' ? `<div class="field"><label for="iurl">Lien de l'article</label><input type="url" id="iurl" placeholder="https://www.boutique.fr/l-article-qui-te-plait" value="${esc(idr.url)}"><p class="hint" id="ihint">KDO va chercher la photo et le nom du produit sur la page du magasin.</p></div>` : ''}
+        <div class="field"><label for="ititle">${idr.tab === 'link' ? 'Nom' : gift ? 'Quel cadeau ?' : 'Qu’est-ce qui te ferait plaisir ?'}</label><input type="text" id="ititle" maxlength="110" placeholder="Ex. Un grand plaid tout doux" value="${esc(idr.title)}"></div>
         <div class="field"><label for="iprice">Prix (facultatif)</label><input type="text" id="iprice" maxlength="16" placeholder="40 €" value="${esc(idr.price)}"></div>
-        <div class="field"><label for="inote">${prop ? 'Un mot pour la famille (facultatif)' : "Précisions (taille, couleur, où l'acheter…)"}</label><textarea id="inote" maxlength="240" placeholder="${prop ? 'On pourrait le lui offrir à plusieurs ?' : 'Taille M, toutes les couleurs sauf le jaune'}">${esc(idr.note)}</textarea></div>
-        ${visibility}${status}
+        <div class="field"><label for="inote">${gift ? 'Une note (facultatif)' : "Précisions (taille, couleur, où l'acheter…)"}</label><textarea id="inote" maxlength="240" placeholder="${gift ? 'Taille L, plutôt en bleu…' : 'Taille M, toutes les couleurs sauf le jaune'}">${esc(idr.note)}</textarea></div>
+        ${visibility}${dest}
       </div>
     </div>
-    <div class="m-foot">${!prop && idr.id ? '<button class="btn danger" data-act="idelete">Retirer de la liste</button>' : ''}<span class="sp"></span><button class="btn ghost" data-act="close">Annuler</button><button class="btn" data-act="isave">${saveLabel}</button></div>`);
+    <div class="m-foot">${!gift && idr.id ? '<button class="btn danger" data-act="idelete">Retirer de la liste</button>' : ''}<span class="sp"></span><button class="btn ghost" data-act="close">Annuler</button><button class="btn" data-act="isave">${saveLabel}</button></div>`);
   refreshThumb();
 }
 function refreshThumb() {
-  const t = $('#ithumb'); if (!t) return;
+  const t = $('#ithumb'); if (!t || !idr) return;
   const dom = domainOf(normalizeUrl(idr.url) || '');
-  t.innerHTML = thumbHTML({ title: idr.title || '?', photo: idr.photo }) + (dom ? `<span class="domain">${esc(dom)}</span>` : '');
+  t.innerHTML = thumbHTML({ title: idr.title || '?', photo: idr.photo, imageUrl: idr.imageUrl }) + (dom ? `<span class="domain">${esc(dom)}</span>` : '') + (idr.loading ? '<span class="loading">Recherche du produit…</span>' : '');
+}
+// Called while typing or pasting a link: fetch the real product name and photo
+function onUrlInput(value) {
+  idr.url = value; idr.imageUrl = '';
+  if (idr.autoTitle) { idr.title = titleFromUrl(value); const ti = $('#ititle'); if (ti) ti.value = idr.title; }
+  const url = normalizeUrl(value), token = ++previewToken;
+  idr.loading = !!url; refreshThumb();
+  if (!url) return;
+  setTimeout(async () => {
+    if (token !== previewToken || !idr) return;
+    const res = await linkPreview(url);
+    if (token !== previewToken || !idr) return;
+    idr.loading = false;
+    if (res?.title && idr.autoTitle) { idr.title = res.title; const ti = $('#ititle'); if (ti) ti.value = res.title; }
+    if (res?.image) idr.imageUrl = res.image;
+    const h = $('#ihint');
+    if (h) h.textContent = res?.image || res?.title ? 'Trouvé sur la page du magasin. Tu peux corriger le nom si besoin.' : "Le magasin n'a pas voulu donner sa photo. Tu peux ajouter la tienne.";
+    refreshThumb();
+  }, 500);
+}
+function giftFields(x) {
+  return { title: x.title, url: x.url || '', price: x.price || '', note: x.note || '', photo: x.photo || null, imageUrl: x.photo ? '' : (x.imageUrl || '') };
 }
 function saveItem(btn) {
   let url = '';
@@ -1518,16 +1649,22 @@ function saveItem(btn) {
   }
   const title = (idr.title || '').trim() || (url ? titleFromUrl(url) || domainOf(url) : '');
   if (!title) { toast('Donne un nom à ce cadeau.'); $('#ititle')?.focus(); return; }
-  const data = { title, url, price: (idr.price || '').trim(), note: (idr.note || '').trim(), photo: idr.photo || null };
+  const data = giftFields({ ...idr, title, url, price: (idr.price || '').trim(), note: (idr.note || '').trim() });
   const r = btn.getBoundingClientRect();
-  if (idr.kind === 'prop') {
-    const { forId, status, fromIdea } = idr, name = prof(forId)?.name || '';
+  if (idr.kind === 'gift') {
+    const { forId, dest, ideaId } = idr, name = prof(forId)?.name || '';
     closeModal(true);
-    if (status === 'decided') burst(r.left + r.width / 2, r.top, 50);
+    if (dest === 'keep') {
+      S.tab = 'mine';
+      if (ideaId) run(backend.updateIdea(DEV.fid, ideaId, data), 'Idée enregistrée');
+      else run(backend.addIdea(DEV.fid, { ...data, forId, by: S.me, createdAt: Date.now() }), 'Idée notée, rien que pour toi');
+      return;
+    }
     S.tab = 'family';
-    run(backend.addProposal(DEV.fid, { ...data, forId, by: S.me, status, votes: {}, createdAt: Date.now() }),
-      status === 'decided' ? `C'est noté : tu lui offres ça. ${name} n'en saura rien.` : 'Proposé à la famille')
-      .then(id => { if (id && fromIdea) backend.deleteIdea(DEV.fid, fromIdea).catch(err => console.error(err)); });
+    if (dest === 'decided') burst(r.left + r.width / 2, r.top, 50);
+    run(backend.addProposal(DEV.fid, { ...data, forId, by: S.me, status: dest, votes: {}, createdAt: Date.now() }),
+      dest === 'decided' ? `C'est noté : tu lui offres ça. ${name} n'en saura rien.` : `Proposé à la famille. ${name} ne le verra pas.`)
+      .then(id => { if (id && ideaId) backend.deleteIdea(DEV.fid, ideaId).catch(err => console.error(err)); });
     return;
   }
   const id = idr.id, ownerId = idr.ownerId, owner = prof(ownerId);
@@ -1547,13 +1684,15 @@ async function removeItem(id) {
   const ok = await run(backend.updateItem(DEV.fid, id, { removed: true, removedBy: S.me, removedAt: Date.now() }).then(() => true));
   if (ok) toast('Retiré de la liste', 'Annuler', () => run(backend.updateItem(DEV.fid, id, { removed: false, removedBy: null, removedAt: null })));
 }
-// Quick private idea: a name or a link
-function addIdea(text) {
-  text = (text || '').trim(); if (!text) return;
-  const looksLikeLink = /^(https?:\/\/|www\.)\S+$/i.test(text) || /^[\w-]+(\.[\w-]+)+\/\S*$/.test(text);
-  const url = looksLikeLink ? normalizeUrl(text) : '';
-  const title = url ? (titleFromUrl(url) || domainOf(url)) : text;
-  run(backend.addIdea(DEV.fid, { forId: selected().id, by: S.me, title: title.slice(0, 120), url: url || '', createdAt: Date.now() }), 'Idée notée, rien que pour toi');
+// Turn one of my private ideas into a family proposal ("question") or an announced gift ("decided")
+function shareIdea(ideaId, status, el) {
+  const i = S.ideas.find(x => x.id === ideaId); if (!i) return;
+  const name = prof(i.forId)?.name || '';
+  if (status === 'decided' && el) { const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top, 50); }
+  S.tab = 'family';
+  run(backend.addProposal(DEV.fid, { ...giftFields(i), forId: i.forId, by: S.me, status, votes: {}, createdAt: Date.now() }),
+    status === 'decided' ? `C'est noté : tu lui offres ça. La famille le voit, ${name} non.` : `Proposé à la famille. ${name} ne le verra pas.`)
+    .then(pid => { if (pid) backend.deleteIdea(DEV.fid, i.id).catch(err => console.error(err)); });
 }
 
 // ================= Stories =================
@@ -1590,7 +1729,7 @@ function refreshStory() {
   </div>`;
   clearTimeout(storyTimer);
   if (!reduceMotion.matches) storyTimer = setTimeout(storyNext, STORY_MS);
-  renderStories();
+  renderFamily();
 }
 function storyNext() {
   if (!viewerState) return;
@@ -1611,7 +1750,7 @@ function storyPrev() {
 function closeStory() {
   clearTimeout(storyTimer); viewerState = null;
   const el = $('#storyview'); if (el) { el.hidden = true; el.innerHTML = ''; }
-  if (S.me) renderStories();
+  if (S.me) render();
 }
 function openStoryComposer() { sd = { photo: null, caption: '' }; renderStoryComposer(); }
 function renderStoryComposer() {
@@ -1634,7 +1773,7 @@ async function postStory(btn) {
   const now = Date.now();
   const id = await run(backend.addStory(DEV.fid, { by: S.me, photo, caption, createdAt: now, expiresAt: now + STORY_LIFE }), 'Story publiée pour 48 h');
   closeModal(true);
-  if (id) burst(innerWidth / 2, 120, 60);
+  if (id) { DEV.seen = DEV.seen || {}; DEV.seen[id] = now + STORY_LIFE; saveDevice(); render(); burst(innerWidth / 2, 120, 60); }
 }
 
 // ================= Modal / toast =================
@@ -1814,8 +1953,12 @@ function readImage(file, max, square, quality = .82) {
 const cv = $('#confetti'), ctx = cv.getContext('2d');
 let parts = [], running = false;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
-function sizeCanvas() { const d = window.devicePixelRatio || 1; cv.width = innerWidth * d; cv.height = innerHeight * d; ctx.setTransform(d, 0, 0, d, 0, 0); }
-addEventListener('resize', sizeCanvas); sizeCanvas();
+function sizeCanvas() {
+  const d = window.devicePixelRatio || 1, w = document.documentElement.clientWidth || innerWidth, ht = Math.max(innerHeight, document.documentElement.clientHeight || 0);
+  cv.style.width = w + 'px'; cv.style.height = ht + 'px';
+  cv.width = Math.round(w * d); cv.height = Math.round(ht * d); ctx.setTransform(d, 0, 0, d, 0, 0);
+}
+addEventListener('resize', sizeCanvas); window.visualViewport?.addEventListener('resize', sizeCanvas); sizeCanvas();
 function burst(x, y, n = 80) {
   if (reduceMotion.matches) return;
   const cs = getComputedStyle(document.documentElement);
@@ -1823,9 +1966,12 @@ function burst(x, y, n = 80) {
   for (let i = 0; i < n; i++) parts.push({ x, y, vx: (Math.random() - .5) * 12, vy: -Math.random() * 11 - 3, r: Math.random() * 6.28, vr: (Math.random() - .5) * .4, w: 6 + Math.random() * 6, h: 4 + Math.random() * 5, c: cols[i % cols.length], life: 0, round: Math.random() < .3 });
   if (!running) { running = true; requestAnimationFrame(tick); }
 }
+// Clear the whole canvas, edges included (iPhone's canvas can be bigger than the visible area)
+function clearCanvas() { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.restore(); }
 function tick() {
-  ctx.clearRect(0, 0, innerWidth, innerHeight);
-  parts = parts.filter(p => p.y < innerHeight + 40 && p.life < 260);
+  clearCanvas();
+  const W = cv.width / (window.devicePixelRatio || 1), H = cv.height / (window.devicePixelRatio || 1);
+  parts = parts.filter(p => p.y < H + 60 && p.y > -400 && p.x > -60 && p.x < W + 60 && p.life < 240);
   for (const p of parts) {
     p.life++; p.vy += .3; p.vx *= .985; p.vy *= .985; p.x += p.vx; p.y += p.vy; p.r += p.vr;
     ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c;
@@ -1833,8 +1979,11 @@ function tick() {
     else { const f = Math.abs(Math.cos(p.life * .18)); ctx.fillRect(-p.w / 2, -p.h * f / 2, p.w, p.h * f + .5); }
     ctx.restore();
   }
-  if (parts.length) requestAnimationFrame(tick); else { running = false; ctx.clearRect(0, 0, innerWidth, innerHeight); }
+  if (parts.length) requestAnimationFrame(tick);
+  else { running = false; clearCanvas(); }
 }
+// If the app is hidden mid-animation, drop the leftovers instead of freezing them on screen
+document.addEventListener('visibilitychange', () => { if (document.hidden) { parts = []; clearCanvas(); } });
 
 // ================= Events =================
 document.addEventListener('click', e => {
@@ -1843,11 +1992,18 @@ document.addEventListener('click', e => {
   const act = el.dataset.act, id = el.dataset.id, v = el.dataset.v;
   switch (act) {
     case 'me': openProfile('edit', S.me); break;
-    case 'select': if (S.selected !== id) S.tab = 'wishes'; S.selected = id; save(); render(); break;
-    case 'tab': S.tab = v; renderMain(); if (v === 'mine') setTimeout(() => $('#ideain')?.focus(), 30); break;
+    case 'select': {
+      if (S.selected !== id) S.tab = 'wishes';
+      S.selected = id; save(); render();
+      // Like Instagram: a new story plays when you tap someone, then you land on their list
+      if (id !== S.me && storyState(id) === 'st-new') openStory(id);
+      break;
+    }
+    case 'tab': S.tab = v; renderMain(); break;
     // ---- family proposals ----
-    case 'new-prop': openProposal(); break;
-    case 'pstatus': idr.status = v; renderItemModal(); break;
+    case 'new-prop': openGift({ dest: 'question' }); break;
+    case 'new-idea': openGift({ dest: 'keep' }); break;
+    case 'gdest': idr.dest = v; renderItemModal(); break;
     case 'vote': {
       const p = S.proposals.find(x => x.id === id); if (!p) break;
       const cur = (p.votes || {})[S.me] || 0, val = Number(v);
@@ -1866,16 +2022,13 @@ document.addEventListener('click', e => {
       run(backend.deleteProposal(DEV.fid, id), 'Proposition supprimée'); break;
     }
     // ---- private ideas ----
-    case 'idea-delete': run(backend.deleteIdea(DEV.fid, id)); break;
-    case 'idea-propose': { const i = S.ideas.find(x => x.id === id); if (i) openProposal({ forId: i.forId, title: i.title, url: i.url, status: 'question', fromIdea: i.id }); break; }
-    case 'idea-take': {
-      const i = S.ideas.find(x => x.id === id); if (!i) break;
-      const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top, 50);
-      run(backend.addProposal(DEV.fid, { forId: i.forId, by: S.me, title: i.title, url: i.url || '', price: '', note: '', photo: null, status: 'decided', votes: {}, createdAt: Date.now() }),
-        `C'est noté : tu lui offres ça. La famille le voit, ${prof(i.forId)?.name || ''} non.`)
-        .then(pid => { if (pid) backend.deleteIdea(DEV.fid, i.id).catch(err => console.error(err)); });
-      break;
+    case 'idea-delete': {
+      if (!el.classList.contains('armed')) { el.classList.add('armed'); el.textContent = 'Confirmer'; break; }
+      run(backend.deleteIdea(DEV.fid, id), 'Idée supprimée'); break;
     }
+    case 'idea-propose': shareIdea(id, 'question', el); break;
+    case 'idea-edit': { const i = S.ideas.find(x => x.id === id); if (i) openGift({ idea: i, dest: 'keep' }); break; }
+    case 'idea-take': shareIdea(id, 'decided', el); break;
     // ---- item visibility ----
     case 'ivis': idr.everyone = v === 'all'; renderItemModal(); break;
     case 'ipick': { const k = idr.visibleTo.indexOf(id); if (k >= 0) idr.visibleTo.splice(k, 1); else idr.visibleTo.push(id); renderItemModal(); break; }
@@ -1963,11 +2116,7 @@ document.addEventListener('input', e => {
   if (t.id === 'pname' && pd) pd.name = t.value;
   if (t.id === 'scap' && sd) sd.caption = t.value;
   if (!idr) return;
-  if (t.id === 'iurl') {
-    idr.url = t.value;
-    if (idr.autoTitle) { idr.title = titleFromUrl(t.value); const ti = $('#ititle'); if (ti) ti.value = idr.title; }
-    refreshThumb();
-  }
+  if (t.id === 'iurl') onUrlInput(t.value);
   if (t.id === 'ititle') { idr.title = t.value; idr.autoTitle = !t.value; refreshThumb(); }
   if (t.id === 'iprice') idr.price = t.value;
   if (t.id === 'inote') idr.note = t.value;
@@ -1984,9 +2133,6 @@ document.addEventListener('change', async e => {
     try { sd.caption = $('#scap')?.value || sd.caption; sd.photo = await storyPhoto(t.files[0]); renderStoryComposer(); }
     catch (err) { toast("Ce fichier n'a pas pu être lu comme une image."); }
   }
-});
-document.addEventListener('submit', e => {
-  if (e.target.id === 'ideaform') { e.preventDefault(); const inp = $('#ideain'); addIdea(inp.value); inp.value = ''; inp.focus(); }
 });
 document.addEventListener('keydown', e => {
   if (viewerState) {

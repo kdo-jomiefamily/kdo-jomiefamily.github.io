@@ -38,10 +38,10 @@ service cloud.firestore {
         && d.managed is bool;
     }
     function validItem(d) {
-      return d.keys().hasOnly(['ownerId', 'title', 'url', 'price', 'note', 'photo', 'createdAt', 'createdBy', 'removed', 'removedBy', 'removedAt', 'everyone', 'visibleTo'])
+      return d.keys().hasOnly(['ownerId', 'title', 'url', 'price', 'note', 'photo', 'imageUrl', 'createdAt', 'createdBy', 'removed', 'removedBy', 'removedAt', 'everyone', 'visibleTo'])
         && d.ownerId is string
         && d.title is string && d.title.size() > 0 && d.title.size() <= 120
-        && optString(d, 'url', 2000) && optString(d, 'price', 20) && optString(d, 'note', 300)
+        && optString(d, 'url', 2000) && optString(d, 'price', 20) && optString(d, 'note', 300) && optString(d, 'imageUrl', 2000)
         && optPhoto(d, 600000)
         && d.get('removed', false) is bool
         && d.get('everyone', true) is bool
@@ -54,19 +54,20 @@ service cloud.firestore {
         || request.auth.uid in d.get('visibleTo', []);
     }
     function validProposal(d) {
-      return d.keys().hasOnly(['forId', 'by', 'title', 'url', 'price', 'note', 'photo', 'status', 'votes', 'createdAt', 'decidedAt'])
+      return d.keys().hasOnly(['forId', 'by', 'title', 'url', 'price', 'note', 'photo', 'imageUrl', 'status', 'votes', 'createdAt', 'decidedAt'])
         && d.forId is string && d.by is string
         && d.title is string && d.title.size() > 0 && d.title.size() <= 120
-        && optString(d, 'url', 2000) && optString(d, 'price', 20) && optString(d, 'note', 300)
+        && optString(d, 'url', 2000) && optString(d, 'price', 20) && optString(d, 'note', 300) && optString(d, 'imageUrl', 2000)
         && optPhoto(d, 600000)
         && d.status in ['question', 'decided']
         && d.votes is map && d.votes.size() <= 60;
     }
     function validIdea(d) {
-      return d.keys().hasOnly(['forId', 'by', 'title', 'url', 'createdAt'])
+      return d.keys().hasOnly(['forId', 'by', 'title', 'url', 'price', 'note', 'photo', 'imageUrl', 'createdAt'])
         && d.forId is string && d.by == request.auth.uid
         && d.title is string && d.title.size() > 0 && d.title.size() <= 120
-        && optString(d, 'url', 2000);
+        && optString(d, 'url', 2000) && optString(d, 'price', 20) && optString(d, 'note', 300) && optString(d, 'imageUrl', 2000)
+        && optPhoto(d, 600000);
     }
 
     match /families/{fid} {
