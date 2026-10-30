@@ -1,6 +1,6 @@
 rules_version = '2';
 // KDO security rules.
-// Promises: the owner of a list never sees reservations or proposals made for them,
+// Promises: the owner of a list (and the parents of a child) never see reservations or proposals made for them,
 // wishes limited to some people are never sent to anyone else, and private ideas are only readable by their author.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -20,8 +20,20 @@ service cloud.firestore {
     function isManaged(fid, pid) {
       return exists(profilePath(fid, pid)) && get(profilePath(fid, pid)).data.managed == true;
     }
+    // A child account: a relative without the app whose list only their parents look after
+    function parentsOf(fid, pid) {
+      return exists(profilePath(fid, pid)) ? get(profilePath(fid, pid)).data.get('parents', []) : [];
+    }
+    function isParent(fid, pid) {
+      return request.auth.uid in parentsOf(fid, pid);
+    }
     function canManage(fid, ownerId) {
-      return ownerId == request.auth.uid || isManaged(fid, ownerId);
+      return ownerId == request.auth.uid
+        || (isManaged(fid, ownerId) && (parentsOf(fid, ownerId).size() == 0 || isParent(fid, ownerId)));
+    }
+    // Surprises are kept from the list owner, and from the parents of a child
+    function keptSecret(fid, ownerId) {
+      return ownerId == request.auth.uid || isParent(fid, ownerId);
     }
     function optString(d, key, max) {
       return d.get(key, '') == '' || (d[key] is string && d[key].size() <= max);
@@ -31,11 +43,14 @@ service cloud.firestore {
     }
 
     function validProfile(d) {
-      return d.keys().hasOnly(['name', 'avatar', 'photo', 'managed', 'login', 'createdAt', 'createdBy'])
+      return d.keys().hasOnly(['name', 'avatar', 'photo', 'managed', 'login', 'createdAt', 'createdBy', 'parents'])
         && d.name is string && d.name.size() > 0 && d.name.size() <= 30
         && d.avatar is map
         && optPhoto(d, 400000)
-        && d.managed is bool;
+        && d.managed is bool
+        && d.get('parents', []) is list && d.get('parents', []).size() <= 8
+        // Only relatives without the app can have parents
+        && (d.managed == true || d.get('parents', []).size() == 0);
     }
     function validItem(d) {
       return d.keys().hasOnly(['ownerId', 'title', 'url', 'price', 'note', 'photo', 'imageUrl', 'createdAt', 'createdBy', 'removed', 'removedBy', 'removedAt', 'everyone', 'visibleTo'])
@@ -97,15 +112,19 @@ service cloud.firestore {
               && !('login' in request.resource.data))
           );
         // Name, photo and avatar can change. Who the profile belongs to never does.
+        // A child's profile can only be changed by their parents, and a parent can't step out (that would reveal the surprises).
         allow update: if signedIn()
-          && (pid == request.auth.uid || (member(fid) && resource.data.managed == true))
+          && (pid == request.auth.uid || (member(fid) && resource.data.managed == true
+            && (resource.data.get('parents', []).size() == 0 || request.auth.uid in resource.data.get('parents', []))))
+          && (resource.data.get('parents', []).size() == 0 || request.auth.uid in request.resource.data.get('parents', []))
           && validProfile(request.resource.data)
           && request.resource.data.managed == resource.data.managed
           && request.resource.data.get('login', null) == resource.data.get('login', null)
           && request.resource.data.get('createdAt', null) == resource.data.get('createdAt', null)
           && request.resource.data.get('createdBy', null) == resource.data.get('createdBy', null);
         // Only relatives without the app can be deleted; nobody can delete a real person
-        allow delete: if member(fid) && resource.data.managed == true;
+        allow delete: if member(fid) && resource.data.managed == true
+          && (resource.data.get('parents', []).size() == 0 || request.auth.uid in resource.data.get('parents', []));
       }
 
       match /items/{iid} {
@@ -127,12 +146,12 @@ service cloud.firestore {
       }
 
       match /reservations/{iid} {
-        // Nobody can read the reservations made on their own list
-        allow read: if member(fid) && resource.data.ownerId != request.auth.uid;
+        // Nobody can read the reservations made on their own list, or on their child's list
+        allow read: if member(fid) && !keptSecret(fid, resource.data.ownerId);
         allow create: if member(fid)
           && request.resource.data.keys().hasOnly(['ownerId', 'by', 'at'])
           && request.resource.data.by == request.auth.uid
-          && request.resource.data.ownerId != request.auth.uid
+          && !keptSecret(fid, request.resource.data.ownerId)
           && exists(itemPath(fid, iid))
           && get(itemPath(fid, iid)).data.ownerId == request.resource.data.ownerId
           && get(itemPath(fid, iid)).data.get('removed', false) == false
@@ -141,7 +160,7 @@ service cloud.firestore {
         allow delete: if member(fid) && resource.data.by == request.auth.uid;
         // Group gift: others can only add or remove themselves as participants
         allow update: if member(fid)
-          && resource.data.ownerId != request.auth.uid
+          && !keptSecret(fid, resource.data.ownerId)
           && resource.data.by != request.auth.uid
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joiners'])
           && request.resource.data.joiners is map && request.resource.data.joiners.size() <= 40
@@ -150,15 +169,15 @@ service cloud.firestore {
       }
 
       match /proposals/{pid} {
-        // Gifts the family discusses for someone: that person can never read them
-        allow read: if member(fid) && resource.data.forId != request.auth.uid;
+        // Gifts the family discusses for someone: that person (or a child's parents) can never read them
+        allow read: if member(fid) && !keptSecret(fid, resource.data.forId);
         allow create: if member(fid)
           && validProposal(request.resource.data)
           && request.resource.data.by == request.auth.uid
-          && request.resource.data.forId != request.auth.uid
+          && !keptSecret(fid, request.resource.data.forId)
           && exists(profilePath(fid, request.resource.data.forId));
         allow update: if member(fid)
-          && resource.data.forId != request.auth.uid
+          && !keptSecret(fid, resource.data.forId)
           && validProposal(request.resource.data)
           && request.resource.data.by == resource.data.by
           && request.resource.data.forId == resource.data.forId

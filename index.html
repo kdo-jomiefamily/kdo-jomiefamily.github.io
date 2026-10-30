@@ -407,6 +407,8 @@ button.h-ring{cursor:pointer}
 .sv-btn,.sv-x{background:rgba(0,0,0,.35);border:0;color:#fff;border-radius:999px;padding:6px 12px;font-weight:800;font-size:12.5px}
 .sv-btn.armed{background:var(--brand)}
 .sv-x{width:34px;height:34px;padding:0;font-size:16px}
+#pparents .field.parents{margin-top:22px;padding-top:16px;border-top:1.5px dashed var(--line, rgba(0,0,0,.08))}
+#pparents .people{margin-top:10px}
 .sv-frame{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .sv-frame.paused .sv-bars .run i{animation-play-state:paused}
 .sv-nav{position:absolute;top:70px;bottom:0;width:35%;background:none;border:0;z-index:2;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -935,8 +937,17 @@ function save() { DEV.selected = S.selected; DEV.locks = S.locks; saveDevice(); 
 const prof = id => S.profiles.find(p => p.id === id);
 const viewer = () => prof(S.me);
 const selected = () => prof(S.selected) || viewer() || S.profiles[0];
-// I can manage my own list and the lists of relatives without the app (baby, kids, pets...)
-const canManage = owner => !!owner && (owner.id === S.me || !!owner.managed);
+// A child account: a relative without the app whose list only their parents look after
+const parentsOf = p => (p && p.managed && Array.isArray(p.parents)) ? p.parents : [];
+const isParentOf = p => parentsOf(p).includes(S.me);
+// The surprise is kept from the list owner, and from the parents of a child
+const keptSecret = p => !!p && (p.id === S.me || isParentOf(p));
+// I can manage my own list, my children's lists, and the lists of relatives the whole family looks after
+const canManage = owner => !!owner && (owner.id === S.me || (!!owner.managed && (!parentsOf(owner).length || isParentOf(owner))));
+const namesOf = ids => {
+  const n = ids.map(id => id === S.me ? 'toi' : prof(id)?.name).filter(Boolean);
+  return n.length > 1 ? n.slice(0, -1).join(', ') + ' et ' + n[n.length - 1] : n[0] || '';
+};
 const ofName = n => (/^[aeiouyàâäéèêëîïôöûüh]/i.test(n) ? "d'" : 'de ') + n;
 const STORY_LIFE = 48 * 3600 * 1000;
 
@@ -1003,14 +1014,21 @@ async function createFirebaseBackend() {
       const itemSets = { everyone: [], shared: [], mine: [] };
       const pushItems = () => { const m = new Map(); Object.values(itemSets).flat().forEach(i => m.set(i.id, i)); on.items([...m.values()]); };
       const q = (name, ...w) => F.query(col(fid, name), ...w);
-      const track = pid => {
-        if (pid === me || perPerson.has(pid)) return;
+      // One listener per person, except me and the children I'm a parent of: those surprises are never sent to me
+      const quiet = e => console.error(e);
+      const track = p => {
+        const pid = p.id, hidden = pid === me || (p.managed && (p.parents || []).includes(me));
+        if (hidden) {
+          if (perPerson.has(pid)) { perPerson.get(pid).forEach(f => f()); perPerson.delete(pid); on.reservations(pid, []); on.proposals(pid, []); }
+          return;
+        }
+        if (perPerson.has(pid)) return;
         perPerson.set(pid, [
-          F.onSnapshot(q('reservations', F.where('ownerId', '==', pid)), s => on.reservations(pid, rows(s)), on.error),
-          F.onSnapshot(q('proposals', F.where('forId', '==', pid)), s => on.proposals(pid, rows(s)), on.error),
+          F.onSnapshot(q('reservations', F.where('ownerId', '==', pid)), s => on.reservations(pid, rows(s)), quiet),
+          F.onSnapshot(q('proposals', F.where('forId', '==', pid)), s => on.proposals(pid, rows(s)), quiet),
         ]);
       };
-      offs.push(F.onSnapshot(col(fid, 'profiles'), s => { const list = rows(s); list.forEach(p => track(p.id)); on.profiles(list); }, on.error));
+      offs.push(F.onSnapshot(col(fid, 'profiles'), s => { const list = rows(s); list.forEach(track); on.profiles(list); }, on.error));
       offs.push(F.onSnapshot(q('items', F.where('everyone', '==', true)), s => { itemSets.everyone = rows(s); pushItems(); }, on.error));
       offs.push(F.onSnapshot(q('items', F.where('visibleTo', 'array-contains', me)), s => { itemSets.shared = rows(s); pushItems(); }, on.error));
       offs.push(F.onSnapshot(q('items', F.where('ownerId', '==', me)), s => { itemSets.mine = rows(s); pushItems(); }, on.error));
@@ -1072,7 +1090,9 @@ function createMockBackend() {
   const bag = (kind, fid) => (D[kind][fid] = D[kind][fid] || {});
   const all = (kind, fid) => Object.values(bag(kind, fid)).map(x => JSON.parse(JSON.stringify(x)));
   const member = (fid, me) => !!bag('profiles', fid)[me] && !bag('profiles', fid)[me].managed;
-  const manages = (fid, me, ownerId) => ownerId === me || !!bag('profiles', fid)[ownerId]?.managed;
+  const parentsIn = (fid, pid) => { const p = bag('profiles', fid)[pid]; return p && p.managed ? (p.parents || []) : []; };
+  const manages = (fid, me, ownerId) => ownerId === me || (!!bag('profiles', fid)[ownerId]?.managed && (!parentsIn(fid, ownerId).length || parentsIn(fid, ownerId).includes(me)));
+  const secretFrom = (fid, me, ownerId) => ownerId === me || parentsIn(fid, ownerId).includes(me);
   const canSee = (it, me) => it.ownerId === me || it.everyone === true || (it.visibleTo || []).includes(me);
   const emit = () => { persist(); subs.forEach(f => f()); };
   const nid = () => uid() + uid();
@@ -1120,8 +1140,9 @@ function createMockBackend() {
         on.items(all('items', fid).filter(i => canSee(i, uidMe)));
         people.forEach(p => {
           if (p.id === uidMe) return;
-          on.reservations(p.id, all('reservations', fid).filter(r => r.ownerId === p.id));
-          on.proposals(p.id, all('proposals', fid).filter(r => r.forId === p.id));
+          const hide = secretFrom(fid, uidMe, p.id);
+          on.reservations(p.id, hide ? [] : all('reservations', fid).filter(r => r.ownerId === p.id));
+          on.proposals(p.id, hide ? [] : all('proposals', fid).filter(r => r.forId === p.id));
         });
         on.ideas(all('ideas', fid).filter(i => i.by === uidMe));
         on.stories(all('stories', fid));
@@ -1135,11 +1156,14 @@ function createMockBackend() {
       await tick(); const p = bag('profiles', fid)[id];
       if (!p || !(id === me() || (member(fid, me()) && p.managed))) deny();
       if ('managed' in data || 'login' in data) deny();
+      const was = p.parents || [];
+      if (was.length && !was.includes(me())) deny();
+      if ('parents' in data && (!p.managed || (was.length && !(data.parents || []).includes(me())))) deny();
       Object.assign(p, clean(data)); emit();
     },
     async deleteProfile(fid, id, itemIds) {
       await tick(); const p = bag('profiles', fid)[id];
-      if (!p || !p.managed || !member(fid, me())) deny();
+      if (!p || !p.managed || !member(fid, me()) || ((p.parents || []).length && !p.parents.includes(me()))) deny();
       itemIds.forEach(i => delete bag('items', fid)[i]); delete bag('profiles', fid)[id]; emit();
     },
     async addItem(fid, data) { await tick(); if (!member(fid, me()) || !manages(fid, me(), data.ownerId)) deny(); return put('items', fid, data); },
@@ -1150,7 +1174,7 @@ function createMockBackend() {
     },
     async reserve(fid, item, by) {
       await tick(); const it = bag('items', fid)[item.id];
-      if (!member(fid, by) || !it || it.ownerId === by || it.removed || !canSee(it, by)) deny();
+      if (!member(fid, by) || !it || secretFrom(fid, by, it.ownerId) || it.removed || !canSee(it, by)) deny();
       if (bag('reservations', fid)[item.id]) throw new Error('already');
       bag('reservations', fid)[item.id] = { id: item.id, ownerId: it.ownerId, by, at: Date.now() }; emit();
     },
@@ -1161,7 +1185,7 @@ function createMockBackend() {
     },
     async addProposal(fid, data) {
       await tick();
-      if (!member(fid, me()) || data.by !== me() || data.forId === me() || !bag('profiles', fid)[data.forId]) deny();
+      if (!member(fid, me()) || data.by !== me() || secretFrom(fid, me(), data.forId) || !bag('profiles', fid)[data.forId]) deny();
       return put('proposals', fid, data);
     },
     async updateProposal(fid, id, data) {
@@ -1171,17 +1195,17 @@ function createMockBackend() {
     },
     async joinReservation(fid, itemId, who, on) {
       await tick(); const r = bag('reservations', fid)[itemId], it = bag('items', fid)[itemId];
-      if (!r || !member(fid, who) || who !== me() || r.ownerId === who || r.by === who || !it || !canSee(it, who)) deny();
+      if (!r || !member(fid, who) || who !== me() || secretFrom(fid, who, r.ownerId) || r.by === who || !it || !canSee(it, who)) deny();
       r.joiners = r.joiners || {}; if (on) r.joiners[who] = true; else delete r.joiners[who]; emit();
     },
     async joinProposal(fid, id, who, on) {
       await tick(); const p = bag('proposals', fid)[id];
-      if (!p || !member(fid, who) || who !== me() || p.forId === who) deny();
+      if (!p || !member(fid, who) || who !== me() || secretFrom(fid, who, p.forId)) deny();
       p.joiners = p.joiners || {}; if (on) p.joiners[who] = true; else delete p.joiners[who]; emit();
     },
     async vote(fid, id, who, value) {
       await tick(); const p = bag('proposals', fid)[id];
-      if (!p || !member(fid, who) || who !== me() || p.forId === who) deny();
+      if (!p || !member(fid, who) || who !== me() || secretFrom(fid, who, p.forId)) deny();
       p.votes = p.votes || {};
       if (value) p.votes[who] = value; else delete p.votes[who];
       emit();
@@ -1243,7 +1267,7 @@ function startSession(me) {
   if (!S.selected) S.selected = me;
   save();
   stopSync = backend.subscribe(DEV.fid, me, {
-    profiles: list => { S.profiles = list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); mergeReservations(); queueRender(); },
+    profiles: list => { S.profiles = list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); mergeReservations(); queueRender(); defaultParents(list); },
     items: list => {
       S.items = list; mergeReservations(); queueRender(); backfillImages(list, 'items');
       // Wishes made before visibility existed become visible to the whole family
@@ -1272,6 +1296,21 @@ function startSession(me) {
     },
     error: e => { console.error(e); toast('La synchronisation a échoué. Vérifie ta connexion internet.'); },
   });
+}
+// One-time setup asked for by the family: Taya's parents are Lily and Robin, Isusa's are Jérôme and Ghita.
+// Only applies to a relative whose parents were never set, and only if every parent is found by first name.
+const firstName = n => String(n || '').trim().split(/[\s-]+/)[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
+const DEFAULT_PARENTS = [[/^taya$/, ['lily', 'robin']], [/^i[sz]+[aeiouy]*[sz]+[aeiouy]*$/, ['jerome', 'ghita']]];
+const parentsDone = new Set();
+function defaultParents(list) {
+  for (const child of list) {
+    if (!child.managed || 'parents' in child || parentsDone.has(child.id)) continue;
+    const rule = DEFAULT_PARENTS.find(([re]) => re.test(firstName(child.name))); if (!rule) continue;
+    const ids = rule[1].map(n => list.filter(p => !p.managed && firstName(p.name) === n)).map(m => m.length === 1 ? m[0].id : null);
+    if (ids.some(x => !x)) continue;
+    parentsDone.add(child.id);
+    backend.updateProfile(DEV.fid, child.id, { parents: ids }).catch(err => console.error(err));
+  }
 }
 function endSession() {
   stopSync?.(); stopSync = null;
@@ -1498,7 +1537,7 @@ function thumbHTML(it) {
   return gen;
 }
 function cardHTML(it, i, settled) {
-  const v = viewer(), owner = prof(it.ownerId), isOwner = v && v.id === it.ownerId;
+  const v = viewer(), owner = prof(it.ownerId), isOwner = v && (v.id === it.ownerId || isParentOf(owner));
   const manage = canManage(owner);
   // The list owner never gets any reservation information
   const mine = !isOwner && it.reservedBy === v?.id;
@@ -1536,8 +1575,10 @@ const GIFT = `<svg class="gift" viewBox="0 0 84 84" aria-hidden="true"><rect x="
 function subline(sel) {
   const v = viewer(), all = S.items.filter(i => i.ownerId === sel.id && !i.removed);
   if (v.id === sel.id) return `${pl(all.length, 'envie', 'envies')} dans ta liste · Ce que les autres prennent reste une surprise`;
+  if (isParentOf(sel)) return `${pl(all.length, 'envie', 'envies')} · Tu t'occupes de sa liste · Ce que les autres prennent reste une surprise, même pour ${parentsOf(sel).length > 1 ? 'ses parents' : 'toi'}`;
   const r = all.filter(i => i.reservedBy).length;
-  return `${pl(all.length, 'envie', 'envies')} · ${pl(r, 'déjà réservée', 'déjà réservées')}${sel.managed ? ' · Liste gérée par la famille' : ''}`;
+  const by = parentsOf(sel).length ? ` · Liste gérée par ${namesOf(parentsOf(sel))}` : sel.managed ? ' · Liste gérée par la famille' : '';
+  return `${pl(all.length, 'envie', 'envies')} · ${pl(r, 'déjà réservée', 'déjà réservées')}${by}`;
 }
 
 // ---- Family proposals ----
@@ -1624,20 +1665,22 @@ function renderMain() {
   const m = $('#main');
   if (!viewer()) { m.innerHTML = ''; return; }
   const sel = selected(), v = viewer(), isOwner = v.id === sel.id, manage = canManage(sel);
-  const tab = isOwner ? 'wishes' : S.tab;
+  // A parent sees their child's list the way they see their own: no reservations, no family ideas
+  const secret = keptSecret(sel), parent = !isOwner && secret;
+  const tab = secret ? 'wishes' : S.tab;
   // Cards pop in only when a list is first opened, not on every live update
   const key = sel.id + tab, settled = lastAnimated === key; lastAnimated = key;
   const list = S.items.filter(i => i.ownerId === sel.id && !i.removed).sort((a, b) => b.createdAt - a.createdAt);
-  const props = isOwner ? [] : S.proposals.filter(p => p.forId === sel.id);
-  const ideas = isOwner ? [] : S.ideas.filter(i => i.forId === sel.id);
+  const props = secret ? [] : S.proposals.filter(p => p.forId === sel.id);
+  const ideas = secret ? [] : S.ideas.filter(i => i.forId === sel.id);
   // Removed items that I had reserved: tell me so I don't buy them
-  const notices = isOwner ? [] : S.items.filter(i => i.ownerId === sel.id && i.removed && (i.reservedBy === v.id || S.res[i.id]?.joiners?.[v.id]));
-  const title = isOwner ? 'Mes envies' : `Les envies ${esc(ofName(sel.name))}`;
+  const notices = secret ? [] : S.items.filter(i => i.ownerId === sel.id && i.removed && (i.reservedBy === v.id || S.res[i.id]?.joiners?.[v.id]));
+  const title = isOwner ? 'Mes envies' : parent ? `La liste ${esc(ofName(sel.name))}` : `Les envies ${esc(ofName(sel.name))}`;
   let actions = '';
   if (tab === 'wishes' && manage) actions = `<button class="btn ghost" data-act="edit-profile" data-id="${sel.id}">${isOwner ? 'Mon profil' : 'Modifier le profil'}</button><button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter une envie' : 'Ajouter une envie'}</button>`;
   if (tab === 'family' && props.length) actions = `<button class="btn" data-act="new-prop">+ Proposer un cadeau</button>`;
   if (tab === 'mine' && ideas.length) actions = `<button class="btn" data-act="new-idea">+ Ajouter une idée</button>`;
-  const tabs = isOwner ? '' : `<div class="ptabs" role="tablist">
+  const tabs = secret ? (parent ? `<p class="secret">${LOCK}<span><b>Tu es ${parentsOf(sel).length > 1 ? 'un de ses parents' : 'son parent'}.</b> Tu remplis sa liste, mais tu ne vois pas qui prend quoi, ni les idées de la famille pour ${esc(sel.name)}. Comme ça, la surprise est aussi pour toi.</span></p>` : '') : `<div class="ptabs" role="tablist">
       <button role="tab" aria-selected="${tab === 'wishes'}" class="${tab === 'wishes' ? 'on' : ''}" data-act="tab" data-v="wishes"><span class="long">${sel.managed ? 'Sa liste' : 'Ses envies'}</span><span class="short">${sel.managed ? 'Liste' : 'Envies'}</span><b>${list.length}</b></button>
       <button role="tab" aria-selected="${tab === 'family'}" class="${tab === 'family' ? 'on' : ''}" data-act="tab" data-v="family"><span class="long">Idées de la famille</span><span class="short">Famille</span><b>${props.length}</b></button>
       <button role="tab" aria-selected="${tab === 'mine'}" class="${tab === 'mine' ? 'on' : ''}" data-act="tab" data-v="mine">${LOCK}<span>Mes idées</span><b>${ideas.length}</b></button>
@@ -1693,11 +1736,15 @@ function openProfile(flow, id) {
   pd.flow = flow;
   pd.self = flow === 'onboard' || (p && p.id === S.me);
   pd.lock = flow === 'onboard';
+  // Relatives without the app: either the whole family looks after the list, or only the child's parents
+  pd.parents = (p && Array.isArray(p.parents)) ? p.parents.slice() : [];
+  pd.who = pd.parents.length ? 'parents' : 'family';
+  pd.wasParent = pd.parents.includes(S.me);
   const title = flow === 'onboard' ? 'Bienvenue sur KDO !' : flow === 'relative' ? 'Ajouter un proche' : pd.self ? 'Mon profil' : 'Modifier le profil';
   const intro = flow === 'onboard'
     ? `<p class="hint intro">Crée ton profil, puis choisis ton code secret à 6 chiffres. Avec ce code, tu retrouves ton profil sur n'importe quel ordi ou téléphone. Sans lui, personne ne peut entrer à ta place : c'est ce qui garde les cadeaux secrets.</p>`
     : flow === 'relative'
-    ? `<p class="hint intro">Pour un bébé, un enfant, un animal ou un proche qui n'a pas l'appli. Toute la famille pourra ajouter des idées dans sa liste. Les adultes qui ont l'appli créent leur profil eux-mêmes, sur leur appareil.</p>`
+    ? `<p class="hint intro">Pour un bébé, un enfant, un animal ou un proche qui n'a pas l'appli. Les adultes qui ont l'appli créent leur profil eux-mêmes, sur leur appareil.</p>`
     : '';
   const canDelete = p && !pd.self && p.managed;
   showModal(`<h2>${title}</h2>${intro}
@@ -1709,8 +1756,24 @@ function openProfile(flow, id) {
       </div>
     </div>
     <div id="pbody"></div>
+    ${pd.self ? '' : '<div id="pparents"></div>'}
     <div class="m-foot">${canDelete ? `<button class="btn danger" data-act="pdelete">Supprimer le profil</button>` : ''}${pd.self && flow === 'edit' ? '<button class="btn danger" data-act="pchangepin">Changer mon code</button><button class="btn danger" data-act="logout">Me déconnecter</button>' : ''}<span class="sp"></span>${pd.lock ? '<button class="btn ghost" data-act="towho">Retour</button>' : '<button class="btn ghost" data-act="close">Annuler</button>'}<button class="btn" data-act="psave">${flow === 'onboard' ? 'Suivant' : 'Enregistrer'}</button></div>`, pd.lock);
   refreshProfile();
+  refreshParents();
+}
+function refreshParents() {
+  const box = $('#pparents'); if (!box || !pd) return;
+  const members = S.profiles.filter(p => !p.managed);
+  const hint = pd.who === 'family'
+    ? "Tout le monde peut remplir sa liste et voit ce qui est déjà pris. Pratique pour un grand-parent ou un animal."
+    : `<b>Compte enfant :</b> seuls ses parents remplissent sa liste. Ils ne voient pas qui prend quoi, ni les idées de la famille. ${pd.wasParent ? 'Tu ne peux pas te retirer toi-même : ça te dévoilerait les surprises.' : ''}`;
+  box.innerHTML = `<div class="field parents"><span class="glabel">Qui s'occupe de sa liste ?</span>
+    <div class="seg"><button data-act="pwho" data-v="family" class="${pd.who === 'family' ? 'on' : ''}" ${pd.wasParent ? 'disabled' : ''}>Toute la famille</button><button data-act="pwho" data-v="parents" class="${pd.who === 'parents' ? 'on' : ''}">Ses parents</button></div>
+    ${pd.who === 'parents' ? `<div class="people">${members.map(p => {
+      const on = pd.parents.includes(p.id), locked = pd.wasParent && p.id === S.me;
+      return `<button class="pp ${on ? 'on' : ''}" data-act="ppar" data-id="${p.id}" aria-pressed="${on}" ${locked ? 'disabled' : ''}>${face(p, 'sm')}<span>${p.id === S.me ? 'Moi' : esc(p.name)}</span></button>`;
+    }).join('')}</div>` : ''}
+    <p class="hint">${hint}</p></div>`;
 }
 function swatches(key, list, label) {
   return `<div class="group"><span class="glabel">${label}</span><div class="opts">${list.map(c => `<button class="sw ${pd.avatar[key] === c ? 'on' : ''}" style="background:${c}" data-act="pset" data-k="${key}" data-v="${c}" aria-label="${label} ${c}" aria-pressed="${pd.avatar[key] === c}"></button>`).join('')}</div></div>`;
@@ -1776,8 +1839,10 @@ function saveProfile() {
   if (!name) { toast('Donne un prénom à ce profil.'); $('#pname').focus(); return; }
   if (pd.mode === 'photo' && !pd.photo) { toast("Choisis une photo, ou reviens sur l'avatar."); return; }
   if (pd.self && !SELF_KINDS.includes(pd.avatar.kind)) pd.avatar.kind = 'adulte';
+  if (!pd.self && pd.who === 'parents' && !pd.parents.length) { toast('Choisis au moins un parent, ou « Toute la famille ».'); return; }
   // Only name, photo and avatar can change. Who the profile belongs to never does.
   const data = { name, photo: pd.mode === 'photo' ? pd.photo : null, avatar: pd.avatar };
+  if (!pd.self) data.parents = pd.who === 'parents' ? pd.parents.filter(pid => prof(pid)) : [];
   const flow = pd.flow, id = pd.id;
   if (flow === 'onboard') {
     if (S.me) return;
@@ -1792,7 +1857,7 @@ function saveProfile() {
 }
 function deleteProfile(btn) {
   const id = pd.id, p = prof(id);
-  if (!p || id === S.me || !p.managed) return;
+  if (!p || id === S.me || !p.managed || !canManage(p)) return;
   if (!btn.classList.contains('armed')) { btn.classList.add('armed'); btn.textContent = 'Confirmer la suppression'; return; }
   const itemIds = S.items.filter(i => i.ownerId === id).map(i => i.id);
   closeModal(true);
@@ -2585,6 +2650,12 @@ document.addEventListener('click', e => {
     case 'edit-profile': openProfile('edit', id); break;
     case 'ptab': pd.tab = v; refreshProfile(); break;
     case 'pmode': pd.mode = v; refreshProfile(); break;
+    case 'pwho': pd.who = v; if (v === 'parents' && !pd.parents.length) pd.parents = [S.me]; refreshParents(); break;
+    case 'ppar': {
+      if (pd.wasParent && id === S.me) break;
+      const k = pd.parents.indexOf(id); if (k >= 0) pd.parents.splice(k, 1); else pd.parents.push(id);
+      refreshParents(); break;
+    }
     case 'pset': setAvatar(el.dataset.k, v); refreshProfile(); break;
     case 'prandom': pd.avatar = randomAvatar(pd.avatar.kind, pd.avatar.bg); pd.mode = 'avatar'; refreshProfile(); break;
     case 'pnophoto': pd.photo = null; refreshProfile(); break;
