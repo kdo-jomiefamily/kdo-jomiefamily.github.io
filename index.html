@@ -272,9 +272,10 @@ input:focus,textarea:focus{outline:none;border-color:var(--brand)}
 .pf-preview .av{width:132px;height:132px;box-shadow:0 12px 28px -14px rgba(120,20,60,.6)}
 .pf-fields{flex:1;min-width:220px;display:flex;flex-direction:column;gap:12px}
 .pf-fields .seg{margin:0;align-self:flex-start}
-.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;border-bottom:2px solid var(--line)}
-.tabs button{border:0;background:none;padding:8px 12px;font-weight:900;font-size:13.5px;color:var(--ink-2);border-bottom:3px solid transparent;margin-bottom:-6px;white-space:nowrap}
-.tabs button.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.tabs button{border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:9px 14px;min-height:42px;font-weight:900;font-size:14px;color:var(--ink-2);box-shadow:0 2px 0 var(--line)}
+.tabs button:hover{border-color:var(--ink-2);color:var(--ink)}
+.tabs button.on{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 2px 0 var(--brand-deep)}
 .groups{display:flex;flex-direction:column;gap:16px}
 .group{display:flex;flex-direction:column;gap:8px}
 .now{font-size:13px;font-weight:800;color:var(--ink-2)} .now b{color:var(--brand)}
@@ -295,6 +296,42 @@ input:focus,textarea:focus{outline:none;border-color:var(--brand)}
 .toast button{background:none;border:0;color:var(--brand);font-weight:900;padding:0}
 @keyframes toast{from{transform:translateX(-50%) translateY(20px)}}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:70}
+/* Card footers: big, separated buttons that are hard to tap by mistake */
+.bi{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.c-foot{display:flex;flex-direction:column;gap:10px;margin-top:auto;padding-top:10px}
+.site-btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:2px solid var(--sky);color:var(--sky);background:var(--surface);border-radius:14px;font-weight:900;font-size:14px;text-decoration:none;padding:8px 12px;min-width:0;transition:background .15s,color .15s}
+.site-btn span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.site-btn:hover{background:var(--sky);color:#fff}
+.manage{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mbtn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;border:2px solid var(--line);background:var(--surface);border-radius:14px;font:inherit;font-weight:900;font-size:14px;color:var(--ink);padding:8px 10px;cursor:pointer;transition:border-color .15s,background .15s}
+.mbtn:hover{border-color:var(--ink-2)}
+.mbtn.got{border-color:var(--mint);color:var(--mint)}
+.mbtn.got:hover{background:var(--mint);color:#fff}
+.mbtn.del{color:var(--brand)}
+.mbtn.armed{background:var(--brand);border-color:var(--brand);color:#fff}
+.mbtn.small{min-height:40px;font-size:13px;padding:6px 8px;text-align:center}
+.prop .site-btn{margin-top:6px}
+.prop .manage{margin-top:8px}
+.p-actions{margin-top:8px}
+/* Photo choice */
+.photo-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pick-btn{position:absolute;left:8px;right:8px;bottom:8px;border:0;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:900;font-size:12.5px;padding:8px 10px;box-shadow:0 4px 12px rgba(0,0,0,.25);cursor:pointer;animation:pop .3s cubic-bezier(.2,1.6,.4,1)}
+.picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.pk{position:relative;aspect-ratio:1;border:3px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;padding:0;cursor:pointer}
+.pk img{width:100%;height:100%;object-fit:contain;padding:6%}
+.pk.on{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand)}
+.pk.icon .gen{position:absolute;inset:0}
+.pk.icon > span{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-weight:900;font-size:12px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+/* Product icons */
+.gen span.ico{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;font-size:76px;transform:none;text-shadow:0 8px 14px rgba(0,0,0,.2)}
+.it-thumb .gen span.ico{font-size:58px}
+.p-thumb .gen span.ico{font-size:46px}
+.pk .gen span.ico{font-size:46px}
+@media (max-width:560px){
+  .tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tabs button{padding:9px 4px;font-size:13px}
+}
+
 .vh{position:absolute;width:1px;height:1px;opacity:0}
 .list-head .lh-text{flex:1 1 260px}
 .head-av{position:relative;flex:none}
@@ -392,7 +429,7 @@ h2.sec{font-family:var(--f-display);font-weight:400;font-size:22px;margin:22px 0
 .p-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
 .p-actions .c-link{margin-right:4px}
 .p-actions .sp{flex:1}
-.vote{display:inline-flex;align-items:center;gap:5px;border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;font-weight:900;font-size:13px;color:var(--ink-2);transition:transform .15s cubic-bezier(.2,1.8,.4,1)}
+.vote{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 16px;min-height:40px;font-weight:900;font-size:13px;color:var(--ink-2);transition:transform .15s cubic-bezier(.2,1.8,.4,1)}
 .vote svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
 .vote:active{transform:scale(.9)}
 .vote.on{border-color:var(--mint);color:var(--mint);background:var(--surface-2)}
@@ -1157,6 +1194,14 @@ async function run(promise, okMessage) {
 // ================= Render =================
 function render() { renderWho(); renderFamily(); renderBanner(); renderMain(); }
 const LOCK = `<svg class="lk" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
+const svgI = d => `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+const GLOBE = svgI('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9s1.3-6.4 3.8-9z"/>');
+const PENCIL = svgI('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>');
+const CHECK = svgI('<path d="M5 12.5l4.5 4.5L19 7.5"/>');
+const TRASH = svgI('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>');
+const ARROW = svgI('<path d="M7 17L17 7M9 7h8v8"/>');
+// A clear, big button that says we're going to the shop's website
+const siteBtn = url => url ? `<a class="site-btn" href="${esc(url)}" target="_blank" rel="noopener">${GLOBE}<span>Voir sur ${esc(domainOf(url) || 'le site')}</span>${ARROW}</a>` : '';
 const thumbIcon = down => `<svg viewBox="0 0 24 24" aria-hidden="true"${down ? ' style="transform:rotate(180deg)"' : ''}><path d="M7 11v9H4v-9zM7 11l4-8c1.7 0 2.6 1 2.3 2.7L13 9h5.5a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.3 20H7"/></svg>`;
 function ago(ts) {
   const m = Math.max(0, Math.round((Date.now() - ts) / 60000));
@@ -1216,12 +1261,139 @@ function renderBanner() {
   b.hidden = !parts.length;
   b.innerHTML = parts.join('<div style="height:10px"></div>');
 }
-// Thumbnail: my own photo, else the product photo found on the shop page, else a colored letter
+// ================= Product icons (when there's no photo), like the Bring shopping app =================
+// Each line: icon, then the words that point to it (French and English, without accents).
+// The longest matching words win, so "sac a dos" beats "sac". Add words here to improve it over time.
+const PRODUCT_ICONS = [
+  ['🎧', 'casque|casque audio|casque sans fil|casque bluetooth|ecouteur|airpods|headphone|earbud|headset|beats'],
+  ['🪖', 'casque velo|casque de velo|casque moto|casque de ski|casque ski'],
+  ['🔊', 'enceinte|speaker|sonos|barre de son|jbl|marshall'],
+  ['📺', 'tv|tele|television|televiseur|ecran|moniteur|monitor|videoprojecteur|projecteur'],
+  ['📱', 'telephone|iphone|smartphone|galaxy|coque|chargeur'],
+  ['💻', 'ordinateur|laptop|macbook|pc portable|pc|chromebook|tablette|ipad|kindle|liseuse|tablette graphique|wacom'],
+  ['⌨️', 'clavier|keyboard|clavier mecanique'],
+  ['🖱️', 'souris|mouse'],
+  ['🖨️', 'imprimante|printer'],
+  ['📷', 'appareil photo|camera|objectif|gopro|polaroid|instax|reflex|hybride'],
+  ['🎮', 'jeu video|jeux video|console|ps5|ps4|playstation|switch|xbox|manette|nintendo|steam|zelda|mario|pokemon'],
+  ['🎲', 'jeu de societe|jeux de societe|board game|dixit|monopoly|uno|jeu de cartes|catan|escape game'],
+  ['🧩', 'puzzle'],
+  ['🧱', 'lego|duplo|playmobil|jeu de construction|kapla'],
+  ['🧸', 'peluche|doudou|nounours|ours en peluche|jouet|toy|poupee|figurine|empiler|arc en ciel en bois|hochet'],
+  ['🚂', 'train electrique|circuit train'],
+  ['📚', 'livre|roman|bd|bande dessinee|manga|comics|book|encyclopedie|guide|recueil'],
+  ['📓', 'carnet|cahier|agenda|journal intime|notebook|planner|bullet journal'],
+  ['🖊️', 'stylo|stylo plume|fountain pen'],
+  ['🎨', 'peinture|aquarelle|pinceau|toile|acrylique|feutre|crayon|crayons|dessin|coloriage|kit creatif|loisir creatif'],
+  ['🧶', 'tricot|laine|crochet|couture|machine a coudre|broderie'],
+  ['⌚', 'montre|watch|apple watch|garmin|bracelet connecte|fitbit'],
+  ['💍', 'bague|bijou|bijoux|collier|bracelet|boucle d oreille|boucles d oreilles|pendentif|jewel|jonc'],
+  ['🕶️', 'lunette|lunettes|lunettes de soleil|sunglasses|ray ban'],
+  ['👜', 'sac|sac a main|pochette|portefeuille|wallet|handbag|tote bag|cabas'],
+  ['🎒', 'sac a dos|cartable|backpack'],
+  ['🧳', 'valise|bagage|suitcase|trousse de toilette'],
+  ['👟', 'basket|sneaker|chaussure|chaussures|running|nike|adidas|new balance|converse|vans|asics'],
+  ['🥾', 'chaussure de marche|chaussures de randonnee|randonnee|trek|trekking'],
+  ['👢', 'botte|bottine|boots'],
+  ['👠', 'escarpin|talon|talons'],
+  ['🩴', 'tong|claquette|sandale'],
+  ['🧦', 'chaussette|sock'],
+  ['👕', 't shirt|tee shirt|tshirt|polo|chemise|maillot|debardeur|chemisier'],
+  ['🧥', 'pull|sweat|hoodie|veste|manteau|doudoune|blouson|gilet|coat|jacket|cardigan|parka|polaire'],
+  ['👖', 'jean|pantalon|jogging|short|legging'],
+  ['👗', 'robe|jupe|dress|combinaison'],
+  ['🩱', 'maillot de bain|bikini'],
+  ['🧣', 'echarpe|foulard|scarf|snood|cheche'],
+  ['🧤', 'gant|moufle|glove'],
+  ['🧢', 'casquette|bob'],
+  ['🎩', 'chapeau|beret|bonnet'],
+  ['🥿', 'pyjama|nuisette|peignoir|robe de chambre|chausson|pantoufle'],
+  ['💄', 'maquillage|rouge a levre|rouge a levres|mascara|palette|makeup|vernis|fond de teint'],
+  ['🧴', 'parfum|creme|soin|serum|gel douche|shampoing|lotion|coffret beaute|cosmetique|eau de toilette|savon'],
+  ['🪮', 'brosse|peigne|lisseur|boucleur|seche cheveux|dyson|fer a lisser'],
+  ['🪒', 'rasoir|tondeuse|epilateur'],
+  ['☕', 'cafe|cafetiere|machine a cafe|expresso|nespresso|mug|tasse|moulin a cafe|v60|thermos|isotherme'],
+  ['🍵', 'theiere|infusion|matcha|tisane|the vert|the noir|de the|coffret the|the japonais'],
+  ['🍷', 'vin|bouteille|whisky|rhum|gin|cognac|spiritueux|decanteur|cave a vin'],
+  ['🍾', 'champagne|cremant|prosecco'],
+  ['🍺', 'biere|beer|tireuse'],
+  ['🍫', 'chocolat|praline|bonbon|confiserie|macaron|tablette de chocolat|truffe'],
+  ['🍳', 'poele|casserole|cocotte|wok|ustensile|cuisine|robot cuisine|robot patissier|blender|thermomix|airfryer|friteuse|mixeur|grille pain|bouilloire'],
+  ['🔪', 'couteau|couteaux|knife'],
+  ['🎂', 'gateau|patisserie|moule'],
+  ['🧺', 'pique nique|panier'],
+  ['🛋️', 'plaid|couverture|coussin|canape|fauteuil|pouf'],
+  ['🛏️', 'drap|draps|housse de couette|couette|oreiller|lit|matelas|parure|linge de lit'],
+  ['💡', 'lampe|luminaire|lumiere|guirlande|veilleuse|ampoule|led'],
+  ['🕯️', 'bougie|bougies|diffuseur|encens'],
+  ['🪴', 'plante|cactus|jardinage|jardin|graine|bonsai|terrarium'],
+  ['💐', 'fleur|fleurs|bouquet|orchidee|rose'],
+  ['🖼️', 'cadre|tableau|affiche|poster|deco|decoration|miroir'],
+  ['⏰', 'reveil|horloge'],
+  ['🧹', 'aspirateur|balai|robot aspirateur|nettoyeur|serpillere'],
+  ['🛠️', 'outil|outils|perceuse|visseuse|tournevis|boite a outils|bricolage|scie|marteau'],
+  ['🚲', 'velo|vtt|bmx|bike|velo electrique|draisienne'],
+  ['🛴', 'trottinette|scooter'],
+  ['🛹', 'skate|skateboard|longboard'],
+  ['⛸️', 'patin|patins|roller|rollers'],
+  ['⚽', 'foot|football|ballon|crampon|crampons'],
+  ['🏀', 'basketball|panier de basket'],
+  ['🎾', 'tennis|raquette|padel|badminton|ping pong'],
+  ['⛳', 'golf'],
+  ['🧘', 'yoga|tapis de yoga|meditation|pilates'],
+  ['🏋️', 'haltere|halteres|musculation|kettlebell|fitness|banc de musculation|velo d appartement'],
+  ['🏊', 'natation|piscine|lunettes de natation|bonnet de bain'],
+  ['⛷️', 'ski|skis|snowboard|masque de ski'],
+  ['🏄', 'surf|paddle|kayak'],
+  ['⛺', 'tente|camping|duvet|sac de couchage|lampe frontale'],
+  ['🎣', 'peche|canne a peche'],
+  ['🎸', 'guitare|ukulele|basse'],
+  ['🎹', 'piano|clavier musical|synthe|synthetiseur'],
+  ['🥁', 'batterie|percussion'],
+  ['🎤', 'micro|karaoke'],
+  ['💿', 'vinyle|disque|platine|cd|album'],
+  ['🎟️', 'concert|billet|billets|spectacle|festival|theatre|match|place de concert|parc d attraction|disneyland'],
+  ['🎬', 'cinema|film|dvd|blu ray|netflix|abonnement'],
+  ['✈️', 'voyage|week end|weekend|sejour|avion|escapade|city trip'],
+  ['🏨', 'hotel|airbnb|chambre d hote'],
+  ['🍽️', 'restaurant|diner|repas|gastronomique|brunch'],
+  ['💆', 'spa|massage|soin du corps|hammam|thalasso|institut'],
+  ['🎓', 'cours|atelier|stage|formation|lecon|masterclass|initiation'],
+  ['🍼', 'biberon|tetine|bebe|naissance|gigoteuse|body|layette|bavoir|turbulette'],
+  ['👶', 'poussette|landau|siege auto|transat|parc bebe|tapis d eveil|eveil|porte bebe|babyphone'],
+  ['🐕', 'chien|croquette|croquettes|laisse|collier pour chien|niche|panier pour chien|harnais|panier orthopedique'],
+  ['🦴', 'os a macher|jouet a macher|friandise|friandises'],
+  ['🐈', 'chat|arbre a chat|litiere|griffoir|herbe a chat'],
+  ['🐠', 'poisson|aquarium'],
+  ['🐦', 'oiseau|cage'],
+  ['🚗', 'voiture|permis|accessoire auto'],
+  ['🚁', 'drone'],
+  ['🤖', 'robot'],
+  ['🔭', 'telescope|microscope|jumelle|jumelles'],
+  ['🧪', 'science|chimie|kit scientifique'],
+  ['🎁', 'carte cadeau|bon cadeau|coffret|surprise|cadeau|box'],
+  ['💶', 'argent|cheque|cagnotte|virement'],
+];
+const ICON_RULES = PRODUCT_ICONS.flatMap(([icon, words]) => words.split('|').map(w => [w, icon]))
+  .sort((a, b) => b[0].length - a[0].length)
+  .map(([w, icon]) => [new RegExp(`(^| )${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(s|x|es)?( |$)`), icon]);
+const iconCache = new Map();
+function productIcon(title) {
+  const key = String(title || '');
+  if (iconCache.has(key)) return iconCache.get(key);
+  const text = ' ' + key.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim() + ' ';
+  const hit = ICON_RULES.find(([re]) => re.test(text));
+  const icon = hit ? hit[1] : '';
+  iconCache.set(key, icon);
+  return icon;
+}
+
+// Thumbnail: my own photo, else the product photo found on the shop page, else a product icon, else a letter
 function thumbHTML(it) {
   if (it.photo) return `<img src="${it.photo}" alt="">`;
   const [a, b] = THUMB_PALETTES[hash(it.title || '?') % THUMB_PALETTES.length];
-  const letter = ((it.title || '').trim()[0] || '?').toUpperCase();
-  const gen = `<div class="gen" style="--a:${a};--b:${b}"><span>${esc(letter)}</span></div>`;
+  const letter = ((it.title || '').trim()[0] || '?').toUpperCase(), icon = productIcon(it.title);
+  const gen = `<div class="gen" style="--a:${a};--b:${b}">${icon ? `<span class="ico" aria-hidden="true">${icon}</span>` : `<span>${esc(letter)}</span>`}</div>`;
   if (it.imageUrl) return gen + `<img class="remote" src="${esc(it.imageUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`;
   return gen;
 }
@@ -1250,9 +1422,9 @@ function cardHTML(it, i, settled) {
       ${it.price ? `<span class="price">${esc(it.price)}</span>` : ''}
       <h3>${esc(it.title)}</h3>
       ${it.note ? `<p class="c-note">${esc(it.note)}</p>` : ''}
-      <div class="c-actions">
-        ${it.url ? `<a class="c-link" href="${esc(it.url)}" target="_blank" rel="noopener">Voir l'article ↗</a>` : ''}
-        ${manage ? `<button class="icon-btn" data-act="edit-item" data-id="${it.id}" aria-label="Modifier ${esc(it.title)}">Modifier</button><button class="icon-btn got" data-act="got" data-id="${it.id}">Reçu ✓</button>` : ''}
+      <div class="c-foot">
+        ${siteBtn(it.url)}
+        ${manage ? `<div class="manage"><button class="mbtn" data-act="edit-item" data-id="${it.id}" aria-label="Modifier ${esc(it.title)}">${PENCIL}Modifier</button><button class="mbtn got" data-act="got" data-id="${it.id}" aria-label="${esc(it.title)} : reçu">${CHECK}Reçu</button></div>` : ''}
       </div>
     </div>
     ${reserve}
@@ -1280,12 +1452,12 @@ function propHTML(p) {
       <div class="p-who">${face(by, 'xs')}<span>${who}</span></div>
       <h3>${esc(p.title)}</h3>
       ${info ? `<p class="c-note">${info}</p>` : ''}
+      ${siteBtn(p.url)}
       <div class="p-actions">
-        ${p.url ? `<a class="c-link" href="${esc(p.url)}" target="_blank" rel="noopener">Voir l'article ↗</a>` : ''}
         ${decided ? '' : `<button class="vote ${myVote > 0 ? 'on' : ''}" data-act="vote" data-id="${p.id}" data-v="1" aria-pressed="${myVote > 0}" aria-label="J'aime l'idée">${thumbIcon(false)}<b>${ups}</b></button>
           <button class="vote down ${myVote < 0 ? 'on' : ''}" data-act="vote" data-id="${p.id}" data-v="-1" aria-pressed="${myVote < 0}" aria-label="Je n'aime pas l'idée">${thumbIcon(true)}<b>${downs}</b></button>`}
-        ${mine ? `<span class="sp"></span>${decided ? `<button class="icon-btn" data-act="prop-undecide" data-id="${p.id}">Finalement, on en discute</button>` : `<button class="btn small" data-act="prop-decide" data-id="${p.id}">Je lui prends ✓</button>`}<button class="icon-btn" data-act="prop-delete" data-id="${p.id}">Supprimer</button>` : ''}
       </div>
+      ${mine ? `<div class="manage">${decided ? `<button class="mbtn" data-act="prop-undecide" data-id="${p.id}">Plutôt en discuter</button>` : `<button class="mbtn got" data-act="prop-decide" data-id="${p.id}">${CHECK}Je lui prends</button>`}<button class="mbtn del" data-act="prop-delete" data-id="${p.id}">${TRASH}Supprimer</button></div>` : ''}
     </div>
   </article>`;
 }
@@ -1306,9 +1478,9 @@ function ideaCardHTML(i, k, settled) {
       ${i.price ? `<span class="price">${esc(i.price)}</span>` : ''}
       <h3>${esc(i.title)}</h3>
       ${i.note ? `<p class="c-note">${esc(i.note)}</p>` : ''}
-      <div class="c-actions">
-        ${i.url ? `<a class="c-link" href="${esc(i.url)}" target="_blank" rel="noopener">Voir l'article ↗</a>` : ''}
-        <button class="icon-btn" data-act="idea-edit" data-id="${i.id}">Modifier</button><button class="icon-btn" data-act="idea-delete" data-id="${i.id}">Supprimer</button>
+      <div class="c-foot">
+        ${siteBtn(i.url)}
+        <div class="manage"><button class="mbtn" data-act="idea-edit" data-id="${i.id}">${PENCIL}Modifier</button><button class="mbtn del" data-act="idea-delete" data-id="${i.id}">${TRASH}Supprimer</button></div>
       </div>
     </div>
     <div class="idea-go"><button data-act="idea-propose" data-id="${i.id}">Proposer à la famille</button><button class="main" data-act="idea-take" data-id="${i.id}">Je lui offre</button></div>
@@ -1518,24 +1690,77 @@ function cleanTitle(t, publisher) {
   if (/robot|captcha|access denied|page not found|page introuvable|\b404\b/i.test(t)) return '';
   return t.slice(0, 110);
 }
+// Browsers can't read shop pages directly, so a free preview service (Microlink) reads the page for us:
+// its name, its main photo, and every other image on the page so the person can pick the right one.
 function linkPreview(url) {
   if (!url) return Promise.resolve(null);
   if (previewCache.has(url)) return previewCache.get(url);
   const p = (async () => {
-    if (MOCK) return window.KDO_PREVIEW ? window.KDO_PREVIEW(url) : null;
-    const api = `https://api.microlink.io/?url=${encodeURIComponent(url)}&palette=false&audio=false&video=false&iframe=false`;
-    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 10000);
+    if (MOCK) { const r = window.KDO_PREVIEW ? await window.KDO_PREVIEW(url) : null; return r && { ...r, title: cleanTitle(r.title, r.publisher) }; }
+    const q = new URLSearchParams({ url, palette: 'false', audio: 'false', video: 'false', iframe: 'false' });
+    // Extra rules: all <img> on the page, all og:image tags, and Amazon's big product photo
+    q.set('data.imgs.selectorAll', 'img'); q.set('data.imgs.attr', 'src');
+    q.set('data.lazy.selectorAll', 'img[data-src]'); q.set('data.lazy.attr', 'data-src');
+    q.set('data.ogs.selectorAll', 'meta[property="og:image"]'); q.set('data.ogs.attr', 'content');
+    q.set('data.hires.selector', '#landingImage'); q.set('data.hires.attr', 'data-old-hires');
+    q.set('data.dyn.selector', '#landingImage'); q.set('data.dyn.attr', 'data-a-dynamic-image');
+    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 12000);
     try {
-      const r = await fetch(api, { signal: ctrl.signal });
+      const r = await fetch(`https://api.microlink.io/?${q}`, { signal: ctrl.signal });
       const j = await r.json();
       if (j.status !== 'success' || !j.data) return null;
-      const image = j.data.image?.url || '';
-      return { title: cleanTitle(j.data.title, j.data.publisher), image: /^https:\/\//.test(image) ? image : '' };
+      const d = j.data, list = v => Array.isArray(v) ? v : v ? [v] : [];
+      let dyn = [];
+      try { dyn = Object.keys(JSON.parse(d.dyn || '{}')); } catch (e) {}
+      const images = [d.image?.url, d.hires, ...dyn, ...list(d.ogs), ...list(d.lazy), ...list(d.imgs)]
+        .map(x => typeof x === 'object' && x ? x.url || x.src : x).filter(Boolean);
+      return { title: cleanTitle(d.title, d.publisher), image: d.image?.url || '', images, base: d.url || url };
     } catch (e) { return null; }
     finally { clearTimeout(timer); }
   })();
   previewCache.set(url, p);
   return p;
+}
+// Amazon often blocks robots, but its product photo can be found from the product code in the link
+function amazonImages(url) {
+  const m = String(url).match(/amazon\.[a-z.]+\/(?:.*\/)?(?:dp|gp\/product|gp\/aw\/d|product)\/([A-Z0-9]{10})/i);
+  if (!m) return [];
+  const asin = m[1].toUpperCase();
+  return [`https://m.media-amazon.com/images/P/${asin}.01._SCLZZZZZZZ_.jpg`, `https://images-na.ssl-images-amazon.com/images/P/${asin}.01.LZZZZZZZ.jpg`];
+}
+function cleanImageList(raw, base) {
+  const seen = new Set(), out = [];
+  for (let u of raw) {
+    try { u = new URL(String(u).trim(), base).href; } catch (e) { continue; }
+    u = u.replace(/^http:\/\//, 'https://');
+    if (!/^https:\/\//.test(u) || /^data:/.test(u)) continue;
+    if (/\.svg(\?|$)|\.gif(\?|$)|sprite|logo|icon|favicon|pixel|1x1|blank|spacer|transparent|badge|flag|rating|stars?[-_.]|avatar|banner|tracking|placeholder|loader/i.test(u)) continue;
+    // Amazon thumbnails: ask for the large version instead
+    if (/media-amazon\.com|ssl-images-amazon\.com/.test(u)) u = u.replace(/\._[A-Z0-9_,]+_\.(jpg|jpeg|png|webp)/i, '._AC_SL800_.$1');
+    if (seen.has(u)) continue;
+    seen.add(u); out.push(u);
+    if (out.length >= 30) break;
+  }
+  return out;
+}
+// Keep only real product-sized photos: load each one and check its size
+function probeImages(urls) {
+  return Promise.all(urls.map(url => new Promise(res => {
+    const img = new Image(); let done = false;
+    const end = v => { if (!done) { done = true; res(v); } };
+    img.referrerPolicy = 'no-referrer';
+    img.onload = () => end(img.naturalWidth >= 150 && img.naturalHeight >= 150 && img.naturalWidth / img.naturalHeight < 3 && img.naturalHeight / img.naturalWidth < 3 ? { url, w: img.naturalWidth, h: img.naturalHeight } : null);
+    img.onerror = () => end(null);
+    setTimeout(() => end(null), 6000);
+    img.src = url;
+  }))).then(list => list.filter(Boolean));
+}
+async function findProductPhotos(url, res) {
+  const raw = [...(res?.images || []), ...(res?.image ? [res.image] : []), ...amazonImages(res?.base || url), ...amazonImages(url)];
+  const ok = await probeImages(cleanImageList(raw, res?.base || url));
+  // Main photo first, then the biggest ones
+  const main = ok.slice(0, 1), rest = ok.slice(1).sort((a, b) => b.w * b.h - a.w * a.h);
+  return [...main, ...rest].slice(0, 12).map(x => x.url);
 }
 // Older entries saved before this existed: fetch their product photo once, in the background
 let backfillBudget = 6;
@@ -1547,10 +1772,10 @@ function backfillImages(list, kind) {
     DEV.tried = DEV.tried || {};
     if (!mineToEdit || DEV.tried[x.id]) continue;
     DEV.tried[x.id] = 1; saveDevice(); backfillBudget--;
-    linkPreview(x.url).then(res => {
-      if (!res?.image) return;
+    linkPreview(x.url).then(res => findProductPhotos(x.url, res)).then(photos => {
+      if (!photos[0]) return;
       const fn = kind === 'items' ? backend.updateItem : kind === 'proposals' ? backend.updateProposal : backend.updateIdea;
-      fn(DEV.fid, x.id, { imageUrl: res.image }).catch(err => console.error(err));
+      fn(DEV.fid, x.id, { imageUrl: photos[0] }).catch(err => console.error(err));
     });
   }
 }
@@ -1567,6 +1792,16 @@ function openItem(id) {
   idr.tab = it && !it.url ? 'name' : 'link';
   idr.autoTitle = !it;
   renderItemModal();
+  if (it?.url) loadCandidates(it.url);
+}
+// Fetch the page photos in the background so "Choisir la photo" is ready
+function loadCandidates(url) {
+  const n = normalizeUrl(url), token = previewToken;
+  if (!n) return;
+  linkPreview(n).then(res => findProductPhotos(n, res)).then(photos => {
+    if (!idr || token !== previewToken) return;
+    idr.candidates = photos; refreshThumb();
+  });
 }
 function openGift({ forId, dest = 'keep', idea = null } = {}) {
   const src = idea || {};
@@ -1575,13 +1810,22 @@ function openGift({ forId, dest = 'keep', idea = null } = {}) {
   idr.tab = idr.url || !idr.title ? 'link' : 'name';
   idr.autoTitle = !idr.title;
   renderItemModal();
+  if (idr.url) loadCandidates(idr.url);
 }
 const DEST_HINT = {
   keep: n => `Rien que pour toi. Tu pourras la proposer à la famille plus tard.`,
   question: n => `La famille donne son avis avec 👍 ou 👎. ${n} ne le verra jamais.`,
   decided: n => `La famille saura que tu t'en occupes, pour éviter les doublons. ${n} ne le verra jamais.`,
 };
+function renderPicker() {
+  const list = idr.candidates || [];
+  showModal(`<h2>Choisis la photo</h2><p class="hint intro">Les photos trouvées sur la page du magasin. Touche celle qui montre le bon produit.</p>
+    <div class="picker">${list.map(u => `<button class="pk ${idr.imageUrl === u && !idr.photo ? 'on' : ''}" data-act="pick-img" data-v="${esc(u)}" aria-label="Choisir cette photo"><img src="${esc(u)}" alt="" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></button>`).join('')}
+      <button class="pk icon ${!idr.imageUrl && !idr.photo ? 'on' : ''}" data-act="pick-img" data-v="">${thumbHTML({ title: idr.title || '?' })}<span>Une icône</span></button></div>
+    <div class="m-foot"><span class="sp"></span><button class="btn" data-act="pick-done">C'est bon</button></div>`);
+}
 function renderItemModal() {
+  if (idr.picking) return renderPicker();
   const gift = idr.kind === 'gift';
   const owner = prof(gift ? idr.forId : idr.ownerId), isOwner = viewer().id === owner.id;
   const title = gift ? (idr.ideaId ? "Modifier l'idée" : `Un cadeau pour ${esc(owner.name)}`) : idr.id ? "Modifier l'envie" : (isOwner ? 'Nouvelle envie' : `Une envie pour ${esc(owner.name)}`);
@@ -1600,7 +1844,10 @@ function renderItemModal() {
     <div class="seg"><button data-act="itab" data-v="link" class="${idr.tab === 'link' ? 'on' : ''}">Coller un lien</button><button data-act="itab" data-v="name" class="${idr.tab === 'name' ? 'on' : ''}">Écrire un nom</button></div>
     <div class="it-grid">
       <div class="stack"><div class="it-thumb" id="ithumb"></div>
-        <label class="filebtn"><input type="file" id="iphoto" accept="image/*">${idr.photo ? 'Changer la photo' : '+ Ma propre photo'}</label>
+        <div class="photo-btns">
+          <label class="mbtn small"><input type="file" id="iphoto" accept="image/*" class="vh">${idr.photo ? 'Changer ma photo' : 'Ma photo'}</label>
+          <button class="mbtn small" data-act="paste-img">Coller une image</button>
+        </div>
         ${idr.photo ? '<button class="linkbtn" data-act="inophoto">Retirer ma photo</button>' : ''}
       </div>
       <div class="stack">
@@ -1617,11 +1864,13 @@ function renderItemModal() {
 function refreshThumb() {
   const t = $('#ithumb'); if (!t || !idr) return;
   const dom = domainOf(normalizeUrl(idr.url) || '');
-  t.innerHTML = thumbHTML({ title: idr.title || '?', photo: idr.photo, imageUrl: idr.imageUrl }) + (dom ? `<span class="domain">${esc(dom)}</span>` : '') + (idr.loading ? '<span class="loading">Recherche du produit…</span>' : '');
+  const n = (idr.candidates || []).length;
+  t.innerHTML = thumbHTML({ title: idr.title || '?', photo: idr.photo, imageUrl: idr.imageUrl }) + (dom ? `<span class="domain">${esc(dom)}</span>` : '')
+    + (idr.loading ? '<span class="loading">Recherche des photos…</span>' : n ? `<button class="pick-btn" data-act="pick-open">Choisir la photo · ${n}</button>` : '');
 }
 // Called while typing or pasting a link: fetch the real product name and photo
 function onUrlInput(value) {
-  idr.url = value; idr.imageUrl = '';
+  idr.url = value; idr.imageUrl = ''; idr.candidates = [];
   if (idr.autoTitle) { idr.title = titleFromUrl(value); const ti = $('#ititle'); if (ti) ti.value = idr.title; }
   const url = normalizeUrl(value), token = ++previewToken;
   idr.loading = !!url; refreshThumb();
@@ -1630,13 +1879,35 @@ function onUrlInput(value) {
     if (token !== previewToken || !idr) return;
     const res = await linkPreview(url);
     if (token !== previewToken || !idr) return;
-    idr.loading = false;
     if (res?.title && idr.autoTitle) { idr.title = res.title; const ti = $('#ititle'); if (ti) ti.value = res.title; }
-    if (res?.image) idr.imageUrl = res.image;
+    const photos = await findProductPhotos(url, res);
+    if (token !== previewToken || !idr) return;
+    idr.loading = false; idr.candidates = photos;
+    if (!idr.photo && photos[0]) idr.imageUrl = photos[0];
     const h = $('#ihint');
-    if (h) h.textContent = res?.image || res?.title ? 'Trouvé sur la page du magasin. Tu peux corriger le nom si besoin.' : "Le magasin n'a pas voulu donner sa photo. Tu peux ajouter la tienne.";
+    if (h) h.textContent = photos.length > 1 ? 'Trouvé sur la page du magasin. Pas la bonne photo ? Touche « Choisir la photo ».'
+      : photos.length ? 'Trouvé sur la page du magasin. Tu peux corriger le nom si besoin.'
+      : "Ce magasin bloque la lecture de sa page. Copie la photo du produit (appui long dessus, puis « Copier ») et touche « Coller une image ».";
     refreshThumb();
-  }, 500);
+  }, 450);
+}
+// Paste a photo copied from the shop app or website
+async function pasteImage() {
+  try {
+    if (!navigator.clipboard?.read) throw new Error('no clipboard');
+    for (const item of await navigator.clipboard.read()) {
+      const type = item.types.find(t => t.startsWith('image/'));
+      if (type) { await usePastedImage(await item.getType(type)); return; }
+    }
+    toast("Il n'y a pas d'image copiée. Fais un appui long sur la photo du produit, puis « Copier ».");
+  } catch (e) {
+    toast("Copie d'abord la photo du produit (appui long dessus, puis « Copier »). Sur ordinateur, tu peux aussi faire Ctrl+V ici.");
+  }
+}
+async function usePastedImage(blob) {
+  if (!idr) return;
+  try { idr.photo = await readImage(blob, 600, false); idr.imageUrl = ''; idr.picking = false; renderItemModal(); toast('Photo collée'); }
+  catch (e) { toast("Cette image n'a pas pu être lue."); }
 }
 function giftFields(x) {
   return { title: x.title, url: x.url || '', price: x.price || '', note: x.note || '', photo: x.photo || null, imageUrl: x.photo ? '' : (x.imageUrl || '') };
@@ -2004,6 +2275,10 @@ document.addEventListener('click', e => {
     case 'new-prop': openGift({ dest: 'question' }); break;
     case 'new-idea': openGift({ dest: 'keep' }); break;
     case 'gdest': idr.dest = v; renderItemModal(); break;
+    case 'pick-open': idr.picking = true; renderItemModal(); break;
+    case 'pick-img': idr.imageUrl = v; if (v) idr.photo = null; renderPicker(); break;
+    case 'pick-done': idr.picking = false; renderItemModal(); break;
+    case 'paste-img': pasteImage(); break;
     case 'vote': {
       const p = S.proposals.find(x => x.id === id); if (!p) break;
       const cur = (p.votes || {})[S.me] || 0, val = Number(v);
@@ -2134,6 +2409,11 @@ document.addEventListener('change', async e => {
     catch (err) { toast("Ce fichier n'a pas pu être lu comme une image."); }
   }
 });
+document.addEventListener('paste', e => {
+  if (!idr || $('#modal').hidden) return;
+  const file = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith('image/'))?.getAsFile();
+  if (file) { e.preventDefault(); usePastedImage(file); }
+});
 document.addEventListener('keydown', e => {
   if (viewerState) {
     if (e.key === 'Escape') { closeStory(); return; }
@@ -2177,6 +2457,6 @@ async function boot() {
   openWho();
 }
 if ('serviceWorker' in navigator && !MOCK && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(err => console.error(err));
-window.KDO = { S, dev: () => DEV, backend: () => backend, avatarSVG, KINDS, EMOS, HAIR_STYLES, HATS, GLASSES, ACCS, momentsFor };
+window.KDO = { S, dev: () => DEV, backend: () => backend, avatarSVG, productIcon, cleanImageList, KINDS, EMOS, HAIR_STYLES, HATS, GLASSES, ACCS, momentsFor };
 boot();
 </script>
