@@ -1,0 +1,108 @@
+rules_version = '2';
+// KDO security rules.
+// Core promise: the owner of a list can never read who reserved what on it, not even how many.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function fam(fid) { return /databases/$(database)/documents/families/$(fid); }
+    function profilePath(fid, pid) { return /databases/$(database)/documents/families/$(fid)/profiles/$(pid); }
+    function itemPath(fid, iid) { return /databases/$(database)/documents/families/$(fid)/items/$(iid); }
+
+    // A member is a signed-in person who has their own (non-managed) profile in this family
+    function member(fid) {
+      return signedIn()
+        && exists(profilePath(fid, request.auth.uid))
+        && get(profilePath(fid, request.auth.uid)).data.managed == false;
+    }
+    // Relatives without the app (baby, kids, pets...) have a "managed" profile any member can look after
+    function isManaged(fid, pid) {
+      return exists(profilePath(fid, pid)) && get(profilePath(fid, pid)).data.managed == true;
+    }
+    function canManage(fid, ownerId) {
+      return ownerId == request.auth.uid || isManaged(fid, ownerId);
+    }
+
+    function validProfile(d) {
+      return d.keys().hasOnly(['name', 'avatar', 'photo', 'managed', 'login', 'createdAt', 'createdBy'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 30
+        && d.avatar is map
+        && (d.get('photo', null) == null || (d.photo is string && d.photo.size() < 400000))
+        && d.managed is bool;
+    }
+    function validItem(d) {
+      return d.keys().hasOnly(['ownerId', 'title', 'url', 'price', 'note', 'photo', 'createdAt', 'createdBy', 'removed', 'removedBy', 'removedAt'])
+        && d.ownerId is string
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 120
+        && (d.get('url', '') == '' || (d.url is string && d.url.size() <= 2000))
+        && (d.get('price', '') == '' || (d.price is string && d.price.size() <= 20))
+        && (d.get('note', '') == '' || (d.note is string && d.note.size() <= 300))
+        && (d.get('photo', null) == null || (d.photo is string && d.photo.size() < 600000))
+        && d.get('removed', false) is bool;
+    }
+
+    match /families/{fid} {
+      // Knowing the family code is what lets someone in
+      allow get: if true;
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['createdAt', 'createdBy'])
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update, delete: if false;
+
+      match /profiles/{pid} {
+        // Names and avatars are needed on the "who are you?" screen, before signing in
+        allow read: if true;
+        allow create: if signedIn() && exists(fam(fid)) && validProfile(request.resource.data) && (
+            // My own profile: once, at sign-up, and its id is my account id
+            (pid == request.auth.uid && request.resource.data.managed == false
+              && request.resource.data.login is string)
+            // A relative without the app, added by a member
+            || (member(fid) && request.resource.data.managed == true
+              && request.resource.data.createdBy == request.auth.uid
+              && !('login' in request.resource.data))
+          );
+        // Name, photo and avatar can change. Who the profile belongs to never does.
+        allow update: if signedIn()
+          && (pid == request.auth.uid || (member(fid) && resource.data.managed == true))
+          && validProfile(request.resource.data)
+          && request.resource.data.managed == resource.data.managed
+          && request.resource.data.get('login', null) == resource.data.get('login', null)
+          && request.resource.data.get('createdAt', null) == resource.data.get('createdAt', null)
+          && request.resource.data.get('createdBy', null) == resource.data.get('createdBy', null);
+        // Only relatives without the app can be deleted; nobody can delete a real person
+        allow delete: if member(fid) && resource.data.managed == true;
+      }
+
+      match /items/{iid} {
+        allow read: if member(fid);
+        allow create: if member(fid)
+          && validItem(request.resource.data)
+          && canManage(fid, request.resource.data.ownerId)
+          && request.resource.data.createdBy == request.auth.uid;
+        allow update: if member(fid)
+          && canManage(fid, resource.data.ownerId)
+          && validItem(request.resource.data)
+          && request.resource.data.ownerId == resource.data.ownerId
+          && request.resource.data.createdBy == resource.data.createdBy;
+        // Normally items are only marked "removed" so reservers get told; real deletion is for removed relatives
+        allow delete: if member(fid) && canManage(fid, resource.data.ownerId);
+      }
+
+      match /reservations/{iid} {
+        // THE secret: nobody can read the reservations made on their own list
+        allow read: if member(fid) && resource.data.ownerId != request.auth.uid;
+        allow create: if member(fid)
+          && request.resource.data.keys().hasOnly(['ownerId', 'by', 'at'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.ownerId != request.auth.uid
+          && exists(itemPath(fid, iid))
+          && get(itemPath(fid, iid)).data.ownerId == request.resource.data.ownerId
+          && get(itemPath(fid, iid)).data.get('removed', false) == false;
+        // Only the person who reserved can release it. No overwriting someone else's reservation.
+        allow delete: if member(fid) && resource.data.by == request.auth.uid;
+        allow update: if false;
+      }
+    }
+  }
+}

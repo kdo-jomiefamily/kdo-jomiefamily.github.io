@@ -1,0 +1,1597 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KDO</title>
+<meta name="description" content="Les envies de toute la famille">
+<meta name="theme-color" content="#FF3D6E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KDO">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Nunito:wght@400;600;700;800;900&display=swap">
+<style>
+/* Layout: strong pink band (logo, "you are", family strip), then one big wish grid per person. Modals for editing. */
+:root{
+  --brand:#FF3D6E; --brand-deep:#D62657; --on-brand:#FFFFFF;
+  --bg:#FFF3F6; --surface:#FFFFFF; --surface-2:#FFE6EE; --ink:#2B1430; --ink-2:#7A5670; --line:#F6D3DE;
+  --sun:#FFB627; --mint:#17B48A; --sky:#4D7CFE; --grape:#8E5BFF;
+  --scrim:rgba(43,20,48,.45); --chip:#FFFFFF;
+  --shadow:0 1px 0 rgba(43,20,48,.05), 0 14px 30px -16px rgba(120,20,60,.38);
+  --f-display:'Bagel Fat One','Nunito',ui-rounded,system-ui,sans-serif;
+  --f-body:'Nunito',ui-rounded,'Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --brand:#F2386A; --brand-deep:#B51E4C; --on-brand:#FFFFFF;
+    --bg:#1E0E18; --surface:#2B1522; --surface-2:#3A1D2E; --ink:#FFEFF4; --ink-2:#D6A9BE; --line:#4A2639;
+    --sun:#FFC24D; --mint:#3DD3A8; --sky:#7096FF; --grape:#A47BFF;
+    --scrim:rgba(10,3,8,.65); --chip:#3A1D2E;
+    --shadow:0 1px 0 rgba(0,0,0,.2), 0 16px 34px -18px rgba(0,0,0,.8); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --brand:#F2386A; --brand-deep:#B51E4C; --on-brand:#FFFFFF;
+  --bg:#1E0E18; --surface:#2B1522; --surface-2:#3A1D2E; --ink:#FFEFF4; --ink-2:#D6A9BE; --line:#4A2639;
+  --sun:#FFC24D; --mint:#3DD3A8; --sky:#7096FF; --grape:#A47BFF;
+  --scrim:rgba(10,3,8,.65); --chip:#3A1D2E;
+  --shadow:0 1px 0 rgba(0,0,0,.2), 0 16px 34px -18px rgba(0,0,0,.8); color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+:root{padding-top:env(safe-area-inset-top, 0px);padding-bottom:env(safe-area-inset-bottom, 0px)}
+body{margin:0}
+img{max-width:100%}
+button:disabled{opacity:.6;cursor:default}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--sky);outline-offset:2px;border-radius:12px}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+
+/* Pink band */
+.band{background:
+  radial-gradient(circle at 8% 30%, rgba(255,255,255,.22) 0 5px, transparent 6px),
+  radial-gradient(circle at 92% 18%, rgba(255,255,255,.2) 0 8px, transparent 9px),
+  radial-gradient(circle at 70% 80%, rgba(255,255,255,.14) 0 4px, transparent 5px),
+  radial-gradient(circle at 35% 12%, rgba(255,214,102,.5) 0 3px, transparent 4px),
+  var(--brand);
+  color:var(--on-brand);border-radius:0 0 36px 36px;box-shadow:0 18px 40px -24px rgba(180,20,70,.7)}
+.band-in{padding-block:18px 8px;display:flex;flex-direction:column;gap:10px}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-family:var(--f-display);font-size:46px;line-height:1;letter-spacing:.03em;display:inline-flex;color:#fff;text-shadow:0 4px 0 var(--brand-deep)}
+.logo span{display:inline-block;animation:drop .75s cubic-bezier(.2,1.6,.4,1) backwards}
+.logo span:nth-child(2){animation-delay:.08s;color:#FFE08A} .logo span:nth-child(3){animation-delay:.16s;transform:rotate(8deg)}
+@keyframes drop{from{transform:translateY(-26px) rotate(-14deg)}}
+.tag{font-weight:800;font-size:14px;opacity:.92}
+.whoami{position:relative;display:flex;align-items:center;gap:10px}
+.lbl{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.09em;opacity:.85}
+.who{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.45);border-radius:999px;padding:4px 14px 4px 4px;font-weight:900;color:#fff}
+.who:hover{background:rgba(255,255,255,.28)}
+.invite{display:inline-flex;align-items:center;gap:7px;background:#fff;color:var(--brand-deep);border:0;border-radius:999px;padding:8px 14px;font-weight:900;font-size:13px;box-shadow:0 3px 0 rgba(120,10,50,.25);margin-right:6px;transition:transform .15s}
+.invite:hover{transform:translateY(-1px)}
+.invite svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:560px){.invite span{display:none}.invite{padding:8px 10px}.whoami .lbl{display:none}}
+.caret{width:9px;height:9px;border-right:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:rotate(45deg) translateY(-3px);margin-left:2px}
+.menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--surface);color:var(--ink);border:2px solid var(--line);border-radius:18px;padding:6px;min-width:240px;box-shadow:var(--shadow);z-index:30;animation:pop .22s cubic-bezier(.2,1.5,.4,1)}
+.menu button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;padding:6px 10px 6px 6px;border-radius:12px;font-weight:800;text-align:left}
+.menu button:hover,.menu button.on{background:var(--surface-2)}
+.menu .note{font-size:12px;color:var(--ink-2);padding:6px 10px 4px;line-height:1.35}
+
+/* Avatars */
+.av{display:inline-block;border-radius:50%;overflow:hidden;flex:none;background:var(--surface-2);line-height:0}
+.av svg,.av img{width:100%;height:100%;display:block;object-fit:cover}
+.av.xs{width:22px;height:22px} .av.sm{width:34px;height:34px} .av.md{width:66px;height:66px} .av.lg{width:100px;height:100px}
+
+.ava .a-head{transform-box:view-box;transform-origin:60px 92px;animation:sway 5s ease-in-out infinite;animation-delay:var(--d,0s)}
+.ava .a-breathe,.ava .a-hold{transform-box:view-box;transform-origin:60px 120px;animation:breathe 3.4s ease-in-out infinite;animation-delay:var(--d,0s)}
+.ava .a-eyes{transform-box:fill-box;transform-origin:center;animation:blink 4.6s infinite;animation-delay:var(--d,0s)}
+.ava .a-bob{transform-box:view-box;transform-origin:82px 116px;animation:balloon 3.6s ease-in-out infinite}
+.ava .a-float{transform-box:fill-box;transform-origin:center;animation:floaty 2.8s ease-in-out infinite}
+.ava .a-float2{animation-delay:-1.4s}
+.ava .a-zz{animation:zz 3s ease-in-out infinite} .ava .a-zz2{animation-delay:-1.5s}
+.ava .a-twinkle{transform-box:fill-box;transform-origin:center;animation:twinkle 1.8s ease-in-out infinite}
+.ava .a-steam{animation:steam 2.4s ease-in-out infinite}
+.ava.emo-rieur .a-head{animation:laugh .55s ease-in-out infinite}
+.ava.emo-surpris .a-head{animation:hop 2.2s cubic-bezier(.3,1.6,.5,1) infinite}
+.ava.emo-endormi .a-head{animation:doze 4.5s ease-in-out infinite}
+.ava.emo-clin .a-head{animation:tilt 3.2s ease-in-out infinite}
+.ava.emo-cool .a-head{animation:nod 2.4s ease-in-out infinite}
+.ava.emo-boudeur .a-head{animation:huff 2.8s ease-in-out infinite}
+.ava.emo-amoureux .a-head{animation:swoon 3s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.015,1.035)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+@keyframes laugh{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-2.5px) rotate(2deg)}}
+@keyframes hop{0%,60%,100%{transform:translateY(0)}72%{transform:translateY(-6px) scale(1.03)}}
+@keyframes doze{0%,100%{transform:rotate(-6deg) translateY(1px)}50%{transform:rotate(-1deg)}}
+@keyframes tilt{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(-2.5deg)}}
+@keyframes nod{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(1.5px) rotate(-1deg)}}
+@keyframes huff{0%,100%{transform:rotate(3deg)}50%{transform:rotate(-3deg) translateX(-1px)}}
+@keyframes swoon{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg) translateY(-1.5px)}}
+@keyframes balloon{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg) translateY(-2px)}}
+@keyframes floaty{0%{transform:translateY(4px) scale(.8);opacity:0}30%{opacity:1}100%{transform:translateY(-12px) scale(1.1);opacity:0}}
+@keyframes zz{0%{transform:translate(0,4px);opacity:0}40%{opacity:1}100%{transform:translate(6px,-10px);opacity:0}}
+@keyframes twinkle{0%,100%{transform:scale(.55) rotate(0);opacity:.5}50%{transform:scale(1.15) rotate(40deg);opacity:1}}
+@keyframes steam{0%{transform:translateY(2px);opacity:0}50%{opacity:.9}100%{transform:translateY(-6px);opacity:0}}
+.still .ava *{animation:none!important}
+
+/* Family strip */
+.fam-row{display:flex;gap:12px;overflow-x:auto;padding:8px 4px 14px;scrollbar-width:thin}
+.fam{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;padding:0;min-width:78px;font-weight:900;font-size:13px;color:#fff}
+.fam .ring{padding:4px;border-radius:50%;border:3px solid transparent;transition:transform .25s cubic-bezier(.2,1.6,.4,1),border-color .2s}
+.fam:hover .ring{transform:translateY(-3px) rotate(-4deg)}
+.fam.on .ring{border-color:#fff;transform:translateY(-3px)}
+.fam > span:last-child{opacity:.85} .fam.on > span:last-child{opacity:1}
+.fam .you{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:var(--sun);color:#2B1430;border-radius:999px;padding:0 7px;margin-top:-15px;position:relative}
+.add-ring{width:74px;height:74px;border-radius:50%;border:3px dashed rgba(255,255,255,.6);display:grid;place-items:center;font-size:30px;font-weight:900;transition:border-color .2s,transform .25s}
+.fam:hover .add-ring{border-color:#fff;transform:rotate(90deg)}
+
+/* Banner */
+.banner{margin-top:18px}
+.banner-in{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface);border:2px dashed var(--sun);border-radius:18px;padding:12px 16px}
+.banner p{margin:0;font-weight:600;font-size:14px;max-width:66ch}
+.banner b{font-weight:900}
+.banner-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* List header */
+main{padding-block:20px 64px}
+.list-head{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:20px}
+.list-head .av.lg{box-shadow:0 10px 24px -12px rgba(120,20,60,.55)}
+.lh-text{flex:1;min-width:0}
+.lh-text h1{font-family:var(--f-display);font-weight:400;font-size:clamp(30px,5vw,46px);line-height:1.05;margin:0;text-wrap:balance}
+.lh-text p{margin:6px 0 0;color:var(--ink-2);font-weight:700}
+.lh-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;background:var(--brand);color:var(--on-brand);font-weight:900;padding:11px 20px;box-shadow:0 4px 0 var(--brand-deep);transition:transform .12s, box-shadow .12s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 5px 0 var(--brand-deep)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--brand-deep)}
+.btn.ghost{background:var(--surface);color:var(--ink);box-shadow:0 0 0 2px var(--line) inset}
+.btn.ghost:hover,.btn.ghost:active{box-shadow:0 0 0 2px var(--brand) inset;transform:none}
+.btn.small{padding:7px 14px;font-size:13px}
+.btn.danger{background:none;color:var(--brand);box-shadow:none;padding-inline:8px}
+.btn.danger.armed{background:var(--brand);color:var(--on-brand);padding-inline:16px}
+
+/* Cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px}
+.card{position:relative;background:var(--surface);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;animation:rise .55s cubic-bezier(.2,1.3,.4,1) backwards;animation-delay:calc(var(--i,0) * 55ms);transition:transform .25s cubic-bezier(.2,1.5,.4,1)}
+.card.settled{animation:none}
+.card:hover{transform:translateY(-4px) rotate(-.4deg)}
+@keyframes rise{from{transform:translateY(18px) scale(.96)}}
+.thumb{position:relative;aspect-ratio:4/3;max-width:100%;overflow:hidden;background:var(--surface-2)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.gen{position:absolute;inset:0;background:radial-gradient(circle at 18% 24%,rgba(255,255,255,.45) 0 6px,transparent 7px),radial-gradient(circle at 82% 70%,rgba(255,255,255,.35) 0 9px,transparent 10px),radial-gradient(circle at 70% 18%,rgba(255,255,255,.3) 0 4px,transparent 5px),linear-gradient(135deg,var(--a),var(--b));display:grid;place-items:center}
+.gen span{font-family:var(--f-display);font-size:78px;color:#fff;line-height:1;text-shadow:0 6px 0 rgba(0,0,0,.14);transform:rotate(-6deg)}
+.domain{position:absolute;left:10px;top:10px;background:var(--surface);color:var(--ink);font-size:11px;font-weight:900;border-radius:999px;padding:3px 10px;box-shadow:0 2px 8px rgba(0,0,0,.12);max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ribbon{position:absolute;top:20px;right:-46px;width:170px;transform:rotate(40deg);background:var(--sun);color:#2B1430;text-align:center;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;padding:4px 0;box-shadow:0 3px 8px rgba(0,0,0,.18);animation:ribbon .5s cubic-bezier(.2,1.6,.4,1) backwards}
+@keyframes ribbon{from{transform:rotate(40deg) translateX(60px)}}
+.c-body{padding:14px 16px 12px;display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.price{font-weight:900;font-variant-numeric:tabular-nums;color:var(--brand)}
+.c-body h3{margin:0;font-size:17px;line-height:1.25;font-weight:900;overflow-wrap:anywhere}
+.c-note{margin:0;color:var(--ink-2);font-size:14px;overflow-wrap:anywhere}
+.c-actions{display:flex;gap:6px;align-items:center;margin-top:auto;padding-top:6px;flex-wrap:wrap}
+.c-link{font-weight:800;font-size:13px;color:var(--sky);text-decoration:none;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:auto}
+.c-link:hover{text-decoration:underline}
+.icon-btn{background:none;border:0;color:var(--ink-2);font-weight:800;font-size:13px;padding:4px 8px;border-radius:10px}
+.icon-btn:hover{background:var(--surface-2);color:var(--ink)}
+.icon-btn.got{color:var(--mint)}
+.c-actions .icon-btn:first-child{margin-left:auto}
+.c-link + .icon-btn{margin-left:0}
+
+.reserve{display:flex;align-items:center;gap:10px;width:100%;border:0;border-top:2px dashed var(--line);background:none;padding:12px 16px;font-weight:900;text-align:left;transition:background .2s}
+.reserve:hover:not(:disabled){background:var(--surface-2)}
+.reserve:disabled{cursor:default;color:var(--ink-2);font-weight:700}
+.box{width:28px;height:28px;border-radius:10px;border:2.5px solid var(--ink-2);display:grid;place-items:center;flex:none;transition:background .2s,border-color .2s}
+.box svg{width:18px;height:18px;stroke:#fff;stroke-width:3.4;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:24;stroke-dashoffset:24}
+.mine .box{background:var(--mint);border-color:var(--mint);animation:boing .5s cubic-bezier(.2,1.8,.4,1)}
+.mine .box svg{stroke-dashoffset:0;transition:stroke-dashoffset .35s .1s ease-out}
+.mine .reserve{color:var(--mint)}
+@keyframes boing{0%{transform:scale(.6)}60%{transform:scale(1.18) rotate(-8deg)}100%{transform:scale(1)}}
+.taken .thumb{filter:saturate(.35) opacity(.75)}
+.taken h3{color:var(--ink-2)}
+
+.notices{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.notice{display:flex;gap:14px;align-items:center;background:var(--surface);border:2px solid var(--sun);border-radius:18px;padding:12px 14px;flex-wrap:wrap}
+.notice p{margin:0;flex:1;min-width:220px;font-weight:600;font-size:14px}
+.notice b{font-weight:900}
+
+.empty{background:var(--surface);border:2px dashed var(--line);border-radius:24px;padding:40px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+.empty h2{font-family:var(--f-display);font-weight:400;font-size:28px;margin:0}
+.empty p{margin:0;color:var(--ink-2);font-weight:600;max-width:46ch}
+.gift{width:84px;height:84px;animation:giftbob 3.5s ease-in-out infinite}
+@keyframes giftbob{50%{transform:translateY(-6px) rotate(3deg)}}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:var(--scrim);backdrop-filter:blur(4px);display:grid;place-items:center;z-index:50;padding:max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
+.panel{background:var(--surface);border-radius:28px;width:100%;max-width:700px;max-height:100%;overflow:auto;padding:22px;box-shadow:0 30px 60px -20px rgba(0,0,0,.45);animation:pop .3s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.92) translateY(10px)}}
+.panel h2{font-family:var(--f-display);font-weight:400;font-size:30px;margin:0 0 14px;line-height:1.1}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label,.glabel{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.09em;color:var(--ink-2)}
+input[type=text],input[type=url],textarea{width:100%;background:var(--surface-2);border:2px solid transparent;border-radius:14px;padding:11px 14px;font:inherit;font-weight:700;color:var(--ink)}
+textarea{resize:vertical;min-height:70px;font-weight:600}
+input:focus,textarea:focus{outline:none;border-color:var(--brand)}
+.hint{font-size:12.5px;color:var(--ink-2);margin:0;line-height:1.4}
+.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:999px;padding:4px;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.seg button{border:0;background:none;border-radius:999px;padding:7px 16px;font-weight:900;font-size:13px;color:var(--ink-2)}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.it-grid{display:grid;grid-template-columns:170px 1fr;gap:18px;align-items:start}
+.it-thumb{border-radius:20px;overflow:hidden;position:relative;aspect-ratio:4/3;max-width:100%;background:var(--surface-2)}
+.it-thumb .gen span{font-size:56px}
+.it-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.filebtn{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:var(--sky);cursor:pointer}
+.filebtn input{position:absolute;width:1px;height:1px;opacity:0}
+.filebtn:focus-within{outline:3px solid var(--sky);outline-offset:2px;border-radius:8px}
+.linkbtn{background:none;border:0;color:var(--ink-2);font-weight:800;font-size:13px;padding:0;text-decoration:underline;align-self:flex-start}
+.m-foot{display:flex;align-items:center;gap:10px;margin-top:20px;flex-wrap:wrap}
+.m-foot .sp{flex:1}
+.intro{margin:-6px 0 16px;max-width:62ch;font-size:13.5px}
+.fam-intro{display:flex;flex-direction:column;gap:14px;align-items:flex-start;max-width:460px;margin:0 auto}
+.fam-intro h2{margin:0}
+.who-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px}
+.who-tile{display:flex;flex-direction:column;align-items:center;gap:8px;border:2px solid var(--line);background:var(--surface);border-radius:20px;padding:14px 8px;font-weight:900;font-size:14px;text-align:center;transition:transform .2s cubic-bezier(.2,1.6,.4,1),border-color .2s}
+.who-tile:hover{border-color:var(--brand);transform:translateY(-3px)}
+.add-ring.dark{width:66px;height:66px;border-color:var(--line);color:var(--ink-2)}
+.pin-wrap{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;max-width:340px;margin:0 auto}
+.pin-wrap h2{margin:6px 0 0}
+.pin-wrap .hint{max-width:34ch}
+.dots{display:flex;gap:12px;margin:10px 0 2px}
+.dots span{width:16px;height:16px;border-radius:50%;border:2.5px solid var(--ink-2);transition:transform .15s cubic-bezier(.2,1.8,.4,1),background .15s,border-color .15s}
+.dots span.on{background:var(--brand);border-color:var(--brand);transform:scale(1.15)}
+.dots.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.pin-msg{min-height:21px;margin:0;color:var(--brand);font-weight:800;font-size:14px}
+.pad{display:grid;grid-template-columns:repeat(3,72px);gap:12px;justify-content:center}
+.pad button{height:62px;border-radius:20px;border:0;background:var(--surface-2);font-size:24px;font-weight:900;color:var(--ink);transition:transform .1s}
+.pad button:active{transform:scale(.9)}
+.pad button.txt{font-size:14px;background:none;color:var(--ink-2)}
+.pad button.txt:empty{visibility:hidden}
+.check{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--brand)}
+
+.pf{display:flex;gap:20px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.pf-side{display:flex;flex-direction:column;align-items:center;gap:10px}
+.pf-preview .av{width:132px;height:132px;box-shadow:0 12px 28px -14px rgba(120,20,60,.6)}
+.pf-fields{flex:1;min-width:220px;display:flex;flex-direction:column;gap:12px}
+.pf-fields .seg{margin:0;align-self:flex-start}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;border-bottom:2px solid var(--line)}
+.tabs button{border:0;background:none;padding:8px 12px;font-weight:900;font-size:13.5px;color:var(--ink-2);border-bottom:3px solid transparent;margin-bottom:-6px;white-space:nowrap}
+.tabs button.on{color:var(--brand);border-bottom-color:var(--brand)}
+.groups{display:flex;flex-direction:column;gap:16px}
+.group{display:flex;flex-direction:column;gap:8px}
+.now{font-size:13px;font-weight:800;color:var(--ink-2)} .now b{color:var(--brand)}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.sw{width:32px;height:32px;border-radius:50%;border:3px solid var(--surface);box-shadow:0 0 0 2px var(--line);padding:0;transition:transform .2s cubic-bezier(.2,1.6,.4,1)}
+.sw:hover{transform:scale(1.12)}
+.sw.on{box-shadow:0 0 0 3px var(--brand);transform:scale(1.1)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;border:2px solid var(--line);background:var(--surface);border-radius:18px;padding:8px 6px 8px;font-weight:800;font-size:12px;line-height:1.2;text-align:center;color:var(--ink-2);transition:transform .2s cubic-bezier(.2,1.6,.4,1),border-color .2s}
+.tile:hover{transform:translateY(-2px);border-color:var(--ink-2)}
+.tile.on{border-color:var(--brand);color:var(--ink);background:var(--surface-2)}
+.tile .av{width:60px;height:60px}
+.tile .tg{position:absolute;top:-8px;right:-4px;font-size:9.5px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;background:var(--surface-2);color:var(--ink-2);border-radius:999px;padding:1px 7px;border:1.5px solid var(--line)}
+.tile .tg.hot{background:var(--sun);color:#2B1430;border-color:var(--sun)}
+.drop{display:flex;flex-direction:column;align-items:center;gap:8px;border:2px dashed var(--line);border-radius:20px;padding:22px;text-align:center;font-weight:700;color:var(--ink-2)}
+
+.toast{position:fixed;left:50%;bottom:max(20px, calc(env(safe-area-inset-bottom, 0px) + 12px));transform:translateX(-50%);background:var(--ink);color:var(--bg);font-weight:800;padding:11px 20px;border-radius:999px;z-index:60;box-shadow:var(--shadow);animation:toast .35s cubic-bezier(.2,1.5,.4,1);max-width:calc(100% - 32px);display:flex;gap:14px;align-items:center}
+.toast button{background:none;border:0;color:var(--brand);font-weight:900;padding:0}
+@keyframes toast{from{transform:translateX(-50%) translateY(20px)}}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:70}
+
+@media (max-width:560px){
+  .it-grid{grid-template-columns:1fr}
+  .it-thumb{max-width:220px}
+  .logo{font-size:38px}
+  .panel{padding:18px;border-radius:24px}
+  .tiles{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+  .band{border-radius:0 0 28px 28px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="wrap band-in">
+    <div class="top-row">
+      <div class="brand">
+        <span class="logo" aria-label="KDO"><span>K</span><span>D</span><span>O</span></span>
+        <span class="tag">Les envies de toute la famille</span>
+      </div>
+      <div class="whoami" id="whoami"></div>
+    </div>
+    <div class="fam-row" id="family" role="tablist" aria-label="La famille"></div>
+  </div>
+</header>
+<div class="wrap banner" id="banner" hidden></div>
+<main class="wrap" id="main"></main>
+<div class="modal" id="modal" hidden><div class="panel" id="panel" role="dialog" aria-modal="true"></div></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script type="module">
+// ================= Firebase project =================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAaaSfiY_hSIYvTsMWUe4-hLTOyeC9F4eY",
+  authDomain: "kdo-famille-a1f2b.firebaseapp.com",
+  projectId: "kdo-famille-a1f2b",
+  storageBucket: "kdo-famille-a1f2b.firebasestorage.app",
+  messagingSenderId: "576663696757",
+  appId: "1:576663696757:web:45065aae2e2c5c6118cf3c"
+};
+const FIREBASE_VERSION = '10.14.1';
+// Each profile gets a hidden technical login: nobody ever sees or types an email
+const LOGIN_DOMAIN = 'kdo-famille-a1f2b.firebaseapp.com';
+// ?mock runs the app on a local fake backend (used for testing, never touches the real data)
+const MOCK = new URLSearchParams(location.search).has('mock');
+
+// ================= Constants =================
+const SKINS  = ['#FBE3D1','#F3C9A5','#E3A97E','#C98A5E','#A66B43','#84502F','#5E3720','#3E2414'];
+const HAIRS  = ['#1E1A1A','#4A2E1F','#7A4B2A','#A3462A','#E1B866','#B9B6B3','#F28DB2','#5B7BE0'];
+const COATS  = ['#2B2522','#EDE6DC','#E08A3C','#8C8C94','#C9A27A','#F5EFE6'];
+const SHIRTS = ['#FF3D6E','#FFB627','#17B48A','#4D7CFE','#8E5BFF','#2B1430'];
+const BGS    = ['#FFE3EC','#FFF1C9','#DDF3FF','#E3F6EC','#EEE6FF','#FFE5D3'];
+const HUMAN = ['bebe','enfant','ado','adulte','senior'];
+const MANAGED_KINDS = ['bebe','enfant','chien','chat'];
+const KINDS = [['bebe','Bébé'],['enfant','Enfant'],['ado','Ado'],['adulte','Adulte'],['senior','Grand-parent'],['chien','Chien'],['chat','Chat']];
+const HAIR_STYLES = [['court','Court'],['rase','Rasé'],['houppe','Houppe'],['meche','Mèche'],['long','Long'],['ondule','Ondulé'],['carre','Carré'],['frange','Frange'],['queue','Queue de cheval'],['couettes','Couettes'],['chignon','Chignon'],['macarons','Macarons'],['boucles','Bouclés'],['afro','Afro'],['tresses','Tresses'],['locks','Locks'],['crete','Crête'],['degarni','Dégarni'],['touffe','Petite mèche'],['chauve','Chauve']];
+const BEARDS = [['aucune','Aucune'],['moustache','Moustache'],['courte','Barbe courte'],['longue','Grande barbe']];
+const EMOS = [['joyeux','Joyeux'],['rieur','Mort de rire'],['clin',"Clin d'œil"],['surpris','Surpris'],['amoureux','Amoureux'],['cool','Cool'],['endormi','Endormi'],['boudeur','Boudeur']];
+const HATS = [['aucun','Aucun',[]],['noel','Bonnet de Noël',['noel']],['renne','Bois de renne',['noel']],['sorciere','Chapeau de sorcière',['halloween']],['pompon','Bonnet à pompon',['hiver']],['beret','Béret',['automne']],['lapin','Oreilles de lapin',['printemps']],['fleurs','Couronne de fleurs',['printemps','ete']],['paille','Chapeau de paille',['ete']],['casquette','Casquette',['ete']],['fete','Chapeau de fête',['fete']],['couronne','Couronne',['fete']]];
+const GLASSES = [['aucune','Aucune',[]],['rondes','Rondes',[]],['carrees','Carrées',[]],['soleil','Soleil',['ete']],['coeur','Cœurs',['fete']],['etoiles','Étoiles',['fete','noel']],['3d','Lunettes 3D',[]],['monocle','Monocle',[]]];
+const ACCS = [['aucun','Aucun',[]],['echarpe','Écharpe',['hiver','automne']],['tasse','Chocolat chaud',['hiver','automne']],['citrouille','Citrouille',['halloween','automne']],['sucre',"Sucre d'orge",['noel']],['cadeau','Cadeau',['fete','noel']],['ballon','Ballon',['fete']],['noeud','Nœud papillon',['fete']],['collier','Collier de fleurs',['ete']],['glace','Glace',['ete']],['appareil','Appareil photo',['ete']]];
+const MOMENT_LABEL = { halloween:'Halloween', noel:'Noël', hiver:'Hiver', printemps:'Printemps', ete:'Été', automne:'Automne', fete:'Fête' };
+const TALL_HATS = ['noel','sorciere','fete','lapin','renne','couronne'];
+const THUMB_PALETTES = [['#FF3D6E','#FFB627'],['#FF7A9C','#8E5BFF'],['#FF3D6E','#FF8A3D'],['#C23BD4','#FF3D6E'],['#FFB627','#FF6B6B'],['#17B48A','#4D7CFE']];
+const AV_DEFAULT = { kind:'adulte', skin:SKINS[1], hair:'court', hairColor:HAIRS[1], beard:'aucune', shirt:SHIRTS[0], coat:COATS[0], bg:BGS[0], emo:'joyeux', hat:'aucun', glasses:'aucune', acc:'aucun' };
+
+// Seasonal moments for today's date
+function momentsFor(date) {
+  const m = date.getMonth() + 1, d = date.getDate(), md = m * 100 + d, t = [];
+  if ((m === 10 && d >= 10) || (m === 11 && d <= 2)) t.push('halloween');
+  if (m === 12 || (m === 1 && d <= 6)) t.push('noel');
+  if (md >= 320 && md <= 620) t.push('printemps');
+  else if (md >= 621 && md <= 922) t.push('ete');
+  else if (md >= 923 && md <= 1220) t.push('automne');
+  else t.push('hiver');
+  return t;
+}
+const NOW = momentsFor(new Date());
+
+// ================= Helpers =================
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 10);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const pl = (n, one, many) => `${n} ${n > 1 ? many : one}`;
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const t = amt < 0 ? 0 : 255, p = Math.abs(amt);
+  r = Math.round(r + (t - r) * p); g = Math.round(g + (t - g) * p); b = Math.round(b + (t - b) * p);
+  return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+}
+function hash(s) { let h = 0; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h); }
+function domainOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } }
+function normalizeUrl(u) {
+  u = (u || '').trim(); if (!u) return '';
+  if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  try { const x = new URL(u); return x.hostname.includes('.') ? x.href : null; } catch (e) { return null; }
+}
+// Reads a product name from the link address (the desktop app will read the real page instead)
+function titleFromUrl(u) {
+  try {
+    const url = new URL(normalizeUrl(u));
+    const segs = url.pathname.split('/').map(s => { try { return decodeURIComponent(s); } catch (e) { return s; } })
+      .filter(s => /[a-zA-ZÀ-ÿ]{3,}/.test(s) && /[-_+]/.test(s));
+    let best = segs.sort((a, b) => b.length - a.length)[0];
+    if (!best) return '';
+    best = best.replace(/\.(html?|php|aspx?)$/i, '').replace(/[-_+]+/g, ' ')
+      .split(' ').filter(w => w && !/^\d{5,}$/.test(w) && !(/^[A-Za-z0-9]{9,}$/.test(w) && /\d/.test(w) && /[A-Za-z]/.test(w) && w === w.toUpperCase()))
+      .join(' ').trim();
+    return best.charAt(0).toUpperCase() + best.slice(1);
+  } catch (e) { return ''; }
+}
+const heartPath = (x, y, s) => `M${x} ${y+4*s} C${x-7*s} ${y-1.5*s} ${x-3.5*s} ${y-7*s} ${x} ${y-3*s} C${x+3.5*s} ${y-7*s} ${x+7*s} ${y-1.5*s} ${x} ${y+4*s} Z`;
+function starPath(x, y, r) {
+  let d = '';
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; d += (i ? 'L' : 'M') + (x + Math.cos(a) * rr).toFixed(1) + ' ' + (y + Math.sin(a) * rr).toFixed(1); }
+  return d + 'Z';
+}
+
+// ================= Avatar parts =================
+const GEO = {
+  bebe:   { cy:57, R:29,   Ry:28,   ey:61, es:1.2,  bodyRx:30 },
+  enfant: { cy:55, R:27,   Ry:27,   ey:59, es:1.15, bodyRx:30 },
+  ado:    { cy:50, R:24.5, Ry:26,   ey:53, es:1.05, bodyRx:36 },
+  adulte: { cy:49, R:25,   Ry:26.5, ey:52, es:1,    bodyRx:40 },
+  senior: { cy:50, R:25,   Ry:26.5, ey:53, es:.95,  bodyRx:40 },
+  chien:  { cy:58, R:27,   Ry:25,   ey:54, es:1,    bodyRx:38 },
+  chat:   { cy:58, R:27,   Ry:24,   ey:55, es:1,    bodyRx:38 },
+};
+
+function hairSVG(style, g, f, skin) {
+  const cx = 60, { cy, R, Ry } = g, top = cy - Ry;
+  const dome = (fd = .62) => `<path d="M${cx-R-1.5} ${cy} A${R+1.5} ${Ry+1.5} 0 0 1 ${cx+R+1.5} ${cy} Q${cx+R*.75} ${cy-Ry*.5} ${cx+R*.1} ${cy-Ry*fd} Q${cx-R*.6} ${cy-Ry*.5} ${cx-R-1.5} ${cy} Z" fill="${f}"/>`;
+  const bangs = `<path d="M${cx-R-1.5} ${cy+2} A${R+1.5} ${Ry+1.5} 0 0 1 ${cx+R+1.5} ${cy+2} L${cx+R*.86} ${cy-Ry*.3} Q${cx} ${cy-Ry*.44} ${cx-R*.86} ${cy-Ry*.3} Z" fill="${f}"/>`;
+  const longBack = `<path d="M${cx-R-5} ${cy} C${cx-R-8} ${cy+R+10} ${cx-R-2} ${cy+R+22} ${cx-R+8} ${cy+R+22} L${cx+R-8} ${cy+R+22} C${cx+R+2} ${cy+R+22} ${cx+R+8} ${cy+R+10} ${cx+R+5} ${cy} Z" fill="${f}"/>`;
+  const cap = op => `<path d="M${cx-R} ${cy-3} A${R} ${Ry} 0 0 1 ${cx+R} ${cy-3} Q${cx} ${cy-Ry*.8} ${cx-R} ${cy-3} Z" fill="${f}" opacity="${op}"/>`;
+  const ring = (rad, from, to, step, r) => { let s = ''; for (let d = from; d <= to; d += step) { const a = d * Math.PI / 180; s += `<circle cx="${(cx + Math.cos(a) * rad).toFixed(1)}" cy="${(cy - 2 + Math.sin(a) * rad * (Ry / R)).toFixed(1)}" r="${r}" fill="${f}"/>`; } return s; };
+  const tie = (x, y) => `<circle cx="${x}" cy="${y}" r="3.6" fill="#FF3D6E"/>`;
+  let back = '', front = '';
+  switch (style) {
+    case 'court': front = dome(); break;
+    case 'rase': front = cap(.7); break;
+    case 'houppe': front = dome(.7) + `<path d="M${cx-R*.75} ${top+8} Q${cx-R*.6} ${top-9} ${cx+R*.2} ${top-9} Q${cx+R*.95} ${top-7} ${cx+R*.78} ${top+9} Z" fill="${f}"/>`; break;
+    case 'meche': front = dome(.5) + `<path d="M${cx+R*.55} ${top+4} Q${cx-R*.1} ${cy-Ry*.3} ${cx-R-1} ${cy-1} Q${cx-R*.95} ${top+6} ${cx-R*.15} ${top+1} Z" fill="${f}"/>`; break;
+    case 'long': back = longBack; front = dome(); break;
+    case 'ondule': back = `<path d="M${cx-R-5} ${cy} C${cx-R-13} ${cy+12} ${cx-R} ${cy+20} ${cx-R-7} ${cy+R+20} Q${cx} ${cy+R+32} ${cx+R+7} ${cy+R+20} C${cx+R} ${cy+20} ${cx+R+13} ${cy+12} ${cx+R+5} ${cy} Z" fill="${f}"/>`; front = dome(.55); break;
+    case 'carre': back = `<path d="M${cx-R-5} ${cy-6} Q${cx-R-8} ${cy+Ry*.8} ${cx-R+2} ${cy+Ry*.72} L${cx+R-2} ${cy+Ry*.72} Q${cx+R+8} ${cy+Ry*.8} ${cx+R+5} ${cy-6} Z" fill="${f}"/>`; front = bangs; break;
+    case 'frange': back = longBack; front = bangs; break;
+    case 'queue': back = `<ellipse cx="${cx+R+4}" cy="${cy+6}" rx="8" ry="18" transform="rotate(-16 ${cx+R+4} ${cy+6})" fill="${f}"/>`; front = dome() + tie(cx + R * .8, top + 9); break;
+    case 'couettes': back = `<ellipse cx="${cx-R-5}" cy="${cy+10}" rx="7.5" ry="14" transform="rotate(16 ${cx-R-5} ${cy+10})" fill="${f}"/><ellipse cx="${cx+R+5}" cy="${cy+10}" rx="7.5" ry="14" transform="rotate(-16 ${cx+R+5} ${cy+10})" fill="${f}"/>`; front = dome() + tie(cx - R + 1, cy - 3) + tie(cx + R - 1, cy - 3); break;
+    case 'chignon': back = `<circle cx="${cx}" cy="${top-4}" r="10" fill="${f}"/>`; front = dome(); break;
+    case 'macarons': back = `<circle cx="${cx-R*.72}" cy="${top+3}" r="9" fill="${f}"/><circle cx="${cx+R*.72}" cy="${top+3}" r="9" fill="${f}"/>`; front = dome(); break;
+    case 'boucles': back = ring(R + 3, -180, 0, 22, 10); front = ring(R - 6, -160, -20, 28, 8); break;
+    case 'afro': back = `<circle cx="${cx}" cy="${cy-6}" r="${R+13}" fill="${f}"/>`; front = ring(R - 5, -165, -15, 25, 8.5); break;
+    case 'tresses': {
+      for (let i = 0; i < 6; i++) back += `<ellipse cx="${cx-R-1}" cy="${cy+2+i*8}" rx="5" ry="5.2" fill="${f}"/><ellipse cx="${cx+R+1}" cy="${cy+2+i*8}" rx="5" ry="5.2" fill="${f}"/>`;
+      front = dome(.75) + `<path d="M${cx} ${top+1} L${cx-1} ${top+10}" stroke="${shade(skin,-.1)}" stroke-width="1.6" stroke-linecap="round"/>`; break;
+    }
+    case 'locks': {
+      for (let i = -4; i <= 4; i++) { const x = cx + i * (R / 4) - 3, len = R + 14 - Math.abs(i) * 2; back += `<rect x="${x.toFixed(1)}" y="${cy-Ry*.6}" width="6.5" height="${len}" rx="3.2" fill="${f}"/>`; }
+      front = dome(.68) + `<rect x="${cx-R-3}" y="${cy-6}" width="6.5" height="22" rx="3.2" fill="${f}"/><rect x="${cx+R-3.5}" y="${cy-6}" width="6.5" height="22" rx="3.2" fill="${f}"/>`; break;
+    }
+    case 'crete': front = cap(.3) + `<path d="M${cx-7} ${top+7} L${cx-10} ${top-7} L${cx-3.5} ${top+1} L${cx} ${top-13} L${cx+3.5} ${top+1} L${cx+10} ${top-7} L${cx+7} ${top+7} Z" fill="${f}" stroke="${f}" stroke-width="2" stroke-linejoin="round"/>`; break;
+    case 'degarni': front = `<ellipse cx="${cx-R+3}" cy="${cy-6}" rx="5.5" ry="10" fill="${f}"/><ellipse cx="${cx+R-3}" cy="${cy-6}" rx="5.5" ry="10" fill="${f}"/>`; break;
+    case 'touffe': front = `<path d="M57 ${top+3} q1 -9 9 -7 q-6 1 -5 6" stroke="${f}" stroke-width="3" stroke-linecap="round" fill="none"/>`; break;
+  }
+  return { back, front };
+}
+
+function eyesSVG(emo, xs, y, s, style, lid) {
+  const dark = '#22182c';
+  const open = (x, look = 0, big = false) => {
+    if (style === 'human') return `<ellipse cx="${x}" cy="${y}" rx="${(big?6.3:5.4)*s}" ry="${(big?7.4:6.4)*s}" fill="#fff"/><circle cx="${x+.6+look}" cy="${y+1}" r="${(big?2.6:3.6)*s}" fill="${dark}"/><circle cx="${x-.8+look}" cy="${y-.6}" r="${1.3*s}" fill="#fff"/>`;
+    if (style === 'cat') return `<ellipse cx="${x}" cy="${y}" rx="${5*s}" ry="${(big?6.6:6)*s}" fill="#9ccc4a"/><ellipse cx="${x+look}" cy="${y+.5}" rx="${(big?3:1.9)*s}" ry="${4.6*s}" fill="${dark}"/><circle cx="${x-1.5}" cy="${y-2}" r="1.3" fill="#fff"/>`;
+    return `<circle cx="${x+look}" cy="${y}" r="${(big?5.8:5)*s}" fill="${dark}"/><circle cx="${x-1.6+look}" cy="${y-1.6}" r="${(big?2.2:1.7)*s}" fill="#fff"/>`;
+  };
+  const arc = x => `<path d="M${x-5*s} ${y+1.5} Q${x} ${y-5*s} ${x+5*s} ${y+1.5}" stroke="${dark}" stroke-width="2.6" stroke-linecap="round" fill="none"/>`;
+  const shut = x => `<path d="M${x-5*s} ${y} Q${x} ${y+4*s} ${x+5*s} ${y}" stroke="${dark}" stroke-width="2.4" stroke-linecap="round" fill="none"/>`;
+  const lidded = x => open(x, 1) + `<path d="M${x-6.6*s} ${y-8*s} H${x+6.6*s} V${y-.3} Q${x} ${y+1.4} ${x-6.6*s} ${y-.3} Z" fill="${lid}"/><path d="M${x-6*s} ${y-.3} Q${x} ${y+1.4} ${x+6*s} ${y-.3}" stroke="${dark}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+  const [l, r] = xs;
+  let out, blink = true;
+  switch (emo) {
+    case 'rieur': out = arc(l) + arc(r); blink = false; break;
+    case 'clin': out = open(l) + arc(r); blink = false; break;
+    case 'surpris': out = open(l, 0, true) + open(r, 0, true); break;
+    case 'amoureux': out = `<path d="${heartPath(l, y+1, 1.15*s)}" fill="#FF3D6E"/><path d="${heartPath(r, y+1, 1.15*s)}" fill="#FF3D6E"/>`; blink = false; break;
+    case 'cool': out = lidded(l) + lidded(r); blink = false; break;
+    case 'endormi': out = shut(l) + shut(r); blink = false; break;
+    case 'boudeur': out = open(l, -1.6) + open(r, -1.6); break;
+    default: out = open(l) + open(r);
+  }
+  return `<g${blink ? ' class="a-eyes"' : ''}>${out}</g>`;
+}
+
+function browsSVG(emo, xs, ey, color, op) {
+  return xs.map(x => {
+    const left = x < 60;
+    let d;
+    switch (emo) {
+      case 'surpris': d = `M${x-5} ${ey-12.5} q5 -3.2 10 0`; break;
+      case 'boudeur': d = left ? `M${x-5} ${ey-11} L${x+5} ${ey-8}` : `M${x-5} ${ey-8} L${x+5} ${ey-11}`; break;
+      case 'cool': d = `M${x-5} ${ey-10} L${x+5} ${ey-10.5}`; break;
+      case 'rieur': d = `M${x-5} ${ey-10.5} q5 -3.5 10 0`; break;
+      case 'endormi': d = `M${x-5} ${ey-8} q5 -1.5 10 0`; break;
+      default: d = `M${x-5} ${ey-9.5} q5 -3.2 10 0`;
+    }
+    return `<path d="${d}" stroke="${color}" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="${op}"/>`;
+  }).join('');
+}
+
+function mouthHuman(emo, my, skin) {
+  const mc = shade(skin, -.55), inside = '#7a2236';
+  const st = d => `<path d="${d}" stroke="${mc}" stroke-width="2.4" stroke-linecap="round" fill="none"/>`;
+  switch (emo) {
+    case 'rieur': return `<path d="M52.5 ${my-1} Q60 ${my+12} 67.5 ${my-1} Z" fill="${inside}"/><ellipse cx="60" cy="${my+5.5}" rx="3.6" ry="2" fill="#ff8aa0"/><path d="M54 ${my-.4} H66" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`;
+    case 'clin': return st(`M54 ${my+.5} Q61 ${my+5} 67 ${my-2}`);
+    case 'surpris': return `<ellipse cx="60" cy="${my+2}" rx="3.2" ry="4.2" fill="${inside}"/>`;
+    case 'amoureux': return st(`M53 ${my} Q60 ${my+7} 67 ${my}`);
+    case 'cool': return st(`M55 ${my+1.5} Q62 ${my+3.5} 66.5 ${my-1}`);
+    case 'endormi': return `<ellipse cx="60" cy="${my+2}" rx="2.2" ry="1.8" fill="${inside}"/>`;
+    case 'boudeur': return st(`M55 ${my+3} Q60 ${my-.5} 65 ${my+3}`);
+    default: return st(`M53.5 ${my} Q60 ${my+6} 66.5 ${my}`);
+  }
+}
+function mouthDog(emo) {
+  const k = '#1f1716', line = d => `<path d="${d}" stroke="${k}" stroke-width="2.2" stroke-linecap="round" fill="none"/>`;
+  switch (emo) {
+    case 'rieur': return `<path d="M51 71 Q60 85 69 71 Z" fill="#5a1f28"/><ellipse cx="60" cy="78.5" rx="5" ry="3.5" fill="#ff7e96"/>` + line('M60 68.5 V71');
+    case 'surpris': return line('M60 68.5 V71') + `<ellipse cx="60" cy="75" rx="3" ry="3.6" fill="#3a1a20"/>`;
+    case 'cool': return line('M60 68.5 V72 M54 73 Q58 75 66 71');
+    case 'endormi': return line('M60 68.5 V72 M54 73 Q60 75 66 73');
+    case 'boudeur': return line('M60 68.5 V72 M54 75 Q60 71 66 75');
+    default: return `<ellipse cx="60" cy="78" rx="4.8" ry="4.4" fill="#ff7e96"/>` + line('M60 68.5 V72 M53 72 Q56.5 75.5 60 72 Q63.5 75.5 67 72');
+  }
+}
+function mouthCat(emo) {
+  const k = '#4a3a3a', line = d => `<path d="${d}" stroke="${k}" stroke-width="1.6" stroke-linecap="round" fill="none"/>`;
+  switch (emo) {
+    case 'rieur': return line('M60 67.5 V70') + `<path d="M55 70 Q60 78 65 70 Z" fill="#7a2236"/>`;
+    case 'surpris': return line('M60 67.5 V70') + `<ellipse cx="60" cy="72.5" rx="2.2" ry="2.6" fill="#7a2236"/>`;
+    case 'endormi': return line('M60 67.5 V70 M56 71 H64');
+    case 'boudeur': return line('M60 67.5 V70 M56 72.5 Q60 69.5 64 72.5');
+    default: return line('M60 67.5 V70 M56 71 Q58 72.5 60 70 Q62 72.5 64 71');
+  }
+}
+
+function beardSVG(b, g, f) {
+  const cx = 60, { cy, R, Ry, ey } = g, my = ey + 12 * g.es;
+  const mous = `<path d="M${cx-8} ${my-3} Q${cx-4} ${my-6.5} ${cx} ${my-4.2} Q${cx+4} ${my-6.5} ${cx+8} ${my-3} Q${cx+4} ${my-1.2} ${cx} ${my-2.6} Q${cx-4} ${my-1.2} ${cx-8} ${my-3} Z" fill="${f}"/>`;
+  const jaw = drop => `<path d="M${cx-R+1.5} ${cy+2} Q${cx-R+2} ${cy+Ry+drop*.6} ${cx} ${cy+Ry+drop} Q${cx+R-2} ${cy+Ry+drop*.6} ${cx+R-1.5} ${cy+2} Q${cx+R*.62} ${my+1} ${cx} ${my+3.5} Q${cx-R*.62} ${my+1} ${cx-R+1.5} ${cy+2} Z" fill="${f}"/>`;
+  if (b === 'moustache') return { under: '', over: mous };
+  if (b === 'courte') return { under: jaw(3), over: mous };
+  if (b === 'longue') return { under: jaw(15), over: mous };
+  return { under: '', over: '' };
+}
+
+function hatSVG(h, cx, hb, top, R) {
+  switch (h) {
+    case 'noel': return `<path d="M${cx-R+1} ${hb} Q${cx-R*.3} ${top-R*.95} ${cx+R*.95} ${top-R*.25} Q${cx+R*.45} ${top-R*.05} ${cx+R-1} ${hb} Z" fill="#E63946"/><path d="M${cx-R*.4} ${hb-5} Q${cx-R*.2} ${top-R*.4} ${cx+R*.3} ${top-R*.45}" stroke="#fff" stroke-width="3" opacity=".25" fill="none" stroke-linecap="round"/><rect x="${cx-R-3}" y="${hb-6}" width="${2*R+6}" height="11" rx="5.5" fill="#fff"/><circle cx="${cx+R*.95}" cy="${top-R*.25}" r="5.5" fill="#fff"/>`;
+    case 'renne': {
+      const ant = sgn => `<path d="M${cx+sgn*R*.45} ${top+5} L${cx+sgn*R*.7} ${top-R*.6} M${cx+sgn*R*.62} ${top-R*.35} L${cx+sgn*R*.98} ${top-R*.45} M${cx+sgn*R*.67} ${top-R*.5} L${cx+sgn*R*.45} ${top-R*.82}" stroke="#8B5A2B" stroke-width="4" stroke-linecap="round" fill="none"/>`;
+      return ant(-1) + ant(1) + `<path d="M${cx-R-1} ${hb+2} A${R+1} ${R*.9} 0 0 1 ${cx+R+1} ${hb+2}" stroke="#E63946" stroke-width="3.5" fill="none"/>`;
+    }
+    case 'sorciere': return `<ellipse cx="${cx}" cy="${hb}" rx="${R+13}" ry="5.5" fill="#3b2550"/><path d="M${cx-R*.68} ${hb-1} Q${cx-R*.3} ${top-R*.5} ${cx+R*.55} ${top-R*1.3} Q${cx+R*.25} ${top-R*.4} ${cx+R*.68} ${hb-1} Z" fill="#4a2f66"/><path d="M${cx-R*.66} ${hb-7} h${R*1.32} v5 h-${R*1.32} Z" fill="#FF8A1F"/><rect x="${cx-3}" y="${hb-7.5}" width="6" height="6" rx="1" fill="none" stroke="#FFD43B" stroke-width="1.6"/>`;
+    case 'pompon': return `<path d="M${cx-R-2} ${hb+3} Q${cx-R-2} ${top-R*.35} ${cx} ${top-R*.38} Q${cx+R+2} ${top-R*.35} ${cx+R+2} ${hb+3} Z" fill="#4D7CFE"/><path d="M${cx-R*.4} ${top-R*.1} L${cx-R*.3} ${hb-4} M${cx} ${top-R*.3} V${hb-4} M${cx+R*.4} ${top-R*.1} L${cx+R*.3} ${hb-4}" stroke="#3561E0" stroke-width="2"/><rect x="${cx-R-3}" y="${hb-4}" width="${2*R+6}" height="10" rx="5" fill="#3561E0"/><circle cx="${cx}" cy="${top-R*.4}" r="7" fill="#fff"/>`;
+    case 'beret': return `<ellipse cx="${cx-3}" cy="${hb-5}" rx="${R+5}" ry="9" fill="#9B2242" transform="rotate(-10 ${cx} ${hb})"/><circle cx="${cx-2}" cy="${hb-14}" r="2.6" fill="#9B2242"/>`;
+    case 'lapin': {
+      const ear = sgn => `<ellipse cx="${cx+sgn*R*.42}" cy="${top-R*.5}" rx="6.5" ry="15" transform="rotate(${sgn*12} ${cx+sgn*R*.42} ${top-R*.5})" fill="#fff" stroke="#F3C6D3" stroke-width="1.5"/><ellipse cx="${cx+sgn*R*.42}" cy="${top-R*.45}" rx="3" ry="10" transform="rotate(${sgn*12} ${cx+sgn*R*.42} ${top-R*.5})" fill="#FFB3C7"/>`;
+      return ear(-1) + ear(1) + `<path d="M${cx-R-1} ${hb+2} A${R+1} ${R*.9} 0 0 1 ${cx+R+1} ${hb+2}" stroke="#FFB3C7" stroke-width="3.5" fill="none"/>`;
+    }
+    case 'fleurs': {
+      let s = ''; const cols = ['#FF3D6E', '#4D7CFE', '#FFB627', '#8E5BFF'];
+      for (let i = 0; i < 7; i++) {
+        const t = i / 6 * 2 - 1, x = cx + t * R, y = hb - 2 - (1 - t * t) * 6, c = cols[i % 4];
+        for (let p = 0; p < 5; p++) { const a = p * Math.PI * 2 / 5; s += `<circle cx="${(x+Math.cos(a)*2.8).toFixed(1)}" cy="${(y+Math.sin(a)*2.8).toFixed(1)}" r="2.6" fill="${c}"/>`; }
+        s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.8" fill="#FFE08A"/>`;
+      }
+      return s;
+    }
+    case 'paille': return `<ellipse cx="${cx}" cy="${hb+1}" rx="${R+17}" ry="7" fill="#E9C46A"/><path d="M${cx-R*.72} ${hb} Q${cx-R*.75} ${top-R*.35} ${cx} ${top-R*.38} Q${cx+R*.75} ${top-R*.35} ${cx+R*.72} ${hb} Z" fill="#F2D388"/><rect x="${cx-R*.72}" y="${hb-6}" width="${R*1.44}" height="5" fill="#FF3D6E"/>`;
+    case 'casquette': return `<path d="M${cx-R-1.5} ${hb+3} Q${cx-R-1} ${top-R*.3} ${cx} ${top-R*.32} Q${cx+R+1} ${top-R*.3} ${cx+R+1.5} ${hb+3} Z" fill="#FF3D6E"/><path d="M${cx-R*.2} ${hb+1} Q${cx+R*.8} ${hb-3} ${cx+R*1.55} ${hb+4} Q${cx+R*.8} ${hb+7} ${cx-R*.2} ${hb+4} Z" fill="#D62657"/><circle cx="${cx}" cy="${top-R*.3}" r="2.5" fill="#D62657"/>`;
+    case 'fete': return `<g transform="rotate(10 ${cx} ${hb})"><path d="M${cx-R*.5} ${hb+2} L${cx+R*.02} ${top-R*1.05} L${cx+R*.54} ${hb+2} Z" fill="#FFB627"/><path d="M${cx-R*.36} ${hb-6} L${cx+R*.42} ${hb-8} M${cx-R*.2} ${hb-17} L${cx+R*.28} ${hb-18.5}" stroke="#FF3D6E" stroke-width="3.5" stroke-linecap="round"/><circle cx="${cx+R*.02}" cy="${top-R*1.05}" r="4.5" fill="#8E5BFF"/></g>`;
+    case 'couronne': return `<path d="M${cx-R*.75} ${hb+2} L${cx-R*.8} ${top-R*.25} L${cx-R*.4} ${top+R*.1} L${cx} ${top-R*.45} L${cx+R*.4} ${top+R*.1} L${cx+R*.8} ${top-R*.25} L${cx+R*.75} ${hb+2} Z" fill="#FFC83D" stroke="#E0A21B" stroke-width="1.5" stroke-linejoin="round"/><circle cx="${cx}" cy="${hb-3}" r="2.8" fill="#FF3D6E"/><circle cx="${cx-R*.45}" cy="${hb-2}" r="2.2" fill="#4D7CFE"/><circle cx="${cx+R*.45}" cy="${hb-2}" r="2.2" fill="#17B48A"/>`;
+  }
+  return '';
+}
+
+function glassesSVG(gl, xl, xr, y, s, half) {
+  const fr = '#2a1d33';
+  const temples = (w, c = fr) => `<path d="M${xl-w} ${y-1} L${60-half} ${y-3} M${xr+w} ${y-1} L${60+half} ${y-3}" stroke="${c}" stroke-width="2" stroke-linecap="round"/>`;
+  const bridge = (w, c = fr) => `<path d="M${xl+w} ${y-1.5} Q60 ${y-4} ${xr-w} ${y-1.5}" stroke="${c}" stroke-width="2.2" fill="none"/>`;
+  switch (gl) {
+    case 'rondes': { const r = 7.6 * s; return temples(r) + [xl, xr].map(x => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" fill-opacity=".16" stroke="${fr}" stroke-width="2.2"/>`).join('') + bridge(r); }
+    case 'carrees': { const w = 8.4 * s, h = 6.4 * s; return temples(w) + [xl, xr].map(x => `<rect x="${x-w}" y="${y-h}" width="${2*w}" height="${2*h}" rx="3" fill="#fff" fill-opacity=".16" stroke="${fr}" stroke-width="2.4"/>`).join('') + bridge(w); }
+    case 'soleil': { const w = 8.6 * s, h = 6.6 * s; return temples(w, '#111') + [xl, xr].map(x => `<path d="M${x-w} ${y-h} H${x+w} V${y+h*.2} Q${x+w} ${y+h} ${x} ${y+h} Q${x-w} ${y+h} ${x-w} ${y+h*.2} Z" fill="#1d1726" stroke="#111" stroke-width="2"/><path d="M${x-w*.55} ${y-h*.45} L${x-w*.05} ${y-h*.45}" stroke="#fff" stroke-width="1.8" opacity=".55" stroke-linecap="round"/>`).join('') + `<path d="M${xl+w} ${y-h*.6} Q60 ${y-h} ${xr-w} ${y-h*.6}" stroke="#111" stroke-width="2.6" fill="none"/>`; }
+    case 'coeur': return temples(8 * s, '#C21E4E') + [xl, xr].map(x => `<path d="${heartPath(x, y+1, 1.45*s)}" fill="#FF3D6E" fill-opacity=".82" stroke="#C21E4E" stroke-width="1.8"/>`).join('') + bridge(7, '#C21E4E');
+    case 'etoiles': return temples(8 * s, '#E0A21B') + [xl, xr].map(x => `<path d="${starPath(x, y, 9.5*s)}" fill="#FFC83D" fill-opacity=".92" stroke="#E0A21B" stroke-width="1.6" stroke-linejoin="round"/>`).join('') + bridge(6, '#E0A21B');
+    case '3d': { const w = 8.4 * s, h = 6 * s; return temples(w, '#f5f5f5') + [xl, xr].map((x, i) => `<rect x="${x-w}" y="${y-h}" width="${2*w}" height="${2*h}" rx="2" fill="${i ? '#40C4FF' : '#FF4D5E'}" fill-opacity=".78" stroke="#f5f5f5" stroke-width="2.6"/>`).join('') + bridge(w, '#f5f5f5'); }
+    case 'monocle': { const r = 8 * s; return `<circle cx="${xr}" cy="${y}" r="${r}" fill="#fff" fill-opacity=".18" stroke="#C9A227" stroke-width="2.2"/><path d="M${xr+r*.7} ${y+r*.7} Q${xr+12} ${y+20} ${xr+6} ${y+34}" stroke="#C9A227" stroke-width="1.2" fill="none"/>`; }
+  }
+  return '';
+}
+
+function neckAccSVG(acc, ny, W) {
+  switch (acc) {
+    case 'echarpe': return `<rect x="${60-W}" y="${ny-4}" width="${2*W}" height="11" rx="5.5" fill="#E63946"/><rect x="${60-W+6}" y="${ny-4}" width="3" height="11" fill="#fff" opacity=".7"/><rect x="${60+W-9}" y="${ny-4}" width="3" height="11" fill="#fff" opacity=".7"/><g transform="rotate(10 ${60+W*.4} ${ny+3})"><rect x="${60+W*.4-5}" y="${ny+3}" width="10" height="22" rx="4" fill="#C92A3A"/><rect x="${60+W*.4-5}" y="${ny+12}" width="10" height="3" fill="#fff" opacity=".7"/></g>`;
+    case 'noeud': return `<path d="M60 ${ny+6} L49 ${ny} L49 ${ny+12} Z M60 ${ny+6} L71 ${ny} L71 ${ny+12} Z" fill="#FF3D6E" stroke="#FF3D6E" stroke-width="2.5" stroke-linejoin="round"/><circle cx="60" cy="${ny+6}" r="3.6" fill="#D62657"/>`;
+    case 'collier': {
+      let s = ''; const cols = ['#FF3D6E', '#FFB627', '#8E5BFF', '#17B48A'];
+      for (let i = 0; i <= 6; i++) { const t = i / 6 * 2 - 1, x = 60 + t * W * 1.05, y = ny + 4 + (1 - t * t) * 8; s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.8" fill="${cols[i % 4]}"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.3" fill="#fff"/>`; }
+      return s;
+    }
+    case 'appareil': return `<path d="M${60-W*.6} ${ny+2} L50 98 M${60+W*.6} ${ny+2} L70 98" stroke="#2E2B3A" stroke-width="2.2" fill="none"/>`;
+  }
+  return '';
+}
+function holdAccSVG(acc) {
+  switch (acc) {
+    case 'appareil': return `<rect x="44" y="96" width="32" height="20" rx="4" fill="#2E2B3A"/><rect x="49" y="93" width="9" height="5" rx="1.5" fill="#2E2B3A"/><circle cx="60" cy="106" r="7.5" fill="#55536a" stroke="#d9d6e6" stroke-width="2"/><circle cx="60" cy="106" r="3.8" fill="#7FA8FF"/><circle cx="58.6" cy="104.6" r="1.2" fill="#fff"/><rect x="68" y="99" width="5" height="3" rx="1" fill="#FFC83D"/>`;
+    case 'citrouille': return `<ellipse cx="60" cy="106" rx="15" ry="11" fill="#F7801F"/><ellipse cx="52" cy="106" rx="8" ry="10.5" fill="#FF922B"/><ellipse cx="68" cy="106" rx="8" ry="10.5" fill="#FF922B"/><ellipse cx="60" cy="106" rx="6" ry="11" fill="#FFA94D"/><rect x="58.5" y="92" width="3.5" height="6" rx="1.5" fill="#4C7A2E"/><path d="M52 103 l3 -3 l3 3 Z M62 103 l3 -3 l3 3 Z" fill="#5a2a0a"/><path d="M52 109 Q60 115 68 109 Q60 112 52 109 Z" fill="#5a2a0a"/>`;
+    case 'sucre': return `<path d="M90 116 V86 Q90 77 97 77 Q104 77 104 86" stroke="#fff" stroke-width="6.5" fill="none" stroke-linecap="round"/><path d="M90 116 V86 Q90 77 97 77 Q104 77 104 86" stroke="#E63946" stroke-width="6.5" stroke-dasharray="4 4" fill="none"/>`;
+    case 'cadeau': return `<rect x="47" y="97" width="26" height="20" rx="3" fill="#FF3D6E"/><rect x="45" y="93" width="30" height="7" rx="2.5" fill="#FF5C86"/><rect x="57.5" y="93" width="5" height="24" fill="#FFC83D"/><path d="M60 93 C54 84 47 88 52 92 Z M60 93 C66 84 73 88 68 92 Z" fill="#FFC83D"/>`;
+    case 'glace': return `<path d="M51 96 L69 96 L60 117 Z" fill="#E3A857"/><path d="M53 99 L67 99 M55 104 L65 104" stroke="#C98B3E" stroke-width="1.2"/><circle cx="55" cy="93" r="6.5" fill="#FF8FB1"/><circle cx="65" cy="93" r="6.5" fill="#7FE0C3"/><circle cx="60" cy="86" r="6.5" fill="#FFE08A"/><circle cx="60" cy="80.5" r="2.4" fill="#E63946"/>`;
+    case 'tasse': return `<rect x="50" y="98" width="20" height="18" rx="4" fill="#4D7CFE"/><path d="M70 102 Q77 102 77 107 Q77 112 70 112" stroke="#4D7CFE" stroke-width="3.2" fill="none"/><rect x="50" y="98" width="20" height="4" rx="2" fill="#fff" opacity=".35"/><g class="a-steam"><path d="M56 94 q-3 -4 0 -8 q3 -4 0 -8 M64 94 q-3 -4 0 -8 q3 -4 0 -8" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".85"/></g>`;
+  }
+  return '';
+}
+function emoExtraSVG(emo) {
+  const txt = (x, y, sz, t, cls) => `<g class="${cls}"><text x="${x}" y="${y}" font-family="Nunito, sans-serif" font-weight="900" font-size="${sz}" fill="#7A5670">${t}</text></g>`;
+  switch (emo) {
+    case 'amoureux': return `<g class="a-float"><path d="${heartPath(97, 30, .9)}" fill="#FF3D6E"/></g><g class="a-float a-float2"><path d="${heartPath(22, 38, .7)}" fill="#FF7A9C"/></g>`;
+    case 'endormi': return txt(88, 36, 12, 'z', 'a-zz') + txt(96, 25, 16, 'Z', 'a-zz a-zz2');
+    case 'cool': return `<path class="a-twinkle" d="${starPath(96, 26, 6)}" fill="#FFC83D"/>`;
+    case 'surpris': return `<g class="a-twinkle"><path d="M96 22 L100 15 M101 28 L108 26 M91 18 L90 10" stroke="#FF3D6E" stroke-width="2.4" stroke-linecap="round"/></g>`;
+    case 'rieur': return txt(88, 28, 12, 'ha', 'a-zz') + txt(18, 34, 11, 'ha', 'a-zz a-zz2');
+  }
+  return '';
+}
+
+let gid = 0;
+function avatarSVG(input) {
+  const a = { ...AV_DEFAULT, ...input };
+  const id = 'g' + (++gid);
+  const g = { ...(GEO[a.kind] || GEO.adulte) };
+  const human = HUMAN.includes(a.kind);
+  const cx = 60, { cy, R, Ry, ey, es } = g;
+  const dx = human ? R * .38 : 11;
+  const skin = human ? a.skin : (a.kind === 'chien' ? '#C68A4C' : a.coat);
+  const RG = (n, c) => `<radialGradient id="${id}${n}" cx="36%" cy="30%" r="78%"><stop offset="0" stop-color="${shade(c,.3)}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${shade(c,-.25)}"/></radialGradient>`;
+  const U = n => `url(#${id}${n})`;
+  const bg = a.bg || BGS[0];
+  let defs = `<linearGradient id="${id}bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(bg,.4)}"/><stop offset="1" stop-color="${bg}"/></linearGradient><clipPath id="${id}clip"><circle cx="60" cy="60" r="60"/></clipPath>`;
+  defs += RG('s', skin) + RG('h', a.hairColor) + RG('t', human ? a.shirt : skin);
+  let back = '', body = '', head = '', hold = '';
+  const ny = human ? cy + Ry - 3 : 80, W = human ? R * .78 : 19;
+
+  if (a.acc === 'ballon') back += `<g class="a-bob"><path d="M93 42 Q86 76 80 116" stroke="#7A5670" stroke-width="1.3" fill="none"/><ellipse cx="93" cy="27" rx="12.5" ry="14.5" fill="#FF3D6E"/><path d="M90 41 L96 41 L93 44 Z" fill="#FF3D6E"/><ellipse cx="88.5" cy="21" rx="3" ry="5" fill="#fff" opacity=".45" transform="rotate(20 88.5 21)"/></g>`;
+
+  if (human) {
+    body += `<ellipse cx="60" cy="${cy + Ry + 36}" rx="${g.bodyRx}" ry="34" fill="${U('t')}"/>`;
+    body += `<rect x="53" y="${cy + Ry - 9}" width="14" height="16" rx="6" fill="${shade(skin, -.18)}"/>`;
+  } else {
+    body += `<ellipse cx="60" cy="114" rx="38" ry="30" fill="${U('s')}"/>`;
+  }
+  body += neckAccSVG(a.acc, ny, W);
+  hold += holdAccSVG(a.acc);
+
+  if (human) {
+    const style = a.hair || 'court';
+    const hr = hairSVG(style, g, U('h'), skin);
+    const my = ey + 12 * es;
+    const beard = (a.kind === 'bebe' || a.kind === 'enfant') ? { under: '', over: '' } : beardSVG(a.beard, g, U('h'));
+    head += hr.back;
+    head += `<circle cx="${cx-R+1}" cy="${cy+4}" r="5.5" fill="${shade(skin,-.08)}"/><circle cx="${cx+R-1}" cy="${cy+4}" r="5.5" fill="${shade(skin,-.08)}"/>`;
+    head += `<ellipse cx="60" cy="${cy}" rx="${R}" ry="${Ry}" fill="${U('s')}"/>`;
+    head += `<ellipse cx="${60 - R * .35}" cy="${cy - Ry * .45}" rx="${R * .34}" ry="${R * .2}" fill="#fff" opacity=".22"/>`;
+    const xs = [60 - dx, 60 + dx];
+    if (a.kind === 'senior') head += xs.map(x => { const o = x < 60 ? -1 : 1, ex = x + o * 7.5; return `<path d="M${ex} ${ey-2} l${o*3} -1.5 M${ex} ${ey+1} l${o*3} 1" stroke="${shade(skin,-.3)}" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>`; }).join('') + `<path d="M${cx-7} ${cy-Ry*.42} q7 -2 14 0" stroke="${shade(skin,-.3)}" stroke-width="1.2" fill="none" opacity=".45"/>`;
+    head += xs.map(x => `<circle cx="${x < 60 ? x - 3 : x + 3}" cy="${ey + 9}" r="4.2" fill="#ff6f91" opacity="${a.emo === 'amoureux' ? .55 : .28}"/>`).join('');
+    head += `<ellipse cx="60" cy="${ey+7.5}" rx="2.6" ry="1.9" fill="${shade(skin,-.22)}"/>`;
+    head += beard.under + mouthHuman(a.emo, my, skin) + beard.over;
+    head += eyesSVG(a.emo, xs, ey, es, 'human', shade(skin, -.06));
+    head += browsSVG(a.emo, xs, ey, shade(a.hairColor, -.1), a.kind === 'bebe' ? .5 : 1);
+    head += hr.front;
+    if (a.glasses !== 'aucune') head += glassesSVG(a.glasses, xs[0], xs[1], ey, es, R);
+    if (a.hat !== 'aucun') head += hatSVG(a.hat, cx, cy - Ry * .5, cy - Ry, R);
+  } else {
+    const c = skin, mask = '#3a2a22', dog = a.kind === 'chien';
+    if (dog) {
+      defs += RG('m', mask);
+      head += `<path d="M36 46 Q30 16 35 6 Q47 14 55 34 Z" fill="${U('m')}"/><path d="M84 46 Q90 16 85 6 Q73 14 65 34 Z" fill="${U('m')}"/>`;
+      head += `<path d="M39 40 Q35 20 37.5 14 Q45 20 50 33 Z" fill="#b57a63" opacity=".8"/><path d="M81 40 Q85 20 82.5 14 Q75 20 70 33 Z" fill="#b57a63" opacity=".8"/>`;
+    } else {
+      head += `<path d="M38 44 L36 18 L56 36 Z" fill="${c}" stroke="${c}" stroke-width="5" stroke-linejoin="round"/><path d="M82 44 L84 18 L64 36 Z" fill="${c}" stroke="${c}" stroke-width="5" stroke-linejoin="round"/>`;
+      head += `<path d="M41 38 L40 25 L51 35 Z" fill="#f2a7b8"/><path d="M79 38 L80 25 L69 35 Z" fill="#f2a7b8"/>`;
+    }
+    head += `<ellipse cx="60" cy="58" rx="27" ry="${dog ? 25 : 24}" fill="${U('s')}"/>`;
+    head += `<ellipse cx="51" cy="44" rx="9" ry="5" fill="#fff" opacity=".22"/>`;
+    if (dog) {
+      head += `<ellipse cx="49" cy="54" rx="7.5" ry="6.5" fill="${mask}" opacity=".35"/><ellipse cx="71" cy="54" rx="7.5" ry="6.5" fill="${mask}" opacity=".35"/>`;
+      head += `<path d="M52 60 Q60 49 68 60 L66 70 L54 70 Z" fill="${mask}" opacity=".55"/>`;
+      head += `<ellipse cx="60" cy="71" rx="16" ry="13" fill="${U('m')}"/>`;
+    } else {
+      head += `<ellipse cx="55" cy="68" rx="6.5" ry="5" fill="${shade(c, .45)}"/><ellipse cx="65" cy="68" rx="6.5" ry="5" fill="${shade(c, .45)}"/>`;
+    }
+    if (a.emo === 'amoureux') head += `<circle cx="41" cy="64" r="4.5" fill="#ff6f91" opacity=".5"/><circle cx="79" cy="64" r="4.5" fill="#ff6f91" opacity=".5"/>`;
+    head += eyesSVG(a.emo, [49, 71], dog ? 54 : 55, 1, dog ? 'pet' : 'cat', shade(c, -.08));
+    if (dog) {
+      head += mouthDog(a.emo);
+      head += `<ellipse cx="60" cy="64" rx="6.5" ry="4.6" fill="#1f1716"/><ellipse cx="58" cy="62.6" rx="2" ry="1" fill="#fff" opacity=".5"/>`;
+    } else {
+      head += `<path d="M56 63 L64 63 L60 67.5 Z" fill="#e88aa0" stroke="#e88aa0" stroke-width="1.5" stroke-linejoin="round"/>`;
+      head += mouthCat(a.emo);
+      head += `<path d="M46 66 L34 64 M46 69 L34 70 M74 66 L86 64 M74 69 L86 70" stroke="${shade(c, -.45)}" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>`;
+    }
+    if (a.glasses !== 'aucune') head += glassesSVG(a.glasses, 49, 71, 54, 1, 26);
+    if (a.hat !== 'aucun') head += hatSVG(a.hat, 60, 41, 33, 20);
+  }
+
+  let inner = `${back}<g class="a-breathe">${body}</g><g class="a-head">${head}</g><g class="a-hold">${hold}</g>${emoExtraSVG(a.emo)}`;
+  if (TALL_HATS.includes(a.hat)) inner = `<g transform="translate(7.2 14.4) scale(.88)">${inner}</g>`;
+  const delay = -((hash(id) % 50) / 10);
+  return `<svg class="ava emo-${a.emo}" style="--d:${delay}s" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>${defs}</defs><g clip-path="url(#${id}clip)"><rect width="120" height="120" fill="url(#${id}bg)"/>${inner}</g></svg>`;
+}
+const face = (p, cls = '') => p ? `<span class="av ${cls}">${p.photo ? `<img src="${p.photo}" alt="">` : avatarSVG(p.avatar)}</span>` : '';
+
+// ================= Sample data =================
+// ================= Device + shared state =================
+// DEV stays on this device only: family code, last opened list, failed code attempts
+const DEVICE_KEY = MOCK ? 'kdo-device-mock' : 'kdo-device';
+let DEV = {};
+try { DEV = JSON.parse(localStorage.getItem(DEVICE_KEY)) || {}; } catch (e) { DEV = {}; }
+function saveDevice() { try { localStorage.setItem(DEVICE_KEY, JSON.stringify(DEV)); } catch (e) {} }
+// S mirrors the family data, kept up to date in real time by the backend
+const S = { me: null, profiles: [], items: [], res: {}, selected: DEV.selected || null, locks: DEV.locks || {} };
+function save() { DEV.selected = S.selected; DEV.locks = S.locks; saveDevice(); }
+const prof = id => S.profiles.find(p => p.id === id);
+const viewer = () => prof(S.me);
+const selected = () => prof(S.selected) || viewer() || S.profiles[0];
+// I can manage my own list and the lists of relatives without the app (baby, kids, pets...)
+const canManage = owner => !!owner && (owner.id === S.me || !!owner.managed);
+const ofName = n => (/^[aeiouyàâäéèêëîïôöûüh]/i.test(n) ? "d'" : 'de ') + n;
+
+// ================= Backend =================
+// The 6-digit code is combined with the family code; the result is only ever sent to Firebase, never stored
+const passwordFor = (code, pin) => `kdo:${code}:${pin}`;
+async function familyIdFor(code) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('kdo-family|' + code));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+}
+const clean = o => JSON.parse(JSON.stringify(o));
+
+async function createFirebaseBackend() {
+  const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}`;
+  const [{ initializeApp }, A, F] = await Promise.all([
+    import(`${base}/firebase-app.js`), import(`${base}/firebase-auth.js`), import(`${base}/firebase-firestore.js`),
+  ]);
+  const app = initializeApp(FIREBASE_CONFIG);
+  const auth = A.getAuth(app);
+  let db;
+  try { db = F.initializeFirestore(app, { localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }) }); }
+  catch (e) { db = F.getFirestore(app); }
+  const famDoc = fid => F.doc(db, 'families', fid);
+  const col = (fid, name) => F.collection(db, 'families', fid, name);
+  const emailOf = p => `${p.login}@${LOGIN_DOMAIN}`;
+  const authError = e => {
+    const c = String(e?.code || e?.message || '');
+    if (c.includes('too-many-requests')) return 'too-many';
+    if (/invalid-credential|wrong-password|user-not-found|invalid-login|invalid-password/.test(c)) return 'wrong';
+    if (c.includes('network')) return 'offline';
+    return 'error';
+  };
+  const rows = s => s.docs.map(d => ({ id: d.id, ...d.data() }));
+  return {
+    async familyExists(fid) { return (await F.getDoc(famDoc(fid))).exists(); },
+    async listProfiles(fid) { return rows(await F.getDocs(col(fid, 'profiles'))); },
+    waitForAuth() { return new Promise(res => { const off = A.onAuthStateChanged(auth, u => { off(); res(u ? u.uid : null); }); }); },
+    async signUp({ fid, code, pin, profile, newFamily }) {
+      const login = uid() + uid() + uid();
+      let me;
+      try { me = (await A.createUserWithEmailAndPassword(auth, `${login}@${LOGIN_DOMAIN}`, passwordFor(code, pin))).user.uid; }
+      catch (e) { throw new Error(authError(e)); }
+      if (newFamily) {
+        try { await F.setDoc(famDoc(fid), { createdAt: Date.now(), createdBy: me }); }
+        catch (e) { if (!(await this.familyExists(fid))) throw e; }
+      }
+      await F.setDoc(F.doc(col(fid, 'profiles'), me), clean({ name: profile.name, avatar: profile.avatar, photo: profile.photo || null, managed: false, login, createdAt: Date.now() }));
+      return me;
+    },
+    async signIn({ profile, code, pin }) {
+      try { return (await A.signInWithEmailAndPassword(auth, emailOf(profile), passwordFor(code, pin))).user.uid; }
+      catch (e) { throw new Error(authError(e)); }
+    },
+    async signOut() { await A.signOut(auth); },
+    async checkPin({ code, profile, pin }) {
+      try { await A.reauthenticateWithCredential(auth.currentUser, A.EmailAuthProvider.credential(emailOf(profile), passwordFor(code, pin))); }
+      catch (e) { throw new Error(authError(e)); }
+    },
+    async changePin({ code, newPin }) { await A.updatePassword(auth.currentUser, passwordFor(code, newPin)); },
+    subscribe(fid, me, on) {
+      const offs = [], resOffs = new Map();
+      // One listener per other person: the rules refuse any request that could return my own reservations
+      const track = ownerId => {
+        if (ownerId === me || resOffs.has(ownerId)) return;
+        resOffs.set(ownerId, F.onSnapshot(F.query(col(fid, 'reservations'), F.where('ownerId', '==', ownerId)), s => on.reservations(ownerId, rows(s)), on.error));
+      };
+      offs.push(F.onSnapshot(col(fid, 'profiles'), s => { const list = rows(s); list.forEach(p => track(p.id)); on.profiles(list); }, on.error));
+      offs.push(F.onSnapshot(col(fid, 'items'), s => on.items(rows(s)), on.error));
+      return () => { offs.forEach(f => f()); resOffs.forEach(f => f()); };
+    },
+    async addProfile(fid, data) { const r = await F.addDoc(col(fid, 'profiles'), clean(data)); return r.id; },
+    updateProfile: (fid, id, data) => F.updateDoc(F.doc(col(fid, 'profiles'), id), clean(data)),
+    async deleteProfile(fid, id, itemIds) {
+      const b = F.writeBatch(db);
+      itemIds.forEach(i => b.delete(F.doc(col(fid, 'items'), i)));
+      b.delete(F.doc(col(fid, 'profiles'), id));
+      await b.commit();
+    },
+    async addItem(fid, data) { const r = await F.addDoc(col(fid, 'items'), clean(data)); return r.id; },
+    updateItem: (fid, id, data) => F.updateDoc(F.doc(col(fid, 'items'), id), clean(data)),
+    // Creating the reservation fails if someone already holds it (the rules forbid overwriting)
+    async reserve(fid, item, me) {
+      try { await F.setDoc(F.doc(col(fid, 'reservations'), item.id), { ownerId: item.ownerId, by: me, at: Date.now() }); }
+      catch (e) { throw new Error('already'); }
+    },
+    release: (fid, itemId) => F.deleteDoc(F.doc(col(fid, 'reservations'), itemId)),
+  };
+}
+
+// Local fake backend that applies the same rules as the server. Used for testing only.
+function createMockBackend() {
+  const KEY = 'kdo-mock-db';
+  let D = null;
+  try { D = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  D = D || { families: {}, profiles: {}, items: {}, reservations: {}, users: {}, session: null, fails: {} };
+  const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} };
+  const subs = new Set();
+  const tick = () => new Promise(r => setTimeout(r, 5));
+  const deny = () => { throw new Error('permission-denied'); };
+  const bag = (kind, fid) => (D[kind][fid] = D[kind][fid] || {});
+  const all = (kind, fid) => Object.values(bag(kind, fid)).map(x => ({ ...x }));
+  const member = (fid, me) => !!bag('profiles', fid)[me] && !bag('profiles', fid)[me].managed;
+  const manages = (fid, me, ownerId) => ownerId === me || !!bag('profiles', fid)[ownerId]?.managed;
+  const emit = () => { persist(); subs.forEach(f => f()); };
+  const nid = () => uid() + uid();
+  return {
+    async familyExists(fid) { await tick(); return !!D.families[fid]; },
+    async listProfiles(fid) { await tick(); return all('profiles', fid); },
+    async waitForAuth() { await tick(); return D.session; },
+    async signUp({ fid, code, pin, profile, newFamily }) {
+      await tick();
+      const login = nid(), me = nid();
+      if (newFamily && !D.families[fid]) D.families[fid] = { createdAt: Date.now(), createdBy: me };
+      if (!D.families[fid]) deny();
+      D.users[login] = { pw: passwordFor(code, pin), uid: me }; D.session = me;
+      bag('profiles', fid)[me] = { id: me, name: profile.name, avatar: profile.avatar, photo: profile.photo || null, managed: false, login, createdAt: Date.now() };
+      emit(); return me;
+    },
+    async signIn({ profile, code, pin }) {
+      await tick();
+      const u = D.users[profile.login], f = D.fails[profile.login] || 0;
+      if (f >= 10) throw new Error('too-many');
+      if (!u || u.pw !== passwordFor(code, pin)) { D.fails[profile.login] = f + 1; persist(); throw new Error('wrong'); }
+      D.fails[profile.login] = 0; D.session = u.uid; persist(); return u.uid;
+    },
+    async signOut() { await tick(); D.session = null; persist(); },
+    async checkPin({ code, profile, pin }) { await tick(); if (D.users[profile.login]?.pw !== passwordFor(code, pin)) throw new Error('wrong'); },
+    async changePin({ code, newPin }) {
+      await tick();
+      const u = Object.values(D.users).find(x => x.uid === D.session); if (!u) deny();
+      u.pw = passwordFor(code, newPin); persist();
+    },
+    subscribe(fid, me, on) {
+      const f = () => {
+        if (D.session !== me) return;
+        on.profiles(all('profiles', fid));
+        on.items(all('items', fid));
+        const byOwner = {};
+        all('profiles', fid).forEach(p => { if (p.id !== me) byOwner[p.id] = []; });
+        // Same as the server rules: my own reservations are never sent to me
+        all('reservations', fid).forEach(r => { if (r.ownerId !== me && byOwner[r.ownerId]) byOwner[r.ownerId].push(r); });
+        Object.entries(byOwner).forEach(([o, list]) => on.reservations(o, list));
+      };
+      subs.add(f); setTimeout(f, 0);
+      return () => subs.delete(f);
+    },
+    async addProfile(fid, data) {
+      await tick(); const me = D.session;
+      if (!member(fid, me) || data.managed !== true) deny();
+      const id = nid(); bag('profiles', fid)[id] = { ...clean(data), id }; emit(); return id;
+    },
+    async updateProfile(fid, id, data) {
+      await tick(); const me = D.session, p = bag('profiles', fid)[id];
+      if (!p || !(id === me || (member(fid, me) && p.managed))) deny();
+      if ('managed' in data || 'login' in data) deny();
+      Object.assign(p, clean(data)); emit();
+    },
+    async deleteProfile(fid, id, itemIds) {
+      await tick(); const me = D.session, p = bag('profiles', fid)[id];
+      if (!p || !p.managed || !member(fid, me)) deny();
+      itemIds.forEach(i => delete bag('items', fid)[i]); delete bag('profiles', fid)[id]; emit();
+    },
+    async addItem(fid, data) {
+      await tick(); const me = D.session;
+      if (!member(fid, me) || !manages(fid, me, data.ownerId)) deny();
+      const id = nid(); bag('items', fid)[id] = { ...clean(data), id }; emit(); return id;
+    },
+    async updateItem(fid, id, data) {
+      await tick(); const me = D.session, it = bag('items', fid)[id];
+      if (!it || !member(fid, me) || !manages(fid, me, it.ownerId) || ('ownerId' in data && data.ownerId !== it.ownerId)) deny();
+      Object.assign(it, clean(data)); emit();
+    },
+    async reserve(fid, item, me) {
+      await tick(); const it = bag('items', fid)[item.id];
+      if (!member(fid, me) || !it || it.ownerId === me || it.removed) deny();
+      if (bag('reservations', fid)[item.id]) throw new Error('already');
+      bag('reservations', fid)[item.id] = { id: item.id, ownerId: it.ownerId, by: me, at: Date.now() }; emit();
+    },
+    async release(fid, itemId) {
+      await tick(); const r = bag('reservations', fid)[itemId];
+      if (!r || r.by !== D.session) deny();
+      delete bag('reservations', fid)[itemId]; emit();
+    },
+    // Test helper: lets a test act as someone else in the same browser
+    _db: () => D, _emit: emit,
+  };
+}
+
+// ================= Session =================
+let backend = null, stopSync = null, whoList = [];
+const resByOwner = {};
+function mergeReservations() {
+  S.res = {};
+  Object.values(resByOwner).flat().forEach(r => { S.res[r.id] = r; });
+  S.items.forEach(i => { i.reservedBy = S.res[i.id]?.by || null; });
+}
+let renderQueued = false;
+function queueRender() { if (renderQueued) return; renderQueued = true; requestAnimationFrame(() => { renderQueued = false; render(); }); }
+function startSession(me) {
+  stopSync?.();
+  S.me = me;
+  if (!S.selected) S.selected = me;
+  save();
+  stopSync = backend.subscribe(DEV.fid, me, {
+    profiles: list => { S.profiles = list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); mergeReservations(); queueRender(); },
+    items: list => { S.items = list; mergeReservations(); queueRender(); },
+    reservations: (owner, list) => { resByOwner[owner] = list; mergeReservations(); queueRender(); },
+    error: e => { console.error(e); toast('La synchronisation a échoué. Vérifie ta connexion internet.'); },
+  });
+}
+function endSession() {
+  stopSync?.(); stopSync = null;
+  S.me = null; S.profiles = []; S.items = []; S.res = {};
+  Object.keys(resByOwner).forEach(k => delete resByOwner[k]);
+  render();
+}
+function errorText(e) {
+  const m = String(e?.message || e?.code || '');
+  if (m.includes('permission')) return "Tu n'as pas le droit de faire ça.";
+  if (m.includes('offline') || m.includes('network') || m.includes('unavailable')) return 'Pas de connexion internet. Réessaie dans un instant.';
+  return "Ça n'a pas marché. Réessaie dans un instant.";
+}
+async function run(promise, okMessage) {
+  try { const r = await promise; if (okMessage) toast(okMessage); return r; }
+  catch (e) { console.error(e); toast(errorText(e)); return undefined; }
+}
+// ================= Render =================
+function render() { renderWho(); renderFamily(); renderBanner(); renderMain(); }
+
+function renderWho() {
+  const v = viewer(), box = $('#whoami');
+  if (!v) { box.innerHTML = ''; return; }
+  box.innerHTML = `<button class="invite" data-act="copy-invite" title="Envoyer le lien et le code famille"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg><span>Inviter la famille</span></button>
+    <span class="lbl">Tu es</span>
+    <button class="who" data-act="me" title="Modifier mon prénom ou mon avatar">${face(v, 'sm')}<span>${esc(v.name)}</span></button>`;
+}
+function renderFamily() {
+  const sel = selected(), v = viewer();
+  $('#family').innerHTML = S.profiles.map(p => `
+    <button class="fam ${sel && p.id === sel.id ? 'on' : ''}" data-act="select" data-id="${p.id}" role="tab" aria-selected="${!!sel && p.id === sel.id}">
+      <span class="ring">${face(p, 'md')}</span>
+      ${v && p.id === v.id ? '<span class="you">Moi</span>' : ''}
+      <span>${esc(p.name)}</span>
+    </button>`).join('') + `
+    <button class="fam" data-act="new-relative"><span class="add-ring" aria-hidden="true">+</span><span>Un proche</span></button>`;
+}
+let installEvt = null;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+function inviteText() {
+  return `Rejoins notre liste de cadeaux KDO : ${location.origin}${location.pathname.replace(/index\.html$/, '')}\nCode famille : ${DEV.code}`;
+}
+function renderBanner() {
+  const b = $('#banner');
+  const v = viewer();
+  if (!v) { b.hidden = true; return; }
+  const parts = [];
+  const others = S.profiles.filter(p => !p.managed && p.id !== S.me).length;
+  if (!DEV.inviteHidden && others === 0) parts.push(`<div class="banner-in"><p><b>Invite ta famille.</b> Envoie-leur le lien de KDO et le code famille <b>${esc(DEV.code)}</b>. Chacun crée son profil sur son téléphone ou son ordi. Pour un bébé, un enfant ou un animal, utilise « Un proche ».</p>
+    <div class="banner-actions"><button class="btn small ghost" data-act="hide-invite">Plus tard</button><button class="btn small" data-act="copy-invite">Copier l'invitation</button></div></div>`);
+  if (!isStandalone() && !DEV.installHidden) {
+    if (installEvt) parts.push(`<div class="banner-in"><p><b>Installe KDO</b> sur cet appareil pour l'ouvrir comme une vraie appli, depuis une icône.</p>
+      <div class="banner-actions"><button class="btn small ghost" data-act="hide-install">Non merci</button><button class="btn small" data-act="install">Installer</button></div></div>`);
+    else if (isIOS()) parts.push(`<div class="banner-in"><p><b>Installe KDO sur ton iPhone :</b> touche le bouton Partager de Safari (le carré avec une flèche), puis « Sur l'écran d'accueil ».</p>
+      <div class="banner-actions"><button class="btn small ghost" data-act="hide-install">OK</button></div></div>`);
+  }
+  b.hidden = !parts.length;
+  b.innerHTML = parts.join('<div style="height:10px"></div>');
+}
+function thumbHTML(it) {
+  if (it.photo) return `<img src="${it.photo}" alt="">`;
+  const [a, b] = THUMB_PALETTES[hash(it.title || '?') % THUMB_PALETTES.length];
+  const letter = ((it.title || '').trim()[0] || '?').toUpperCase();
+  return `<div class="gen" style="--a:${a};--b:${b}"><span>${esc(letter)}</span></div>`;
+}
+function cardHTML(it, i, settled) {
+  const v = viewer(), owner = prof(it.ownerId), isOwner = v && v.id === it.ownerId;
+  const manage = canManage(owner);
+  // The list owner never gets any reservation information
+  const mine = !isOwner && it.reservedBy === v?.id;
+  const taken = !isOwner && !!it.reservedBy && it.reservedBy !== v?.id;
+  const by = taken ? prof(it.reservedBy) : null;
+  const dom = domainOf(it.url);
+  let reserve = '';
+  if (!isOwner) {
+    if (taken) reserve = `<button class="reserve" disabled>${face(by, 'xs')}<span>Réservé par ${esc(by ? by.name : "quelqu'un")}</span></button>`;
+    else reserve = `<button class="reserve" data-act="toggle" data-id="${it.id}" aria-pressed="${mine}"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span>${mine ? "Tu t'en occupes" : "Je m'en occupe"}</span></button>`;
+  }
+  return `<article class="card ${mine ? 'mine' : ''} ${taken ? 'taken' : ''} ${settled ? 'settled' : ''}" style="--i:${i}" data-card="${it.id}">
+    <div class="thumb">${thumbHTML(it)}${dom ? `<span class="domain">${esc(dom)}</span>` : ''}${mine ? '<span class="ribbon">Réservé</span>' : ''}</div>
+    <div class="c-body">
+      ${it.price ? `<span class="price">${esc(it.price)}</span>` : ''}
+      <h3>${esc(it.title)}</h3>
+      ${it.note ? `<p class="c-note">${esc(it.note)}</p>` : ''}
+      <div class="c-actions">
+        ${it.url ? `<a class="c-link" href="${esc(it.url)}" target="_blank" rel="noopener">Voir l'article ↗</a>` : ''}
+        ${manage ? `<button class="icon-btn" data-act="edit-item" data-id="${it.id}" aria-label="Modifier ${esc(it.title)}">Modifier</button><button class="icon-btn got" data-act="got" data-id="${it.id}">Reçu ✓</button>` : ''}
+      </div>
+    </div>
+    ${reserve}
+  </article>`;
+}
+const GIFT = `<svg class="gift" viewBox="0 0 84 84" aria-hidden="true"><rect x="12" y="34" width="60" height="42" rx="8" fill="var(--brand)"/><rect x="8" y="24" width="68" height="16" rx="6" fill="var(--sun)"/><rect x="37" y="24" width="10" height="52" fill="var(--grape)"/><path d="M42 24 C30 6 16 14 26 22 C30 25 38 24 42 24 C46 24 54 25 58 22 C68 14 54 6 42 24Z" fill="var(--mint)"/></svg>`;
+function subline(sel) {
+  const v = viewer(), all = S.items.filter(i => i.ownerId === sel.id && !i.removed);
+  if (v.id === sel.id) return `${pl(all.length, 'envie', 'envies')} dans ta liste · Ce que les autres prennent reste une surprise`;
+  const r = all.filter(i => i.reservedBy).length;
+  return `${pl(all.length, 'envie', 'envies')} · ${pl(r, 'déjà réservée', 'déjà réservées')}${sel.managed ? ' · Liste gérée par la famille' : ''}`;
+}
+let lastAnimated = null;
+function renderMain() {
+  const m = $('#main');
+  if (!viewer()) { m.innerHTML = ''; return; }
+  const sel = selected(), v = viewer(), isOwner = v.id === sel.id, manage = canManage(sel);
+  // Cards pop in only when a list is first opened, not on every live update
+  const settled = lastAnimated === sel.id; lastAnimated = sel.id;
+  const list = S.items.filter(i => i.ownerId === sel.id && !i.removed).sort((a, b) => b.createdAt - a.createdAt);
+  // Removed items that I had reserved: tell me so I don't buy them
+  const notices = isOwner ? [] : S.items.filter(i => i.ownerId === sel.id && i.removed && i.reservedBy === v.id);
+  const title = isOwner ? 'Mes envies' : `Les envies ${esc(ofName(sel.name))}`;
+  m.innerHTML = `
+    <div class="list-head">
+      ${face(sel, 'lg')}
+      <div class="lh-text"><h1>${title}</h1><p id="subline">${esc(subline(sel))}</p></div>
+      <div class="lh-actions">
+        ${manage ? `<button class="btn ghost" data-act="edit-profile" data-id="${sel.id}">${isOwner ? 'Mon avatar' : 'Modifier le profil'}</button>
+        <button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter une envie' : 'Ajouter une idée'}</button>` : ''}
+      </div>
+    </div>
+    ${notices.length ? `<div class="notices">${notices.map(it => {
+      const by = prof(it.removedBy);
+      return `<div class="notice"><p><b>${esc(it.title)}</b> a été retiré de la liste${by ? ' par ' + esc(by.name) : ''} : reçu ou déjà acheté. Tu l'avais réservé, alors ne l'achète pas (ou garde bien le ticket).</p><button class="btn small ghost" data-act="ack" data-id="${it.id}">Compris</button></div>`;
+    }).join('')}</div>` : ''}
+    ${list.length ? `<div class="grid">${list.map((it, i) => cardHTML(it, i, settled)).join('')}</div>`
+      : `<div class="empty">${GIFT}<h2>${isOwner ? 'Ta liste est vide' : "Rien pour l'instant"}</h2><p>${isOwner ? "Colle le lien d'un article ou écris simplement ce qui te ferait plaisir." : manage ? `Ajoute des idées pour ${esc(sel.name)}.` : `${esc(sel.name)} n'a encore rien ajouté.`}</p>${manage ? `<button class="btn" data-act="new-item">+ ${isOwner ? 'Ajouter ma première envie' : 'Ajouter une idée'}</button>` : ''}</div>`}`;
+}
+
+// ================= Profile modal =================
+let pd = null;
+const PTABS = [['perso','Personnage'],['cheveux','Cheveux'],['humeur','Humeur'],['chapeau','Chapeau'],['lunettes','Lunettes'],['accessoire','Accessoire']];
+function randomAvatar(kind, bg) {
+  const human = HUMAN.includes(kind);
+  const hairs = HAIR_STYLES.map(h => h[0]).filter(h => h !== 'touffe');
+  const wear = list => Math.random() < .5 ? list[0][0] : pick(list.slice(1))[0];
+  return {
+    ...AV_DEFAULT, kind, bg: bg || pick(BGS), skin: pick(SKINS), shirt: pick(SHIRTS), coat: pick(COATS),
+    hairColor: kind === 'senior' ? pick(['#C9C5C0', '#E8E4DE', '#8A8580']) : pick(HAIRS),
+    hair: kind === 'bebe' ? pick(['touffe', 'chauve', 'couettes', 'boucles']) : pick(hairs),
+    beard: human && !['bebe', 'enfant'].includes(kind) && Math.random() < .3 ? pick(BEARDS.slice(1))[0] : 'aucune',
+    emo: pick(EMOS)[0], hat: wear(HATS), glasses: wear(GLASSES), acc: wear(ACCS),
+  };
+}
+// flow: 'onboard' (create my own profile, once), 'relative' (add a baby, kid, pet or relative without the app), 'edit'
+const SELF_KINDS = ['enfant', 'ado', 'adulte', 'senior'];
+function openProfile(flow, id) {
+  if (flow === 'onboard' && S.me) return;
+  const p = id ? prof(id) : null;
+  if (flow === 'edit' && (!p || !canManage(p))) return;
+  if (p) pd = JSON.parse(JSON.stringify(p));
+  else pd = { id: null, name: '', photo: null, avatar: randomAvatar(flow === 'relative' ? 'enfant' : 'adulte') };
+  pd.avatar = { ...AV_DEFAULT, ...pd.avatar };
+  pd.mode = pd.photo ? 'photo' : 'avatar';
+  pd.tab = 'perso';
+  pd.flow = flow;
+  pd.self = flow === 'onboard' || (p && p.id === S.me);
+  pd.lock = flow === 'onboard';
+  const title = flow === 'onboard' ? 'Bienvenue sur KDO !' : flow === 'relative' ? 'Ajouter un proche' : pd.self ? 'Mon profil' : 'Modifier le profil';
+  const intro = flow === 'onboard'
+    ? `<p class="hint intro">Crée ton profil, puis choisis ton code secret à 6 chiffres. Avec ce code, tu retrouves ton profil sur n'importe quel ordi ou téléphone. Sans lui, personne ne peut entrer à ta place : c'est ce qui garde les cadeaux secrets.</p>`
+    : flow === 'relative'
+    ? `<p class="hint intro">Pour un bébé, un enfant, un animal ou un proche qui n'a pas l'appli. Toute la famille pourra ajouter des idées dans sa liste. Les adultes qui ont l'appli créent leur profil eux-mêmes, sur leur appareil.</p>`
+    : '';
+  const canDelete = p && !pd.self && p.managed;
+  showModal(`<h2>${title}</h2>${intro}
+    <div class="pf">
+      <div class="pf-side"><div class="pf-preview" id="ppreview"></div><button class="btn small ghost" data-act="prandom">Au hasard</button></div>
+      <div class="pf-fields">
+        <div class="field"><label for="pname">Prénom</label><input type="text" id="pname" maxlength="24" placeholder="${pd.self ? 'Ton prénom' : 'Ex. Jade, Nino, Rio'}" value="${esc(pd.name)}"></div>
+        <div class="seg" id="pseg"></div>
+      </div>
+    </div>
+    <div id="pbody"></div>
+    <div class="m-foot">${canDelete ? `<button class="btn danger" data-act="pdelete">Supprimer le profil</button>` : ''}${pd.self && flow === 'edit' ? '<button class="btn danger" data-act="pchangepin">Changer mon code</button><button class="btn danger" data-act="logout">Me déconnecter</button>' : ''}<span class="sp"></span>${pd.lock ? '<button class="btn ghost" data-act="towho">Retour</button>' : '<button class="btn ghost" data-act="close">Annuler</button>'}<button class="btn" data-act="psave">${flow === 'onboard' ? 'Suivant' : 'Enregistrer'}</button></div>`, pd.lock);
+  refreshProfile();
+}
+function swatches(key, list, label) {
+  return `<div class="group"><span class="glabel">${label}</span><div class="opts">${list.map(c => `<button class="sw ${pd.avatar[key] === c ? 'on' : ''}" style="background:${c}" data-act="pset" data-k="${key}" data-v="${c}" aria-label="${label} ${c}" aria-pressed="${pd.avatar[key] === c}"></button>`).join('')}</div></div>`;
+}
+function tiles(key, list, live) {
+  const hot = t => t && t.some(x => NOW.includes(x));
+  const sorted = list.slice().sort((a, b) => {
+    if (a[0] === list[0][0] && list[0][2]) return -1;
+    if (b[0] === list[0][0] && list[0][2]) return 1;
+    return (hot(b[2]) ? 1 : 0) - (hot(a[2]) ? 1 : 0);
+  });
+  return `<div class="tiles">${sorted.map(([v, label, tags]) => {
+    const on = pd.avatar[key] === v;
+    const tag = tags && tags.length ? `<span class="tg ${hot(tags) ? 'hot' : ''}">${hot(tags) ? 'De saison' : MOMENT_LABEL[tags[0]]}</span>` : '';
+    return `<button class="tile ${on ? 'on' : ''} ${live ? '' : 'still'}" data-act="pset" data-k="${key}" data-v="${v}" aria-pressed="${on}"><span class="av">${avatarSVG({ ...pd.avatar, [key]: v })}</span><span>${label}</span>${tag}</button>`;
+  }).join('')}</div>`;
+}
+function refreshProfile() {
+  const a = pd.avatar, human = HUMAN.includes(a.kind);
+  if (!human && pd.tab === 'cheveux') pd.tab = 'perso';
+  $('#ppreview').innerHTML = face({ photo: pd.mode === 'photo' ? pd.photo : null, avatar: a });
+  $('#pseg').innerHTML = `<button data-act="pmode" data-v="avatar" class="${pd.mode === 'avatar' ? 'on' : ''}">Avatar</button><button data-act="pmode" data-v="photo" class="${pd.mode === 'photo' ? 'on' : ''}">Photo</button>`;
+  const body = $('#pbody');
+  if (pd.mode === 'photo') {
+    body.innerHTML = `<div class="drop">${pd.photo ? 'Elle est bien ! Choisis un autre fichier pour la remplacer.' : 'Choisis une photo sur ton ordi ou ton téléphone. Elle sera recadrée en rond.'}
+      <label class="filebtn"><input type="file" id="pphoto" accept="image/*">${pd.photo ? 'Changer la photo' : 'Choisir une photo'}</label>
+      ${pd.photo ? '<button class="linkbtn" data-act="pnophoto">Retirer la photo</button>' : ''}</div>`;
+    return;
+  }
+  const tabs = PTABS.filter(([k]) => human || k !== 'cheveux');
+  const nowLine = `<p class="now">En ce moment : <b>${NOW.map(t => MOMENT_LABEL[t]).join(' · ')}</b></p>`;
+  let panel = '';
+  switch (pd.tab) {
+    case 'perso':
+      panel = `<div class="groups">
+        <div class="group"><span class="glabel">${pd.self ? 'Tu es' : 'Qui est-ce'}</span>${tiles('kind', pd.self ? KINDS.filter(k => SELF_KINDS.includes(k[0])) : KINDS, false)}</div>
+        ${human ? swatches('skin', SKINS, 'Couleur de peau') : ''}
+        ${human ? swatches('shirt', SHIRTS, 'Tenue') : ''}
+        ${a.kind === 'chat' ? swatches('coat', COATS, 'Pelage') : ''}
+        ${human && !['bebe', 'enfant'].includes(a.kind) ? `<div class="group"><span class="glabel">Barbe</span>${tiles('beard', BEARDS, false)}</div>` : ''}
+        ${swatches('bg', BGS, 'Fond')}
+      </div>`; break;
+    case 'cheveux':
+      panel = `<div class="groups">${swatches('hairColor', HAIRS.concat(['#C9C5C0']), 'Couleur')}<div class="group"><span class="glabel">Coiffure</span>${tiles('hair', HAIR_STYLES, false)}</div></div>`; break;
+    case 'humeur':
+      panel = `<div class="groups"><p class="hint">Change d'humeur quand tu veux : ton personnage bouge avec.</p>${tiles('emo', EMOS, true)}</div>`; break;
+    case 'chapeau': panel = `<div class="groups">${nowLine}${tiles('hat', HATS, false)}</div>`; break;
+    case 'lunettes': panel = `<div class="groups">${tiles('glasses', GLASSES, false)}</div>`; break;
+    case 'accessoire': panel = `<div class="groups">${nowLine}${tiles('acc', ACCS, false)}</div>`; break;
+  }
+  body.innerHTML = `<div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${pd.tab === k}" class="${pd.tab === k ? 'on' : ''}" data-act="ptab" data-v="${k}">${l}</button>`).join('')}</div>${panel}`;
+}
+function setAvatar(k, v) {
+  const a = pd.avatar;
+  a[k] = v;
+  if (k === 'kind') {
+    if (v === 'bebe' && !['touffe', 'chauve', 'couettes', 'boucles'].includes(a.hair)) a.hair = 'touffe';
+    if (v === 'senior' && !['#B9B6B3', '#C9C5C0', '#E8E4DE', '#8A8580'].includes(a.hairColor)) a.hairColor = '#C9C5C0';
+  }
+}
+function saveProfile() {
+  const name = ($('#pname').value || '').trim();
+  if (!name) { toast('Donne un prénom à ce profil.'); $('#pname').focus(); return; }
+  if (pd.mode === 'photo' && !pd.photo) { toast("Choisis une photo, ou reviens sur l'avatar."); return; }
+  if (pd.self && !SELF_KINDS.includes(pd.avatar.kind)) pd.avatar.kind = 'adulte';
+  // Only name, photo and avatar can change. Who the profile belongs to never does.
+  const data = { name, photo: pd.mode === 'photo' ? pd.photo : null, avatar: pd.avatar };
+  const flow = pd.flow, id = pd.id;
+  if (flow === 'onboard') {
+    if (S.me) return;
+    // The profile is only created once the 6-digit code is chosen and confirmed
+    closeModal(true); openPin({ mode: 'create', profile: data });
+    return;
+  }
+  closeModal(true);
+  if (flow === 'edit') { run(backend.updateProfile(DEV.fid, id, data), 'Profil enregistré'); return; }
+  run(backend.addProfile(DEV.fid, { ...data, managed: true, createdBy: S.me, createdAt: Date.now() }), `${name} rejoint la famille`)
+    .then(newId => { if (newId) { S.selected = newId; save(); queueRender(); } });
+}
+function deleteProfile(btn) {
+  const id = pd.id, p = prof(id);
+  if (!p || id === S.me || !p.managed) return;
+  if (!btn.classList.contains('armed')) { btn.classList.add('armed'); btn.textContent = 'Confirmer la suppression'; return; }
+  const itemIds = S.items.filter(i => i.ownerId === id).map(i => i.id);
+  closeModal(true);
+  if (S.selected === id) { S.selected = S.me; save(); }
+  run(backend.deleteProfile(DEV.fid, id, itemIds), 'Profil supprimé');
+}
+
+// ================= Item modal =================
+let idr = null;
+function openItem(id) {
+  const it = id ? S.items.find(i => i.id === id) : null;
+  idr = it ? { ...it } : { id: null, ownerId: selected().id, title: '', url: '', price: '', note: '', photo: null };
+  idr.tab = it && !it.url ? 'name' : 'link';
+  idr.autoTitle = !it;
+  renderItemModal();
+}
+function renderItemModal() {
+  const owner = prof(idr.ownerId), isOwner = viewer().id === idr.ownerId;
+  const title = idr.id ? "Modifier l'envie" : (isOwner ? 'Nouvelle envie' : `Une idée pour ${esc(owner.name)}`);
+  showModal(`<h2>${title}</h2>
+    <div class="seg"><button data-act="itab" data-v="link" class="${idr.tab === 'link' ? 'on' : ''}">Coller un lien</button><button data-act="itab" data-v="name" class="${idr.tab === 'name' ? 'on' : ''}">Écrire un nom</button></div>
+    <div class="it-grid">
+      <div class="stack"><div class="it-thumb" id="ithumb"></div>
+        <label class="filebtn"><input type="file" id="iphoto" accept="image/*">${idr.photo ? 'Changer la photo' : '+ Ajouter ta photo'}</label>
+        ${idr.photo ? '<button class="linkbtn" data-act="inophoto">Retirer la photo</button>' : ''}
+      </div>
+      <div class="stack">
+        ${idr.tab === 'link' ? `<div class="field"><label for="iurl">Lien de l'article</label><input type="url" id="iurl" placeholder="https://www.boutique.fr/l-article-qui-te-plait" value="${esc(idr.url)}"><p class="hint">Dans l'appli de bureau, KDO ira chercher la vraie photo et le nom sur la page. Ici, l'aperçu lit seulement le nom dans l'adresse.</p></div>` : ''}
+        <div class="field"><label for="ititle">${idr.tab === 'link' ? 'Nom' : 'Qu’est-ce qui te ferait plaisir ?'}</label><input type="text" id="ititle" maxlength="90" placeholder="Ex. Un grand plaid tout doux" value="${esc(idr.title)}"></div>
+        <div class="field"><label for="iprice">Prix (facultatif)</label><input type="text" id="iprice" maxlength="16" placeholder="40 €" value="${esc(idr.price)}"></div>
+        <div class="field"><label for="inote">Précisions (taille, couleur, où l'acheter…)</label><textarea id="inote" maxlength="240" placeholder="Taille M, toutes les couleurs sauf le jaune">${esc(idr.note)}</textarea></div>
+      </div>
+    </div>
+    <div class="m-foot">${idr.id ? '<button class="btn danger" data-act="idelete">Retirer de la liste</button>' : ''}<span class="sp"></span><button class="btn ghost" data-act="close">Annuler</button><button class="btn" data-act="isave">${idr.id ? 'Enregistrer' : 'Ajouter à la liste'}</button></div>`);
+  refreshThumb();
+}
+function refreshThumb() {
+  const t = $('#ithumb'); if (!t) return;
+  const dom = domainOf(normalizeUrl(idr.url) || '');
+  t.innerHTML = thumbHTML({ title: idr.title || '?', photo: idr.photo }) + (dom ? `<span class="domain">${esc(dom)}</span>` : '');
+}
+function saveItem(btn) {
+  let url = '';
+  if ((idr.url || '').trim()) {
+    url = normalizeUrl(idr.url);
+    if (!url) { toast('Ce lien ne semble pas valide. Vérifie qu’il commence par https://'); return; }
+  }
+  const title = (idr.title || '').trim() || (url ? titleFromUrl(url) : '');
+  if (!title) { toast('Donne un nom à cette envie.'); $('#ititle')?.focus(); return; }
+  const data = { title, url, price: (idr.price || '').trim(), note: (idr.note || '').trim(), photo: idr.photo || null };
+  const id = idr.id, ownerId = idr.ownerId;
+  if (!id) { const r = btn.getBoundingClientRect(); burst(r.left + r.width / 2, r.top, 40); }
+  closeModal(true);
+  if (id) run(backend.updateItem(DEV.fid, id, data), 'Envie enregistrée');
+  else run(backend.addItem(DEV.fid, { ...data, ownerId, createdBy: S.me, createdAt: Date.now(), removed: false, removedBy: null, removedAt: null }), 'Ajouté à la liste');
+}
+// Items are never deleted: they're marked as removed, so whoever reserved one gets told
+async function removeItem(id) {
+  const it = S.items.find(i => i.id === id); if (!it) return;
+  const ok = await run(backend.updateItem(DEV.fid, id, { removed: true, removedBy: S.me, removedAt: Date.now() }).then(() => true));
+  if (ok) toast('Retiré de la liste', 'Annuler', () => run(backend.updateItem(DEV.fid, id, { removed: false, removedBy: null, removedAt: null })));
+}
+
+// ================= Modal / toast =================
+let lastFocus = null;
+let modalLocked = false;
+// lock = the screen can't be dismissed (welcome, "who are you", code entry before sign-in)
+function showModal(html, lock = false) {
+  lastFocus = document.activeElement;
+  modalLocked = lock;
+  $('#panel').innerHTML = html; $('#modal').hidden = false;
+  setTimeout(() => $('#panel').querySelector('input[type=text],input[type=url]')?.focus(), 30);
+}
+function closeModal(force) {
+  if (modalLocked && !force) return;
+  modalLocked = false;
+  $('#modal').hidden = true; $('#panel').innerHTML = ''; pd = null; idr = null; pin = null; lastFocus?.focus?.();
+}
+
+// ================= Family code, "who are you", 6-digit code =================
+function openFamily() {
+  showModal(`<div class="fam-intro">${GIFT}<h2>Bienvenue sur KDO !</h2>
+    <p class="hint">Les envies de toute la famille, au même endroit. Pour commencer, tape le code de ta famille. Si tu es le premier, invente-le (au moins 6 lettres ou chiffres), puis donne-le aux autres avec le lien de l'appli.</p>
+    <div class="field" style="align-self:stretch"><label for="fcode">Code famille</label><input type="text" id="fcode" maxlength="24" placeholder="Ex. JOMIE26" autocapitalize="characters" autocomplete="off" spellcheck="false" value="${esc(DEV.pendingCode || '')}"></div>
+    <button class="btn" data-act="fsave">Continuer</button></div>`, true);
+}
+async function submitFamily(btn) {
+  const code = ($('#fcode').value || '').trim().toUpperCase().replace(/\s+/g, '');
+  if (code.length < 6) { toast('Le code famille doit faire au moins 6 caractères.'); $('#fcode').focus(); return; }
+  btn.disabled = true; btn.textContent = 'Vérification…';
+  try {
+    const fid = await familyIdFor(code);
+    if (await backend.familyExists(fid)) {
+      Object.assign(DEV, { code, fid, newFamily: false }); delete DEV.pendingCode; saveDevice();
+      closeModal(true); openWho();
+    } else {
+      DEV.pendingCode = code;
+      showModal(`<div class="fam-intro">${GIFT}<h2>Nouvelle famille ?</h2>
+        <p class="hint">Aucune famille n'utilise encore le code <b>${esc(code)}</b>. Si tu es le premier de ta famille sur KDO, crée-la. Sinon, vérifie le code avec la personne qui t'a envoyé l'appli.</p>
+        <div class="opts"><button class="btn ghost" data-act="fback">Corriger le code</button><button class="btn" data-act="fcreate" data-v="${esc(code)}" data-id="${fid}">Créer la famille</button></div></div>`, true);
+    }
+  } catch (e) {
+    console.error(e);
+    toast('Impossible de vérifier le code. Vérifie ta connexion internet.');
+    btn.disabled = false; btn.textContent = 'Continuer';
+  }
+}
+async function openWho() {
+  showModal(`<h2>Qui es-tu ?</h2><p class="hint intro">Touche ton avatar, puis tape ton code à 6 chiffres.</p>
+    <div class="who-grid" id="whogrid"><p class="hint">Chargement…</p></div>
+    <p class="hint" style="margin-top:16px">Famille ${esc(DEV.code)} · <button class="linkbtn" data-act="changefam">Changer de famille</button></p>`, true);
+  try { whoList = (await backend.listProfiles(DEV.fid)).filter(p => !p.managed).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); }
+  catch (e) { console.error(e); whoList = []; toast('Impossible de charger la famille. Vérifie ta connexion internet.'); }
+  const g = $('#whogrid'); if (!g) return;
+  g.innerHTML = whoList.map(p => `<button class="who-tile" data-act="pick" data-id="${p.id}">${face(p, 'md')}<span>${esc(p.name)}</span></button>`).join('') +
+    `<button class="who-tile" data-act="newme"><span class="add-ring dark" aria-hidden="true">+</span><span>C'est ma première fois</span></button>`;
+}
+let pin = null;
+const PIN_TEXT = {
+  login: ['Bonjour {n} !', 'Tape ton code à 6 chiffres.'],
+  verify: ['Ton code actuel', "D'abord, tape ton code actuel."],
+  create: ['Choisis ton code secret', "6 chiffres faciles à retenir pour toi, mais pas pour les autres. Il te servira sur un nouvel ordi ou un nouveau téléphone."],
+  confirm: ['Encore une fois', "Tape-le une deuxième fois, pour être sûr qu'il n'y a pas de faute."],
+  change: ['Ton nouveau code', '6 chiffres.'],
+  'change-confirm': ['Encore une fois', 'Tape ton nouveau code une deuxième fois.'],
+};
+function openPin(state) {
+  pin = { ...state, value: '', busy: false };
+  const p = state.profile || prof(state.pid);
+  const [t, sub] = PIN_TEXT[state.mode];
+  const back = state.mode === 'login' ? 'Retour' : ['verify', 'change', 'change-confirm'].includes(state.mode) ? 'Annuler' : '';
+  showModal(`<div class="pin-wrap">${face(p, 'lg')}<h2>${esc(t.replace('{n}', p.name))}</h2><p class="hint">${sub}</p>
+    <div class="dots" id="dots" aria-label="Code, 0 chiffre sur 6">${'<span></span>'.repeat(6)}</div>
+    <p class="pin-msg" id="pinmsg" role="alert"></p>
+    <div class="pad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button data-act="pk" data-v="${n}">${n}</button>`).join('')}
+      <button class="txt" data-act="pback">${back}</button><button data-act="pk" data-v="0">0</button><button class="txt" data-act="pdel" aria-label="Effacer">⌫</button></div></div>`, !S.me);
+}
+function updateDots() {
+  const d = $('#dots'); if (!d || !pin) return;
+  [...d.children].forEach((s, i) => s.classList.toggle('on', i < pin.value.length));
+  d.setAttribute('aria-label', `Code, ${pin.value.length} chiffre${pin.value.length > 1 ? 's' : ''} sur 6`);
+}
+function pinKey(k) {
+  if (!pin || pin.busy || pin.value.length >= 6) return;
+  pin.value += k; updateDots();
+  if (pin.value.length === 6) { pin.busy = true; setTimeout(submitPin, 140); }
+}
+async function submitPin() {
+  const st = pin; if (!st) return;
+  const v = st.value;
+  const msg = t => { const m = $('#pinmsg'); if (m) m.textContent = t; };
+  const fail = (text, then) => {
+    if (pin !== st) return;
+    const d = $('#dots'); if (d) { d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake'); }
+    msg(text); st.value = ''; st.busy = false; setTimeout(updateDots, 250);
+    if (then) { st.busy = true; setTimeout(then, 1100); }
+  };
+  if (st.mode === 'login') {
+    const p = st.profile, L = S.locks[p.id] || { fails: 0, until: 0 };
+    if (L.until > Date.now()) return fail(`Trop d'essais. Réessaie dans ${Math.ceil((L.until - Date.now()) / 1000)} s.`);
+    msg('Un instant…');
+    try {
+      const me = await backend.signIn({ profile: p, code: DEV.code, pin: v });
+      delete S.locks[p.id]; S.selected = me; save();
+      closeModal(true); startSession(me); toast(`Content de te revoir, ${p.name} !`);
+    } catch (e) {
+      const r = e.message;
+      if (r === 'wrong') {
+        L.fails++;
+        if (L.fails >= 5) { L.until = Date.now() + 30000; L.fails = 0; }
+        S.locks[p.id] = L; save();
+        return fail(L.until > Date.now() ? "Trop d'essais. Attends 30 secondes." : "Ce n'est pas le bon code.");
+      }
+      if (r === 'too-many') return fail("Trop d'essais. Attends quelques minutes avant de réessayer.");
+      return fail('Pas de connexion. Vérifie internet et réessaie.');
+    }
+    return;
+  }
+  if (st.mode === 'verify') {
+    msg('Un instant…');
+    try { await backend.checkPin({ code: DEV.code, profile: prof(st.pid), pin: v }); openPin({ mode: 'change', pid: st.pid }); }
+    catch (e) { fail(e.message === 'wrong' ? "Ce n'est pas le bon code." : e.message === 'too-many' ? "Trop d'essais. Attends quelques minutes." : 'Pas de connexion. Réessaie.'); }
+    return;
+  }
+  if (st.mode === 'create' || st.mode === 'change') {
+    if (/^(\d)\1{5}$/.test(v) || ['123456', '654321', '012345', '123123', '121212', '000000'].includes(v)) return fail('Trop facile à deviner. Choisis-en un autre.');
+    return openPin({ ...st, mode: st.mode === 'create' ? 'confirm' : 'change-confirm', first: v });
+  }
+  if (st.mode === 'confirm' || st.mode === 'change-confirm') {
+    const again = () => openPin({ ...st, mode: st.mode === 'confirm' ? 'create' : 'change', first: null });
+    if (v !== st.first) return fail('Les deux codes ne sont pas pareils. On recommence.', again);
+    msg('Un instant…');
+    if (st.mode === 'confirm') {
+      try {
+        const me = await backend.signUp({ fid: DEV.fid, code: DEV.code, pin: v, profile: st.profile, newFamily: !!DEV.newFamily });
+        DEV.newFamily = false; S.selected = me; save();
+        closeModal(true); startSession(me); burst(innerWidth / 2, innerHeight / 3);
+        toast(`Bienvenue ${st.profile.name} ! Retiens bien ton code.`);
+      } catch (e) { console.error(e); fail("La création n'a pas marché. Vérifie internet et réessaie.", again); }
+    } else {
+      try { await backend.changePin({ code: DEV.code, newPin: v }); closeModal(true); toast('Code changé'); }
+      catch (e) { console.error(e); fail("Le code n'a pas pu être changé. Réessaie.", again); }
+    }
+  }
+}
+let toastT;
+function toast(msg, action, fn) {
+  document.querySelector('.toast')?.remove(); clearTimeout(toastT);
+  const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status');
+  const s = document.createElement('span'); s.textContent = msg; t.appendChild(s);
+  if (action) { const b = document.createElement('button'); b.textContent = action; b.onclick = () => { fn(); t.remove(); }; t.appendChild(b); }
+  document.body.appendChild(t); toastT = setTimeout(() => t.remove(), action ? 5000 : 2600);
+}
+
+// ================= Image files =================
+function readImage(file, max, square) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onerror = rej;
+    fr.onload = () => {
+      const img = new Image();
+      img.onerror = rej;
+      img.onload = () => {
+        let sx = 0, sy = 0, sw = img.width, sh = img.height;
+        if (square) { const m = Math.min(sw, sh); sx = (sw - m) / 2; sy = (sh - m) / 2; sw = sh = m; }
+        const s = Math.min(1, max / Math.max(sw, sh));
+        const c = document.createElement('canvas'); c.width = Math.round(sw * s); c.height = Math.round(sh * s);
+        c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+        res(c.toDataURL('image/jpeg', .82));
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+// ================= Confetti =================
+const cv = $('#confetti'), ctx = cv.getContext('2d');
+let parts = [], running = false;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+function sizeCanvas() { const d = window.devicePixelRatio || 1; cv.width = innerWidth * d; cv.height = innerHeight * d; ctx.setTransform(d, 0, 0, d, 0, 0); }
+addEventListener('resize', sizeCanvas); sizeCanvas();
+function burst(x, y, n = 80) {
+  if (reduceMotion.matches) return;
+  const cs = getComputedStyle(document.documentElement);
+  const cols = ['--brand', '--sun', '--mint', '--sky', '--grape'].map(v => cs.getPropertyValue(v).trim() || '#FF3D6E');
+  for (let i = 0; i < n; i++) parts.push({ x, y, vx: (Math.random() - .5) * 12, vy: -Math.random() * 11 - 3, r: Math.random() * 6.28, vr: (Math.random() - .5) * .4, w: 6 + Math.random() * 6, h: 4 + Math.random() * 5, c: cols[i % cols.length], life: 0, round: Math.random() < .3 });
+  if (!running) { running = true; requestAnimationFrame(tick); }
+}
+function tick() {
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+  parts = parts.filter(p => p.y < innerHeight + 40 && p.life < 260);
+  for (const p of parts) {
+    p.life++; p.vy += .3; p.vx *= .985; p.vy *= .985; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c;
+    if (p.round) { ctx.beginPath(); ctx.arc(0, 0, p.w / 2.6, 0, 6.29); ctx.fill(); }
+    else { const f = Math.abs(Math.cos(p.life * .18)); ctx.fillRect(-p.w / 2, -p.h * f / 2, p.w, p.h * f + .5); }
+    ctx.restore();
+  }
+  if (parts.length) requestAnimationFrame(tick); else { running = false; ctx.clearRect(0, 0, innerWidth, innerHeight); }
+}
+
+// ================= Events =================
+document.addEventListener('click', e => {
+  if (e.target === $('#modal')) { closeModal(); return; }
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const act = el.dataset.act, id = el.dataset.id, v = el.dataset.v;
+  switch (act) {
+    case 'me': openProfile('edit', S.me); break;
+    case 'select': S.selected = id; save(); render(); break;
+    case 'hide-invite': DEV.inviteHidden = true; saveDevice(); renderBanner(); break;
+    case 'hide-install': DEV.installHidden = true; saveDevice(); renderBanner(); break;
+    case 'install': if (installEvt) { installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; renderBanner(); }); } break;
+    case 'copy-invite': {
+      const text = inviteText();
+      const copy = () => {
+        if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => toast('Invitation copiée. Colle-la dans un message à ta famille.'), () => toast(text));
+        else toast(text);
+      };
+      // On phones, open the share sheet (WhatsApp, SMS, Messenger...); elsewhere, copy the message
+      if (navigator.share && matchMedia('(pointer: coarse)').matches) {
+        navigator.share({ title: 'KDO, les envies de la famille', text }).catch(err => { if (err?.name !== 'AbortError') copy(); });
+      } else copy();
+      break;
+    }
+    case 'reload': location.reload(); break;
+    case 'fsave': submitFamily(el); break;
+    case 'fback': openFamily(); break;
+    case 'fcreate': Object.assign(DEV, { code: v, fid: id, newFamily: true }); delete DEV.pendingCode; saveDevice(); closeModal(true); openProfile('onboard'); break;
+    case 'changefam': { DEV = {}; saveDevice(); S.selected = null; S.locks = {}; openFamily(); break; }
+    case 'pick': { const p = whoList.find(x => x.id === id); if (p) openPin({ mode: 'login', profile: p }); break; }
+    case 'newme': openProfile('onboard'); break;
+    case 'towho': closeModal(true); openWho(); break;
+    case 'pk': pinKey(v); break;
+    case 'pdel': if (pin && !pin.busy) { pin.value = pin.value.slice(0, -1); updateDots(); } break;
+    case 'pback': if (!pin) break; if (pin.mode === 'login') openWho(); else closeModal(true); break;
+    case 'pchangepin': { const me = S.me; closeModal(true); openPin({ mode: 'verify', pid: me }); break; }
+    case 'logout': {
+      closeModal(true);
+      backend.signOut().catch(err => console.error(err)).finally(() => { S.selected = null; save(); endSession(); openWho(); });
+      break;
+    }
+    case 'toggle': {
+      const it = S.items.find(i => i.id === id), me = S.me;
+      if (!it || it.ownerId === me || (it.reservedBy && it.reservedBy !== me)) return;
+      el.disabled = true;
+      if (it.reservedBy === me) {
+        backend.release(DEV.fid, it.id).then(() => toast("Libéré. Quelqu'un d'autre peut le prendre."), err => { el.disabled = false; toast(errorText(err)); });
+      } else {
+        const r = el.querySelector('.box').getBoundingClientRect();
+        backend.reserve(DEV.fid, it, me).then(() => { burst(r.left + r.width / 2, r.top + r.height / 2); toast('Réservé ! Ça reste une surprise.'); },
+          err => { el.disabled = false; toast(err.message === 'already' ? "Quelqu'un vient de le réserver juste avant toi." : errorText(err)); });
+      }
+      break;
+    }
+    case 'got': removeItem(id); break;
+    case 'ack': run(backend.release(DEV.fid, id)); break;
+    case 'new-relative': openProfile('relative'); break;
+    case 'edit-profile': openProfile('edit', id); break;
+    case 'ptab': pd.tab = v; refreshProfile(); break;
+    case 'pmode': pd.mode = v; refreshProfile(); break;
+    case 'pset': setAvatar(el.dataset.k, v); refreshProfile(); break;
+    case 'prandom': pd.avatar = randomAvatar(pd.avatar.kind, pd.avatar.bg); pd.mode = 'avatar'; refreshProfile(); break;
+    case 'pnophoto': pd.photo = null; refreshProfile(); break;
+    case 'psave': saveProfile(); break;
+    case 'pdelete': deleteProfile(el); break;
+    case 'new-item': openItem(); break;
+    case 'edit-item': openItem(id); break;
+    case 'itab': idr.tab = v; if (v === 'name') idr.url = ''; renderItemModal(); break;
+    case 'inophoto': idr.photo = null; renderItemModal(); break;
+    case 'isave': saveItem(el); break;
+    case 'idelete': {
+      if (!el.classList.contains('armed')) { el.classList.add('armed'); el.textContent = 'Confirmer'; break; }
+      const iid = idr.id; closeModal(); removeItem(iid); break;
+    }
+    case 'close': closeModal(); break;
+  }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'pname' && pd) pd.name = t.value;
+  if (!idr) return;
+  if (t.id === 'iurl') {
+    idr.url = t.value;
+    if (idr.autoTitle) { idr.title = titleFromUrl(t.value); const ti = $('#ititle'); if (ti) ti.value = idr.title; }
+    refreshThumb();
+  }
+  if (t.id === 'ititle') { idr.title = t.value; idr.autoTitle = !t.value; refreshThumb(); }
+  if (t.id === 'iprice') idr.price = t.value;
+  if (t.id === 'inote') idr.note = t.value;
+});
+document.addEventListener('change', async e => {
+  const t = e.target;
+  if ((t.id === 'pphoto' || t.id === 'iphoto') && t.files && t.files[0]) {
+    try {
+      if (t.id === 'pphoto') { pd.photo = await readImage(t.files[0], 256, true); refreshProfile(); }
+      else { idr.photo = await readImage(t.files[0], 480, false); renderItemModal(); }
+    } catch (err) { toast("Ce fichier n'a pas pu être lu comme une image."); }
+  }
+});
+document.addEventListener('keydown', e => {
+  if (pin && !$('#modal').hidden) {
+    if (/^\d$/.test(e.key)) { e.preventDefault(); pinKey(e.key); return; }
+    if (e.key === 'Backspace' && !pin.busy) { e.preventDefault(); pin.value = pin.value.slice(0, -1); updateDots(); return; }
+  }
+  if (e.key === 'Escape') {
+    if (!$('#modal').hidden) closeModal();
+  }
+  if (e.key === 'Enter' && !$('#modal').hidden && e.target.matches('input[type=text],input[type=url]')) {
+    e.preventDefault();
+    $('#panel').querySelector('[data-act="isave"],[data-act="psave"],[data-act="fsave"]')?.click();
+  }
+});
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; renderBanner(); });
+addEventListener('appinstalled', () => { installEvt = null; renderBanner(); });
+
+// ================= Start =================
+async function boot() {
+  render();
+  try { backend = MOCK ? createMockBackend() : await createFirebaseBackend(); }
+  catch (e) {
+    console.error(e);
+    showModal(`<div class="fam-intro">${GIFT}<h2>Pas de connexion</h2><p class="hint">KDO n'arrive pas à joindre sa base de données. Vérifie ta connexion internet, puis réessaie.</p><button class="btn" data-act="reload">Réessayer</button></div>`, true);
+    return;
+  }
+  if (!DEV.fid) { openFamily(); return; }
+  if (DEV.newFamily) { openProfile('onboard'); return; }
+  try {
+    const me = await backend.waitForAuth();
+    if (me) {
+      const people = await backend.listProfiles(DEV.fid);
+      if (people.some(p => p.id === me && !p.managed)) { startSession(me); return; }
+      await backend.signOut();
+    }
+  } catch (e) { console.error(e); }
+  openWho();
+}
+if ('serviceWorker' in navigator && !MOCK && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(err => console.error(err));
+window.KDO = { S, dev: () => DEV, backend: () => backend, avatarSVG, KINDS, EMOS, HAIR_STYLES, HATS, GLASSES, ACCS, momentsFor };
+boot();
+</script>
