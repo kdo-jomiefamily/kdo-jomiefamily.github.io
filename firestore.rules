@@ -193,6 +193,25 @@ service cloud.firestore {
         allow delete: if member(fid) && (resource.data.by == request.auth.uid || resource.data.expiresAt < request.time.toMillis());
         allow update: if false;
       }
+
+      // Emojis and short messages left on a story. They expire with it and leave when it is deleted.
+      match /storyComments/{cid} {
+        allow read: if member(fid);
+        allow create: if member(fid)
+          && request.resource.data.keys().hasOnly(['storyId', 'by', 'text', 'createdAt', 'expiresAt'])
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.storyId is string
+          && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 120
+          && exists(/databases/$(database)/documents/families/$(fid)/stories/$(request.resource.data.storyId))
+          && request.resource.data.expiresAt == get(/databases/$(database)/documents/families/$(fid)/stories/$(request.resource.data.storyId)).data.expiresAt;
+        // My own message, any message after 48 h, any message whose story is gone, or any message on my own story
+        allow delete: if member(fid) && (
+          resource.data.by == request.auth.uid
+          || resource.data.expiresAt < request.time.toMillis()
+          || !exists(/databases/$(database)/documents/families/$(fid)/stories/$(resource.data.storyId))
+          || get(/databases/$(database)/documents/families/$(fid)/stories/$(resource.data.storyId)).data.by == request.auth.uid);
+        allow update: if false;
+      }
     }
   }
 }

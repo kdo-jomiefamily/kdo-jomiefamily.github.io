@@ -407,9 +407,37 @@ button.h-ring{cursor:pointer}
 .sv-btn,.sv-x{background:rgba(0,0,0,.35);border:0;color:#fff;border-radius:999px;padding:6px 12px;font-weight:800;font-size:12.5px}
 .sv-btn.armed{background:var(--brand)}
 .sv-x{width:34px;height:34px;padding:0;font-size:16px}
-.sv-cap{position:absolute;left:14px;right:14px;bottom:20px;margin:0;color:#fff;font-weight:800;font-size:17px;text-align:center;text-shadow:0 2px 10px rgba(0,0,0,.6);z-index:3}
-.sv-nav{position:absolute;top:70px;bottom:0;width:35%;background:none;border:0;z-index:2;cursor:pointer}
+.sv-frame{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.sv-frame.paused .sv-bars .run i{animation-play-state:paused}
+.sv-nav{position:absolute;top:70px;bottom:0;width:35%;background:none;border:0;z-index:2;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .sv-nav.prev{left:0}.sv-nav.next{right:0;width:65%}
+/* Bottom of a story: caption, messages on the photo, and the reply bar */
+.sv-bottom{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;flex-direction:column;gap:8px;padding:60px 12px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,rgba(0,0,0,.72),rgba(0,0,0,.35) 60%,transparent);pointer-events:none}
+.sv-cap{margin:0 2px;color:#fff;font-weight:800;font-size:17px;text-align:center;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+.sv-cms{display:flex;flex-direction:column;align-items:flex-start;gap:6px;max-height:min(34vh,260px);overflow-y:auto;overscroll-behavior:contain;pointer-events:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 22px);mask-image:linear-gradient(to bottom,transparent,#000 22px);padding-top:16px}
+.sv-cms::-webkit-scrollbar{display:none}
+.sv-cms.empty{display:none}
+.sv-cm{display:flex;align-items:center;gap:7px;max-width:88%;background:rgba(20,8,16,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;border-radius:18px;padding:5px 8px 5px 5px;font-size:14.5px;line-height:1.3;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.sv-cm .av{flex:none;border:1.5px solid #fff}
+.sv-cm span{overflow-wrap:anywhere}
+.sv-cm b{font-weight:900;color:#FFC2D3;margin-right:2px}
+.sv-cm.emo span{font-size:15px}
+.sv-cm.pop{animation:cmpop .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes cmpop{from{transform:translateY(12px) scale(.85);opacity:0}}
+.sv-cdel{flex:none;width:22px;height:22px;border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:11px;font-weight:900;padding:0;margin-left:2px;cursor:pointer}
+.sv-reply{display:flex;flex-direction:column;gap:8px;pointer-events:auto}
+.sv-emo{display:flex;justify-content:space-between;gap:4px}
+.sv-emo button{flex:1;min-width:0;height:44px;border:0;border-radius:14px;background:rgba(255,255,255,.14);font-size:24px;line-height:1;cursor:pointer;transition:background .15s}
+.sv-emo button:hover{background:rgba(255,255,255,.26)}
+.sv-emo button.bump{animation:bump .4s cubic-bezier(.2,1.8,.4,1)}
+@keyframes bump{40%{transform:scale(1.35)}}
+.sv-form{display:flex;gap:8px}
+.sv-form input{flex:1;min-width:0;height:46px;border-radius:999px;border:1.5px solid rgba(255,255,255,.55);background:rgba(0,0,0,.3);color:#fff;padding:0 18px;font:inherit;font-size:16px;outline:none}
+.sv-form input::placeholder{color:rgba(255,255,255,.75)}
+.sv-form input:focus{border-color:#fff;background:rgba(0,0,0,.5)}
+.sv-form button{flex:none;width:46px;height:46px;border-radius:50%;border:0;background:var(--brand);color:#fff;font-size:18px;cursor:pointer;box-shadow:0 4px 14px rgba(255,61,110,.45)}
+.sv-fly{position:absolute;z-index:6;font-size:34px;pointer-events:none;transform:translate(-50%,0);animation:svfly 1.7s cubic-bezier(.2,.7,.4,1) forwards}
+@keyframes svfly{0%{opacity:0;transform:translate(-50%,0) scale(.4)}12%{opacity:1;transform:translate(-50%,-30px) scale(var(--s))}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),-380px) scale(var(--s)) rotate(12deg)}}
 .sc{border-radius:20px;overflow:hidden;background:var(--surface-2);max-height:52vh;display:flex;justify-content:center;margin-bottom:10px}
 .sc-img{max-height:52vh;width:auto;max-width:100%;display:block}
 .sc-drop{cursor:pointer}
@@ -902,7 +930,7 @@ let DEV = {};
 try { DEV = JSON.parse(localStorage.getItem(DEVICE_KEY)) || {}; } catch (e) { DEV = {}; }
 function saveDevice() { try { localStorage.setItem(DEVICE_KEY, JSON.stringify(DEV)); } catch (e) {} }
 // S mirrors the family data, kept up to date in real time by the backend
-const S = { me: null, profiles: [], items: [], res: {}, proposals: [], ideas: [], stories: [], tab: 'wishes', selected: DEV.selected || null, locks: DEV.locks || {} };
+const S = { me: null, profiles: [], items: [], res: {}, proposals: [], ideas: [], stories: [], comments: [], tab: 'wishes', selected: DEV.selected || null, locks: DEV.locks || {} };
 function save() { DEV.selected = S.selected; DEV.locks = S.locks; saveDevice(); }
 const prof = id => S.profiles.find(p => p.id === id);
 const viewer = () => prof(S.me);
@@ -988,6 +1016,7 @@ async function createFirebaseBackend() {
       offs.push(F.onSnapshot(q('items', F.where('ownerId', '==', me)), s => { itemSets.mine = rows(s); pushItems(); }, on.error));
       offs.push(F.onSnapshot(q('ideas', F.where('by', '==', me)), s => on.ideas(rows(s)), on.error));
       offs.push(F.onSnapshot(col(fid, 'stories'), s => on.stories(rows(s)), on.error));
+      offs.push(F.onSnapshot(col(fid, 'storyComments'), s => on.storyComments(rows(s)), on.error));
       return () => { offs.forEach(f => f()); perPerson.forEach(list => list.forEach(f => f())); };
     },
     async addProfile(fid, data) { const r = await F.addDoc(col(fid, 'profiles'), clean(data)); return r.id; },
@@ -1017,7 +1046,15 @@ async function createFirebaseBackend() {
     updateIdea: (fid, id, data) => F.updateDoc(ref(fid, 'ideas', id), clean(data)),
     deleteIdea: (fid, id) => F.deleteDoc(ref(fid, 'ideas', id)),
     async addStory(fid, data) { const r = await F.addDoc(col(fid, 'stories'), clean(data)); return r.id; },
-    deleteStory: (fid, id) => F.deleteDoc(ref(fid, 'stories', id)),
+    // A story leaves with its comments, in one go
+    async deleteStory(fid, id, commentIds = []) {
+      const b = F.writeBatch(db);
+      commentIds.forEach(c => b.delete(ref(fid, 'storyComments', c)));
+      b.delete(ref(fid, 'stories', id));
+      await b.commit();
+    },
+    async addStoryComment(fid, data) { const r = await F.addDoc(col(fid, 'storyComments'), clean(data)); return r.id; },
+    deleteStoryComment: (fid, id) => F.deleteDoc(ref(fid, 'storyComments', id)),
   };
 }
 
@@ -1027,7 +1064,7 @@ function createMockBackend() {
   let D = null;
   try { D = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
   D = D || {};
-  for (const k of ['families', 'profiles', 'items', 'reservations', 'proposals', 'ideas', 'stories', 'users', 'fails']) D[k] = D[k] || {};
+  for (const k of ['families', 'profiles', 'items', 'reservations', 'proposals', 'ideas', 'stories', 'storyComments', 'users', 'fails']) D[k] = D[k] || {};
   const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} };
   const subs = new Set();
   const tick = () => new Promise(r => setTimeout(r, 5));
@@ -1040,6 +1077,12 @@ function createMockBackend() {
   const emit = () => { persist(); subs.forEach(f => f()); };
   const nid = () => uid() + uid();
   const me = () => D.session;
+  // Same as the rules: my own comment, an expired one, one whose story is gone, or one on my story
+  const canDropComment = (fid, c) => {
+    if (!c) return false;
+    const s = bag('stories', fid)[c.storyId];
+    return c.by === me() || c.expiresAt < Date.now() || !s || s.by === me();
+  };
   const put = (kind, fid, data) => { const id = nid(); bag(kind, fid)[id] = { ...clean(data), id }; emit(); return id; };
   return {
     async familyExists(fid) { await tick(); return !!D.families[fid]; },
@@ -1082,6 +1125,7 @@ function createMockBackend() {
         });
         on.ideas(all('ideas', fid).filter(i => i.by === uidMe));
         on.stories(all('stories', fid));
+        on.storyComments(all('storyComments', fid));
       };
       subs.add(f); setTimeout(f, 0);
       return () => subs.delete(f);
@@ -1151,10 +1195,23 @@ function createMockBackend() {
       if (!member(fid, me()) || data.by !== me() || (data.photo || '').length >= 950000 || data.expiresAt > Date.now() + STORY_LIFE + 60000) deny();
       return put('stories', fid, data);
     },
-    async deleteStory(fid, id) {
+    async deleteStory(fid, id, commentIds = []) {
       await tick(); const s = bag('stories', fid)[id];
       if (!s || !member(fid, me()) || !(s.by === me() || s.expiresAt < Date.now())) deny();
+      commentIds.forEach(c => { if (!canDropComment(fid, bag('storyComments', fid)[c])) deny(); });
+      commentIds.forEach(c => delete bag('storyComments', fid)[c]);
       delete bag('stories', fid)[id]; emit();
+    },
+    async addStoryComment(fid, data) {
+      await tick(); const s = bag('stories', fid)[data.storyId];
+      const text = typeof data.text === 'string' ? data.text : '';
+      if (!member(fid, me()) || data.by !== me() || !text.length || text.length > 120 || !s || s.expiresAt !== data.expiresAt) deny();
+      return put('storyComments', fid, data);
+    },
+    async deleteStoryComment(fid, id) {
+      await tick(); const c = bag('storyComments', fid)[id];
+      if (!c || !member(fid, me()) || !canDropComment(fid, c)) deny();
+      delete bag('storyComments', fid)[id]; emit();
     },
     // Test helpers
     _db: () => D, _emit: emit,
@@ -1165,6 +1222,14 @@ function createMockBackend() {
 let backend = null, stopSync = null, whoList = [];
 const resByOwner = {}, propsByOwner = {};
 const migrated = new Set(), cleaned = new Set();
+let rawStories = null, rawComments = [];
+// Comments live as long as their story: expired ones, and ones whose story was deleted, are cleared out by whoever sees them first
+function tidyComments() {
+  if (!rawStories) return;
+  const now = Date.now(), ids = new Set(rawStories.map(s => s.id));
+  rawComments.filter(c => !cleaned.has(c.id) && (c.expiresAt <= now || (!ids.has(c.storyId) && now - (c.createdAt || 0) > 120000)))
+    .forEach(c => { cleaned.add(c.id); backend.deleteStoryComment(DEV.fid, c.id).catch(() => {}); });
+}
 function mergeReservations() {
   S.res = {};
   Object.values(resByOwner).flat().forEach(r => { S.res[r.id] = r; });
@@ -1191,10 +1256,19 @@ function startSession(me) {
     ideas: list => { S.ideas = list; queueRender(); backfillImages(list, 'ideas'); },
     stories: list => {
       const now = Date.now();
+      rawStories = list;
       S.stories = list.filter(s => s.expiresAt > now).sort((a, b) => a.createdAt - b.createdAt);
-      queueRender(); if (viewerState) refreshStory();
+      queueRender(); syncStoryViewer();
       // Anyone can tidy up stories older than 48 h; they then disappear from the database
       list.filter(s => s.expiresAt <= now && !cleaned.has(s.id)).forEach(s => { cleaned.add(s.id); backend.deleteStory(DEV.fid, s.id).catch(() => {}); });
+      tidyComments();
+    },
+    storyComments: list => {
+      const now = Date.now();
+      rawComments = list;
+      S.comments = list.filter(c => c.expiresAt > now).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+      renderStoryComments();
+      tidyComments();
     },
     error: e => { console.error(e); toast('La synchronisation a échoué. Vérifie ta connexion internet.'); },
   });
@@ -1202,7 +1276,8 @@ function startSession(me) {
 function endSession() {
   stopSync?.(); stopSync = null;
   closeStory();
-  Object.assign(S, { me: null, profiles: [], items: [], res: {}, proposals: [], ideas: [], stories: [], tab: 'wishes' });
+  Object.assign(S, { me: null, profiles: [], items: [], res: {}, proposals: [], ideas: [], stories: [], comments: [], tab: 'wishes' });
+  rawStories = null; rawComments = [];
   for (const o of [resByOwner, propsByOwner]) Object.keys(o).forEach(k => delete o[k]);
   render();
 }
@@ -2021,6 +2096,8 @@ function shareIdea(ideaId, status, el) {
 // ================= Stories =================
 let viewerState = null, storyTimer = null, sd = null;
 const STORY_MS = 5500;
+const REACTIONS = ['❤️', '😍', '😂', '🔥', '👏', '🎁'];
+const isReaction = t => REACTIONS.includes(t);
 function storyAuthors() {
   const ids = [...new Set(S.stories.map(s => s.by))].filter(id => prof(id));
   return [S.me, ...ids.filter(id => id !== S.me)].filter(id => storiesBy(id).length);
@@ -2028,9 +2105,12 @@ function storyAuthors() {
 function openStory(pid) {
   const order = storyAuthors(); if (!order.includes(pid)) return;
   const list = storiesBy(pid), firstNew = list.findIndex(s => !seenStory(s.id));
-  viewerState = { order, a: order.indexOf(pid), i: firstNew < 0 ? 0 : firstNew };
+  viewerState = { order, a: order.indexOf(pid), i: firstNew < 0 ? 0 : firstNew, hold: new Set() };
   refreshStory();
 }
+const storyKey = () => viewerState ? viewerState.a + ':' + storiesBy(viewerState.order[viewerState.a]).map(s => s.id).join(',') : '';
+// New data arrived: only rebuild the viewer if the stories on screen changed, so typing and the timer aren't interrupted
+function syncStoryViewer() { if (viewerState && storyKey() !== viewerState.key) refreshStory(); }
 function refreshStory() {
   const el = $('#storyview');
   if (!viewerState) { el.hidden = true; el.innerHTML = ''; return; }
@@ -2041,18 +2121,87 @@ function refreshStory() {
   DEV.seen = DEV.seen || {};
   for (const k of Object.keys(DEV.seen)) if (DEV.seen[k] < Date.now()) delete DEV.seen[k];
   DEV.seen[s.id] = s.expiresAt; saveDevice();
+  const comments = S.comments.filter(c => c.storyId === s.id);
+  // A little more time to read when people left messages
+  const ms = STORY_MS + Math.min(comments.length, 6) * 700;
+  Object.assign(viewerState, { sid: s.id, key: storyKey(), shown: new Set(comments.map(c => c.id)), hold: new Set() });
   el.hidden = false;
   el.innerHTML = `<div class="sv-frame">
-    <div class="sv-bars">${list.map((x, k) => `<span class="${k < viewerState.i ? 'done' : k === viewerState.i ? 'run' : ''}"><i></i></span>`).join('')}</div>
+    <div class="sv-bars">${list.map((x, k) => `<span class="${k < viewerState.i ? 'done' : k === viewerState.i ? 'run' : ''}"><i${k === viewerState.i ? ` style="animation-duration:${ms}ms"` : ''}></i></span>`).join('')}</div>
     <div class="sv-head">${face(p, 'sm')}<b>${esc(pid === S.me ? 'Ma story' : p.name)}</b><span>${ago(s.createdAt)}</span><span class="sp"></span>
       ${pid === S.me ? `<button class="sv-btn" data-act="story-del" data-id="${s.id}">Supprimer</button>` : ''}<button class="sv-x" data-act="story-close" aria-label="Fermer">✕</button></div>
     <img class="sv-img" src="${s.photo}" alt="${esc(s.caption || 'Story de ' + p.name)}">
-    ${s.caption ? `<p class="sv-cap">${esc(s.caption)}</p>` : ''}
     <button class="sv-nav prev" data-act="story-prev" aria-label="Story précédente"></button><button class="sv-nav next" data-act="story-next" aria-label="Story suivante"></button>
+    <div class="sv-bottom">
+      ${s.caption ? `<p class="sv-cap">${esc(s.caption)}</p>` : ''}
+      <div class="sv-cms" aria-live="polite" aria-label="Messages sur cette story"></div>
+      <div class="sv-reply">
+        <div class="sv-emo">${REACTIONS.map(r => `<button type="button" data-act="story-react" data-v="${r}" aria-label="Réagir ${r}">${r}</button>`).join('')}</div>
+        <form class="sv-form" id="svform" autocomplete="off"><input type="text" id="svtext" maxlength="120" enterkeyhint="send" placeholder="${pid === S.me ? 'Réponds à ta famille…' : `Écris un petit mot à ${esc(p.name)}…`}" aria-label="Écrire un message sur la story"><button type="submit" aria-label="Envoyer">➤</button></form>
+      </div>
+    </div>
   </div>`;
-  clearTimeout(storyTimer);
-  if (!reduceMotion.matches) storyTimer = setTimeout(storyNext, STORY_MS);
+  renderStoryComments(true);
+  storyArm(ms);
   renderFamily();
+}
+function commentHTML(c, storyBy, pop) {
+  const p = prof(c.by), name = c.by === S.me ? 'Moi' : (p?.name || "Quelqu'un");
+  const canDel = c.by === S.me || storyBy === S.me;
+  return `<div class="sv-cm${isReaction(c.text) ? ' emo' : ''}${pop ? ' pop' : ''}">${p ? face(p, 'xs') : ''}<span><b>${esc(name)}</b> ${esc(c.text)}</span>${canDel ? `<button class="sv-cdel" data-act="cm-del" data-id="${c.id}" aria-label="Effacer ce message">✕</button>` : ''}</div>`;
+}
+// Only the messages overlay is redrawn when someone comments
+function renderStoryComments(first) {
+  const box = $('#storyview .sv-cms'); if (!box || !viewerState) return;
+  const story = S.stories.find(x => x.id === viewerState.sid); if (!story) return;
+  const list = S.comments.filter(c => c.storyId === story.id);
+  const stick = first || box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+  const fresh = list.filter(c => !viewerState.shown.has(c.id));
+  box.innerHTML = list.map(c => commentHTML(c, story.by, fresh.includes(c))).join('');
+  box.classList.toggle('empty', !list.length);
+  // Someone else's emoji arriving live floats up too (mine already did when I tapped it)
+  fresh.forEach(c => { viewerState.shown.add(c.id); if (c.by !== S.me && isReaction(c.text)) flyEmoji(c.text); });
+  if (stick) box.scrollTop = box.scrollHeight;
+}
+function flyEmoji(emoji, fromEl) {
+  const frame = $('#storyview .sv-frame'); if (!frame || reduceMotion.matches) return;
+  const fr = frame.getBoundingClientRect(), r = fromEl?.getBoundingClientRect();
+  const x0 = r ? r.left + r.width / 2 - fr.left : fr.width * .75, y0 = r ? r.top - fr.top : fr.height - 140;
+  for (let k = 0; k < 7; k++) {
+    const e = document.createElement('span');
+    e.className = 'sv-fly'; e.textContent = emoji;
+    e.style.left = x0 + 'px'; e.style.top = y0 + 'px';
+    e.style.setProperty('--dx', (Math.random() * 160 - 80).toFixed(0) + 'px');
+    e.style.setProperty('--s', (0.9 + Math.random() * 0.9).toFixed(2));
+    e.style.animationDelay = (k * 90) + 'ms';
+    e.addEventListener('animationend', () => e.remove());
+    frame.appendChild(e);
+  }
+}
+function sendStoryComment(text, fromEl) {
+  text = String(text || '').trim().slice(0, 120);
+  const story = viewerState && S.stories.find(x => x.id === viewerState.sid);
+  if (!text || !story) return;
+  if (isReaction(text)) flyEmoji(text, fromEl);
+  run(backend.addStoryComment(DEV.fid, { storyId: story.id, by: S.me, text, createdAt: Date.now(), expiresAt: story.expiresAt }));
+}
+// The story pauses while someone types, holds a finger on the photo, or is about to delete it
+function storyArm(ms) {
+  clearTimeout(storyTimer);
+  viewerState.left = ms; viewerState.t0 = Date.now();
+  if (!reduceMotion.matches) storyTimer = setTimeout(storyNext, ms);
+}
+function storyPause(why) {
+  if (!viewerState) return;
+  if (!viewerState.hold.size) { clearTimeout(storyTimer); viewerState.left -= Date.now() - viewerState.t0; }
+  viewerState.hold.add(why);
+  $('#storyview .sv-frame')?.classList.add('paused');
+}
+function storyResume(why) {
+  if (!viewerState || !viewerState.hold.delete(why) || viewerState.hold.size) return;
+  $('#storyview .sv-frame')?.classList.remove('paused');
+  viewerState.t0 = Date.now(); viewerState.left = Math.max(1500, viewerState.left);
+  if (!reduceMotion.matches) storyTimer = setTimeout(storyNext, viewerState.left);
 }
 function storyNext() {
   if (!viewerState) return;
@@ -2363,12 +2512,17 @@ document.addEventListener('click', e => {
     case 'story-new': e.stopPropagation(); openStoryComposer(); break;
     case 'story-open': openStory(id); break;
     case 'story-close': closeStory(); break;
-    case 'story-next': storyNext(); break;
-    case 'story-prev': storyPrev(); break;
+    case 'story-next': if (!swallowTap) storyNext(); break;
+    case 'story-prev': if (!swallowTap) storyPrev(); break;
     case 'story-del': {
-      if (!el.classList.contains('armed')) { el.classList.add('armed'); el.textContent = 'Confirmer'; clearTimeout(storyTimer); break; }
-      run(backend.deleteStory(DEV.fid, id), 'Story supprimée'); break;
+      if (!el.classList.contains('armed')) { el.classList.add('armed'); el.textContent = 'Confirmer'; storyPause('del'); break; }
+      run(backend.deleteStory(DEV.fid, id, rawComments.filter(c => c.storyId === id).map(c => c.id)), 'Story supprimée'); break;
     }
+    case 'story-react': {
+      el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+      sendStoryComment(v, el); break;
+    }
+    case 'cm-del': run(backend.deleteStoryComment(DEV.fid, id)); break;
     case 'story-post': postStory(el); break;
     case 'hide-invite': DEV.inviteHidden = true; saveDevice(); renderBanner(); break;
     case 'hide-install': DEV.installHidden = true; saveDevice(); renderBanner(); break;
@@ -2448,6 +2602,30 @@ document.addEventListener('click', e => {
     case 'close': closeModal(); break;
   }
 });
+document.addEventListener('submit', e => {
+  if (e.target.id !== 'svform') return;
+  e.preventDefault();
+  const input = $('#svtext'); if (!input) return;
+  sendStoryComment(input.value, e.target.querySelector('button'));
+  input.value = ''; input.blur();
+});
+document.addEventListener('focusin', e => { if (e.target.id === 'svtext') storyPause('type'); });
+document.addEventListener('focusout', e => { if (e.target.id === 'svtext') storyResume('type'); });
+// Holding a finger on a story pauses it, like on Instagram; letting go carries on without skipping
+let holdTimer = null, holding = false, swallowTap = false;
+document.addEventListener('pointerdown', e => {
+  if (!viewerState || !e.target.closest('.sv-frame') || e.target.closest('.sv-reply, .sv-head, .sv-cdel')) return;
+  clearTimeout(holdTimer);
+  holdTimer = setTimeout(() => { holding = true; storyPause('hold'); }, 250);
+});
+const endHold = () => {
+  clearTimeout(holdTimer);
+  if (!holding) return;
+  holding = false; storyResume('hold');
+  swallowTap = true; setTimeout(() => { swallowTap = false; }, 350);
+};
+document.addEventListener('pointerup', endHold);
+document.addEventListener('pointercancel', endHold);
 document.addEventListener('input', e => {
   const t = e.target;
   if (t.id === 'pname' && pd) pd.name = t.value;
@@ -2478,6 +2656,8 @@ document.addEventListener('paste', e => {
 });
 document.addEventListener('keydown', e => {
   if (viewerState) {
+    // Typing a message: the arrows move in the text, Escape just leaves the field
+    if (e.target.id === 'svtext') { if (e.key === 'Escape') e.target.blur(); return; }
     if (e.key === 'Escape') { closeStory(); return; }
     if (e.key === 'ArrowRight') { storyNext(); return; }
     if (e.key === 'ArrowLeft') { storyPrev(); return; }
