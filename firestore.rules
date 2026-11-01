@@ -69,14 +69,29 @@ service cloud.firestore {
         || request.auth.uid in d.get('visibleTo', []);
     }
     function validProposal(d) {
-      return d.keys().hasOnly(['forId', 'by', 'title', 'url', 'price', 'note', 'photo', 'imageUrl', 'status', 'votes', 'joiners', 'createdAt', 'decidedAt'])
+      return d.keys().hasOnly(['forId', 'by', 'title', 'url', 'price', 'note', 'photo', 'imageUrl', 'status', 'votes', 'joiners', 'createdAt', 'decidedAt', 'takenBy', 'pay'])
         && d.forId is string && d.by is string
         && d.title is string && d.title.size() > 0 && d.title.size() <= 120
         && optString(d, 'url', 2000) && optString(d, 'price', 20) && optString(d, 'note', 300) && optString(d, 'imageUrl', 2000)
         && optPhoto(d, 600000)
         && d.status in ['question', 'decided']
         && d.votes is map && d.votes.size() <= 60
-        && d.get('joiners', {}) is map && d.get('joiners', {}).size() <= 60;
+        && d.get('joiners', {}) is map && d.get('joiners', {}).size() <= 60
+        && validPay(d.get('pay', null));
+    }
+    // Splitting the cost of a group gift: who paid, the total, each share, and who paid back
+    function validPay(p) {
+      return p == null || (p is map
+        && p.keys().hasOnly(['by', 'total', 'mode', 'shares', 'back'])
+        && p.by is string
+        && p.total is number && p.total > 0 && p.total < 100000
+        && p.mode in ['equal', 'custom']
+        && p.get('shares', {}) is map && p.get('shares', {}).size() <= 40
+        && p.get('back', {}) is map && p.get('back', {}).size() <= 40);
+    }
+    // The people on a group gift: who took it, plus everyone who joined
+    function inGang(d, takerKey) {
+      return d.get(takerKey, '') == request.auth.uid || d.get('joiners', {}).get(request.auth.uid, false) == true;
     }
     // Someone else changing only their own entry in a map (a vote, or joining a group gift)
     function onlyMyKey(after, before) {
@@ -162,14 +177,20 @@ service cloud.firestore {
           && canSeeItem(get(itemPath(fid, iid)).data);
         // Only the person who reserved can release it. No overwriting someone else's reservation.
         allow delete: if member(fid) && resource.data.by == request.auth.uid;
-        // Group gift: others can only add or remove themselves as participants
         allow update: if member(fid)
           && !keptSecret(fid, resource.data.ownerId)
-          && resource.data.by != request.auth.uid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joiners'])
-          && request.resource.data.joiners is map && request.resource.data.joiners.size() <= 40
-          && onlyMyKey(request.resource.data.joiners, resource.data.get('joiners', {}))
-          && canSeeItem(get(itemPath(fid, iid)).data);
+          && canSeeItem(get(itemPath(fid, iid)).data)
+          && (
+            // Group gift: others can only add or remove themselves as participants
+            (resource.data.by != request.auth.uid
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joiners'])
+              && request.resource.data.joiners is map && request.resource.data.joiners.size() <= 40
+              && onlyMyKey(request.resource.data.joiners, resource.data.get('joiners', {})))
+            // The people on the gift share its cost
+            || (inGang(resource.data, 'by')
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pay'])
+              && validPay(request.resource.data.get('pay', null)))
+          );
       }
 
       match /proposals/{pid} {
@@ -192,6 +213,16 @@ service cloud.firestore {
             || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes', 'joiners'])
               && onlyMyKey(request.resource.data.votes, resource.data.votes)
               && onlyMyKey(request.resource.data.get('joiners', {}), resource.data.get('joiners', {})))
+            // "Je lui prends": anyone can announce they're buying a gift still under discussion
+            || (resource.data.status == 'question' && request.resource.data.status == 'decided'
+              && request.resource.data.takenBy == request.auth.uid
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'takenBy', 'decidedAt']))
+            // ...and give it back
+            || (resource.data.get('takenBy', '') == request.auth.uid && request.resource.data.status == 'question'
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'takenBy', 'pay']))
+            // The people on the gift share its cost
+            || (inGang(resource.data, 'takenBy')
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pay']))
           );
         allow delete: if member(fid) && resource.data.by == request.auth.uid;
       }

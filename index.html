@@ -430,6 +430,44 @@ button.h-ring{cursor:pointer}
 .notif{display:flex;align-items:center;gap:12px;margin-top:10px;padding:12px 14px;border-radius:16px;background:var(--surface-2);color:var(--ink);font-size:14px;font-weight:700}
 .notif span{flex:1}
 #pnotif .notif{margin-top:18px}
+#payw .field{margin-top:16px}
+#payw .people{margin-top:8px}
+.acc-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;color:var(--brand-deep);border:0;border-radius:999px;padding:8px 12px;font-weight:900;font-size:13px;box-shadow:0 3px 0 rgba(120,10,50,.25);margin-right:6px}
+.acc-btn b{background:var(--brand);color:#fff;border-radius:999px;font-size:11px;padding:1px 7px}
+.pay{flex-basis:100%;display:flex;flex-direction:column;gap:8px;margin-top:4px;padding-top:10px;border-top:1.5px dashed var(--line);font-size:13.5px;color:var(--ink)}
+.pay-q{color:var(--ink-2);font-weight:700}
+.pay .payb{align-self:flex-start}
+.pay-head{margin:0;line-height:1.4}
+.pay-head .linkbtn{margin-left:4px;display:inline}
+.pay-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.pay-list li{display:flex;align-items:center;gap:8px}
+.pay-list li span:not(.paid):not(.due){flex:1;min-width:0}
+.pay-list li.done span{color:var(--ink-2)}
+.paid{color:var(--ok);font-weight:900;white-space:nowrap}
+.due{color:var(--ink-2);font-weight:700;white-space:nowrap;font-size:12.5px}
+.mbtn.back{min-height:36px;border-color:var(--mint);color:var(--ok);white-space:nowrap}
+.eur{display:flex;align-items:center;gap:8px}
+.eur input{flex:1;min-width:0}
+.eur>span{font-weight:900;color:var(--ink-2)}
+.shares{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.share{display:flex;align-items:center;gap:10px;font-weight:800}
+.share>span:nth-of-type(1){flex:1;min-width:0}
+.share small{color:var(--ink-2);font-weight:700}
+.share .eur{flex:0 0 120px}
+.acc-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 4px}
+.acc-sum div{background:var(--surface-2);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column}
+.acc-sum small{color:var(--ink-2);font-weight:800}
+.acc-sum b{font-size:22px;font-weight:900;color:var(--ink)}
+.acc{margin-top:10px;padding-bottom:10px;border-bottom:1.5px solid var(--line)}
+.acc-who{display:flex;align-items:center;gap:10px;font-size:15px}
+.acc-who b{color:var(--name)}
+.acc ul,.acc-done{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.acc li,.acc-done li{display:flex;align-items:center;gap:10px;font-size:13.5px}
+.acc li span,.acc-done li span{flex:1;min-width:0}
+.acc li small{color:var(--ink-2)}
+.acc-done li{color:var(--ink-2)}
+.acc-ok{font-weight:800;text-align:center;margin:18px 0}
+.p-who small{color:var(--ink-2);font-weight:700}
 .cmbadge{position:absolute;left:0;top:-2px;padding:2px 6px;border-radius:999px;background:#fff;color:var(--brand-deep);font-size:11px;font-weight:900;line-height:1.3;box-shadow:0 2px 8px rgba(0,0,0,.25);animation:bump .5s cubic-bezier(.2,1.8,.4,1)}
 .switch{display:flex;align-items:center;gap:12px;width:100%;border:2px solid var(--line);background:var(--surface);border-radius:16px;padding:12px 14px;font:inherit;font-weight:800;font-size:15px;color:var(--ink);cursor:pointer;text-align:left}
 .switch .knob{flex:none;position:relative;width:46px;height:28px;border-radius:999px;background:var(--ink-2);transition:background .2s}
@@ -609,6 +647,7 @@ const NOW = momentsFor(new Date());
 
 // ================= Helpers =================
 const $ = s => document.querySelector(s);
+const $$ = sel => [...document.querySelectorAll(sel)];
 const uid = () => Math.random().toString(36).slice(2, 10);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -1100,6 +1139,12 @@ async function createFirebaseBackend() {
     // Group gifts: each person can only add or remove themselves
     joinReservation: (fid, itemId, me, on) => F.updateDoc(ref(fid, 'reservations', itemId), { [`joiners.${me}`]: on ? true : F.deleteField() }),
     joinProposal: (fid, id, me, on) => F.updateDoc(ref(fid, 'proposals', id), { [`joiners.${me}`]: on ? true : F.deleteField() }),
+    // "Je lui prends": whoever announces they're buying it, not necessarily who proposed it
+    takeProposal: (fid, id, me) => F.updateDoc(ref(fid, 'proposals', id), { status: 'decided', takenBy: me, decidedAt: Date.now() }),
+    untakeProposal: (fid, id) => F.updateDoc(ref(fid, 'proposals', id), { status: 'question', takenBy: F.deleteField(), pay: F.deleteField() }),
+    // Splitting the cost of a group gift: who paid, how much, each share, who paid back
+    setPay: (fid, kind, id, pay) => F.updateDoc(ref(fid, kind, id), { pay: pay ? clean(pay) : F.deleteField() }),
+    markBack: (fid, kind, id, who, on) => F.updateDoc(ref(fid, kind, id), { [`pay.back.${who}`]: on ? true : F.deleteField() }),
     async addProposal(fid, data) { const r = await F.addDoc(col(fid, 'proposals'), clean(data)); return r.id; },
     updateProposal: (fid, id, data) => F.updateDoc(ref(fid, 'proposals', id), clean(data)),
     vote: (fid, id, me, value) => F.updateDoc(ref(fid, 'proposals', id), { [`votes.${me}`]: value ? value : F.deleteField() }),
@@ -1136,6 +1181,11 @@ function createMockBackend() {
   const member = (fid, me) => !!bag('profiles', fid)[me] && !bag('profiles', fid)[me].managed;
   const parentsIn = (fid, pid) => { const p = bag('profiles', fid)[pid]; return p && p.managed ? (p.parents || []) : []; };
   const manages = (fid, me, ownerId) => ownerId === me || (!!bag('profiles', fid)[ownerId]?.managed && (!parentsIn(fid, ownerId).length || parentsIn(fid, ownerId).includes(me)));
+  // Same as the rules: the people on a group gift (who took it, plus who joined) manage its cost
+  const inGangMock = (fid, kind, d, who) => {
+    if (kind === 'reservations') return !secretFrom(fid, who, d.ownerId) && (d.by === who || !!(d.joiners || {})[who]);
+    return !secretFrom(fid, who, d.forId) && (d.by === who || d.takenBy === who || !!(d.joiners || {})[who]);
+  };
   const secretFrom = (fid, me, ownerId) => ownerId === me || parentsIn(fid, ownerId).includes(me);
   const canSee = (it, me) => it.ownerId === me || it.everyone === true || (it.visibleTo || []).includes(me);
   const emit = () => { persist(); subs.forEach(f => f()); };
@@ -1253,6 +1303,26 @@ function createMockBackend() {
       await tick(); const p = bag('proposals', fid)[id];
       if (!p || !member(fid, who) || who !== me() || secretFrom(fid, who, p.forId)) deny();
       p.joiners = p.joiners || {}; if (on) p.joiners[who] = true; else delete p.joiners[who]; emit();
+    },
+    async takeProposal(fid, id, who) {
+      await tick(); const p = bag('proposals', fid)[id];
+      if (!p || !member(fid, who) || who !== me() || secretFrom(fid, who, p.forId) || p.status !== 'question') deny();
+      Object.assign(p, { status: 'decided', takenBy: who, decidedAt: Date.now() }); emit();
+    },
+    async untakeProposal(fid, id) {
+      await tick(); const p = bag('proposals', fid)[id];
+      if (!p || !member(fid, me()) || !(p.by === me() || p.takenBy === me())) deny();
+      p.status = 'question'; delete p.takenBy; delete p.pay; emit();
+    },
+    async setPay(fid, kind, id, pay) {
+      await tick(); const d = bag(kind, fid)[id];
+      if (!d || !member(fid, me()) || !inGangMock(fid, kind, d, me())) deny();
+      if (pay) d.pay = clean(pay); else delete d.pay; emit();
+    },
+    async markBack(fid, kind, id, who, on) {
+      await tick(); const d = bag(kind, fid)[id];
+      if (!d || !d.pay || !member(fid, me()) || !inGangMock(fid, kind, d, me())) deny();
+      d.pay.back = d.pay.back || {}; if (on) d.pay.back[who] = true; else delete d.pay.back[who]; emit();
     },
     async vote(fid, id, who, value) {
       await tick(); const p = bag('proposals', fid)[id];
@@ -1421,7 +1491,7 @@ async function run(promise, okMessage) {
   catch (e) { console.error(e); toast(errorText(e)); return undefined; }
 }
 // ================= Render =================
-function render() { renderWho(); renderFamily(); renderBanner(); renderMain(); }
+function render() { renderWho(); renderFamily(); renderBanner(); renderMain(); renderAccounts(); }
 const LOCK = `<svg class="lk" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
 const svgI = d => `<svg class="bi" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
 const GLOBE = svgI('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9s1.3-6.4 3.8-9z"/>');
@@ -1444,7 +1514,9 @@ function ago(ts) {
 function renderWho() {
   const v = viewer(), box = $('#whoami');
   if (!v) { box.innerHTML = ''; return; }
-  box.innerHTML = `<button class="invite" data-act="copy-invite" title="Envoyer le lien et le code famille"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg><span>Inviter la famille</span></button>`;
+  const debts = myDebts(), due = debts.filter(d => !d.back).length;
+  const acc = debts.length ? `<button class="acc-btn" data-act="accounts" aria-label="Les comptes des cadeaux à plusieurs${due ? ` : ${due} en attente` : ''}">💶<span>Comptes</span>${due ? `<b>${due}</b>` : ''}</button>` : '';
+  box.innerHTML = acc + `<button class="invite" data-act="copy-invite" title="Envoyer le lien et le code famille"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg><span>Inviter la famille</span></button>`;
 }
 
 // ---- One row for everyone: tap to open their list; a colored ring means a story to watch ----
@@ -1645,7 +1717,7 @@ function cardHTML(it, i, settled) {
   let reserve = '';
   if (!isOwner) {
     const res = S.res[it.id], joined = Object.keys(res?.joiners || {}).length;
-    const gang = res ? gangHTML({ leadId: it.reservedBy, joiners: res.joiners, price: it.price, act: 'join-res', id: it.id }) : '';
+    const gang = res ? gangHTML({ leadId: it.reservedBy, joiners: res.joiners, price: it.price, act: 'join-res', id: it.id, pay: res.pay, kind: 'reservations', money: true }) : '';
     if (taken) reserve = `<button class="reserve" disabled>${face(by, 'xs')}<span>Réservé par ${esc(by ? by.name : "quelqu'un")}</span></button>${gang}`;
     else reserve = `<button class="reserve" data-act="toggle" data-id="${it.id}" aria-pressed="${mine}"><span class="box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span>${mine ? "Tu t'en occupes" : "Je m'en occupe"}</span></button>${mine && joined ? gang : ''}`;
   }
@@ -1684,31 +1756,86 @@ function splitPrice(price, n) {
   const cur = /€|eur/i.test(price) ? ' €' : /\$/.test(price) ? ' $' : /£/.test(price) ? ' £' : '';
   return String(v >= 10 ? Math.round(v) : Math.round(v * 10) / 10).replace('.', ',') + cur;
 }
-function gangHTML({ leadId, joiners, price, act, id }) {
-  const ids = [leadId, ...Object.keys(joiners || {}).filter(k => joiners[k] && k !== leadId)];
-  const people = ids.map(prof).filter(Boolean), n = people.length;
-  const meIn = ids.includes(S.me), lead = leadId === S.me;
-  const share = splitPrice(price, n);
-  const names = people.map(p => p.id === S.me ? 'toi' : p.name);
-  const label = n > 1 ? `<b>${n} personnes sur ce cadeau</b>${share ? ` · ≈ ${esc(share)} chacun` : ''}<br><span>${esc(names.join(', '))}</span>`
-    : `<b>1 personne sur ce cadeau pour l'instant</b><br><span>${lead ? 'Les autres peuvent se joindre à toi' : 'Tu peux te joindre à ' + esc(people[0]?.name || 'elle')}</span>`;
-  return `<div class="gang">
-    <span class="g-avs">${people.slice(0, 4).map(p => face(p, 'xs')).join('')}${n > 4 ? `<span class="g-more">+${n - 4}</span>` : ''}</span>
-    <span class="g-txt">${label}</span>
-    ${lead ? '' : `<button class="mbtn join ${meIn ? 'on' : ''}" data-act="${act}" data-id="${id}" aria-pressed="${meIn}">${meIn ? CHECK + 'Tu participes' : '+ Je participe'}</button>`}
+// ---- Money: amounts in euros, shown the French way ----
+function parsePrice(price) {
+  const m = String(price || '').replace(/\s/g, '').match(/(\d+(?:[.,]\d+)?)/);
+  const v = m ? parseFloat(m[1].replace(',', '.')) : NaN;
+  return isFinite(v) && v > 0 ? v : null;
+}
+const money = n => (Math.round(n * 100) / 100).toLocaleString('fr-FR', { minimumFractionDigits: Number.isInteger(Math.round(n * 100) / 100) ? 0 : 2, maximumFractionDigits: 2 }) + ' €';
+// Everyone on a group gift: the person who took it first, then whoever joined
+function gangIds(leadId, joiners) {
+  return [...new Set([leadId, ...Object.keys(joiners || {}).filter(k => joiners[k])].filter(Boolean))].filter(id => prof(id));
+}
+// Each person's share and what they still owe to whoever paid
+function shareOf(pay, ids, id) {
+  if (!pay) return 0;
+  if (pay.mode === 'custom') return Number((pay.shares || {})[id] || 0);
+  const all = [...new Set([...ids, pay.by])];
+  return all.length ? pay.total / all.length : 0;
+}
+function debtsOf(pay, ids) {
+  if (!pay || !pay.by) return [];
+  return [...new Set([...ids, ...Object.keys(pay.shares || {})])].filter(id => id !== pay.by && prof(id))
+    .map(id => ({ from: id, to: pay.by, amount: shareOf(pay, ids, id), back: !!(pay.back || {})[id] }))
+    .filter(d => d.amount > 0.004);
+}
+const splitName = (pay, n) => pay.mode === 'custom' ? 'Montants perso' : n === 2 ? 'Moitié-moitié' : 'Parts égales';
+function payHTML({ pay, ids, kind, id }) {
+  const meIn = ids.includes(S.me);
+  // Money stays between the people on the gift
+  if (!meIn) return '';
+  if (!pay) return meIn ? `<div class="pay"><span class="pay-q">Qui avance l'argent ?</span><button class="mbtn small payb" data-act="pay-open" data-kind="${kind}" data-id="${id}">💳 Je règle le cadeau</button></div>` : '';
+  const payer = prof(pay.by), all = [...new Set([...ids, pay.by])];
+  const rows = debtsOf(pay, ids).map(d => {
+    const from = prof(d.from), mine = d.from === S.me, toMe = d.to === S.me;
+    const who = mine ? `Tu dois <b>${money(d.amount)}</b> à ${esc(payer?.name || '')}` : toMe ? `${esc(from.name)} te doit <b>${money(d.amount)}</b>` : `${esc(from.name)} doit <b>${money(d.amount)}</b> à ${esc(payer?.name || '')}`;
+    const btn = d.back ? `<span class="paid">✓ Remboursé</span>`
+      : (mine || toMe) ? `<button class="mbtn small back" data-act="pay-back" data-kind="${kind}" data-id="${id}" data-who="${d.from}">${mine ? "J'ai remboursé" : 'Remboursé'}</button>` : `<span class="due">En attente</span>`;
+    return `<li class="${d.back ? 'done' : ''}">${face(from, 'xs')}<span>${who}</span>${btn}</li>`;
+  }).join('');
+  return `<div class="pay">
+    <p class="pay-head">💶 <b>${pay.by === S.me ? 'Tu as réglé' : esc(payer?.name || "Quelqu'un") + ' a réglé'} ${money(pay.total)}</b> · ${splitName(pay, all.length)}${meIn ? ` <button class="linkbtn" data-act="pay-open" data-kind="${kind}" data-id="${id}">Modifier</button>` : ''}</p>
+    ${rows ? `<ul class="pay-list">${rows}</ul>` : ''}
   </div>`;
 }
+function gangHTML({ leadId, joiners, price, act, id, pay, kind, money: withMoney }) {
+  const ids = gangIds(leadId, joiners);
+  const people = ids.map(prof), n = people.length;
+  const meIn = ids.includes(S.me), lead = leadId === S.me;
+  const total = pay?.total || parsePrice(price);
+  const share = total && n > 1 ? money(total / n) : '';
+  const names = people.map(p => p.id === S.me ? 'toi' : p.name);
+  const label = n > 1 ? `<b>${n} personnes sur ce cadeau</b>${share && !pay ? ` · ≈ ${esc(share)} chacun` : ''}<br><span>${esc(names.join(', '))}</span>`
+    : n === 1 ? `<b>1 personne sur ce cadeau pour l'instant</b><br><span>${lead || (meIn && !leadId) ? 'Les autres peuvent se joindre à toi' : 'Tu peux te joindre à ' + esc(people[0]?.name || 'elle')}</span>`
+    : `<b>Personne ne s'est encore engagé</b><br><span>Tu peux dire que tu participes, sans le prendre en entier.</span>`;
+  return `<div class="gang">
+    ${n ? `<span class="g-avs">${people.slice(0, 4).map(p => face(p, 'xs')).join('')}${n > 4 ? `<span class="g-more">+${n - 4}</span>` : ''}</span>` : ''}
+    <span class="g-txt">${label}</span>
+    ${lead ? '' : `<button class="mbtn join ${meIn ? 'on' : ''}" data-act="${act}" data-id="${id}" aria-pressed="${meIn}">${meIn ? CHECK + 'Tu participes' : '+ Je participe'}</button>`}
+    ${withMoney && n > 1 ? payHTML({ pay, ids, kind, id }) : ''}
+  </div>`;
+}
+const takerOf = p => p.status === 'decided' ? (p.takenBy || p.by) : null;
 function propHTML(p) {
   const by = prof(p.by), mine = p.by === S.me, votes = p.votes || {};
   const ups = Object.values(votes).filter(x => x > 0).length, downs = Object.values(votes).filter(x => x < 0).length;
   const myVote = votes[S.me] || 0, decided = p.status === 'decided';
+  const takerId = takerOf(p), taker = prof(takerId), iTook = takerId === S.me;
   const name = esc(by?.name || "Quelqu'un");
-  const who = decided ? (mine ? 'Tu lui offres ça' : `${name} lui offre ça`) : (mine ? "Tu demandes l'avis de la famille" : `${name} demande ton avis`);
+  // Proposing is not buying: who offers it is whoever pressed "Je lui prends"
+  const who = decided ? (iTook ? 'Tu lui offres ça' : `${esc(taker?.name || "Quelqu'un")} lui offre ça`) + (takerId !== p.by ? ` <small>· idée de ${mine ? 'toi' : name}</small>` : '')
+    : (mine ? "Tu demandes l'avis de la famille" : `${name} demande ton avis`);
   const info = [p.price && `<b class="price">${esc(p.price)}</b>`, p.note && esc(p.note)].filter(Boolean).join(' · ');
+  const buttons = [
+    decided ? '' : `<button class="mbtn got" data-act="prop-decide" data-id="${p.id}">${CHECK}Je lui prends</button>`,
+    decided && (iTook || mine) ? `<button class="mbtn" data-act="prop-undecide" data-id="${p.id}">Plutôt en discuter</button>` : '',
+    mine ? `<button class="mbtn del" data-act="prop-delete" data-id="${p.id}">${TRASH}Supprimer</button>` : '',
+  ].filter(Boolean).join('');
   return `<article class="prop ${decided ? 'decided' : ''}" data-prop="${p.id}">
     <div class="p-thumb">${thumbHTML(p)}</div>
     <div class="p-body">
-      <div class="p-who">${face(by, 'xs')}<span>${who}</span></div>
+      <div class="p-who">${face(decided ? taker : by, 'xs')}<span>${who}</span></div>
       <h3>${esc(p.title)}</h3>
       ${info ? `<p class="c-note">${info}</p>` : ''}
       ${siteBtn(p.url)}
@@ -1716,8 +1843,8 @@ function propHTML(p) {
         ${decided ? '' : `<button class="vote ${myVote > 0 ? 'on' : ''}" data-act="vote" data-id="${p.id}" data-v="1" aria-pressed="${myVote > 0}" aria-label="J'aime l'idée">${thumbIcon(false)}<b>${ups}</b></button>
           <button class="vote down ${myVote < 0 ? 'on' : ''}" data-act="vote" data-id="${p.id}" data-v="-1" aria-pressed="${myVote < 0}" aria-label="Je n'aime pas l'idée">${thumbIcon(true)}<b>${downs}</b></button>`}
       </div>
-      ${gangHTML({ leadId: p.by, joiners: p.joiners, price: p.price, act: 'join-prop', id: p.id })}
-      ${mine ? `<div class="manage">${decided ? `<button class="mbtn" data-act="prop-undecide" data-id="${p.id}">Plutôt en discuter</button>` : `<button class="mbtn got" data-act="prop-decide" data-id="${p.id}">${CHECK}Je lui prends</button>`}<button class="mbtn del" data-act="prop-delete" data-id="${p.id}">${TRASH}Supprimer</button></div>` : ''}
+      ${gangHTML({ leadId: takerId, joiners: p.joiners, price: p.price, act: 'join-prop', id: p.id, pay: p.pay, kind: 'proposals', money: decided })}
+      ${buttons ? `<div class="manage">${buttons}</div>` : ''}
     </div>
   </article>`;
 }
@@ -2219,7 +2346,7 @@ function saveItem(btn) {
     }
     S.tab = 'family';
     if (dest === 'decided') burst(r.left + r.width / 2, r.top, 50);
-    run(backend.addProposal(DEV.fid, { ...data, forId, by: S.me, status: dest, votes: {}, createdAt: Date.now() }),
+    run(backend.addProposal(DEV.fid, { ...data, forId, by: S.me, status: dest, votes: {}, createdAt: Date.now(), ...(dest === 'decided' ? { takenBy: S.me } : {}) }),
       dest === 'decided' ? `C'est noté : tu lui offres ça. ${name} n'en saura rien.` : `Proposé à la famille. ${name} ne le verra pas.`)
       .then(id => { if (id && ideaId) backend.deleteIdea(DEV.fid, ideaId).catch(err => console.error(err)); });
     return;
@@ -2247,9 +2374,104 @@ function shareIdea(ideaId, status, el) {
   const name = prof(i.forId)?.name || '';
   if (status === 'decided' && el) { const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top, 50); }
   S.tab = 'family';
-  run(backend.addProposal(DEV.fid, { ...giftFields(i), forId: i.forId, by: S.me, status, votes: {}, createdAt: Date.now() }),
+  run(backend.addProposal(DEV.fid, { ...giftFields(i), forId: i.forId, by: S.me, status, votes: {}, createdAt: Date.now(), ...(status === 'decided' ? { takenBy: S.me } : {}) }),
     status === 'decided' ? `C'est noté : tu lui offres ça. La famille le voit, ${name} non.` : `Proposé à la famille. ${name} ne le verra pas.`)
     .then(pid => { if (pid) backend.deleteIdea(DEV.fid, i.id).catch(err => console.error(err)); });
+}
+
+// ================= Splitting the cost of a group gift =================
+let pf = null;
+function payDoc(kind, id) {
+  if (kind === 'reservations') {
+    const r = S.res[id], it = S.items.find(i => i.id === id);
+    return r && it ? { doc: r, title: it.title, price: it.price, forId: it.ownerId, ids: gangIds(r.by, r.joiners) } : null;
+  }
+  const p = S.proposals.find(x => x.id === id);
+  return p ? { doc: p, title: p.title, price: p.price, forId: p.forId, ids: gangIds(takerOf(p), p.joiners) } : null;
+}
+function openPay(kind, id) {
+  const d = payDoc(kind, id); if (!d) return;
+  const pay = d.doc.pay;
+  pf = { kind, id, payer: pay?.by || S.me, mode: pay?.mode || 'equal', total: pay ? String(pay.total).replace('.', ',') : (parsePrice(d.price) ? String(parsePrice(d.price)).replace('.', ',') : ''),
+    shares: Object.fromEntries(Object.entries(pay?.shares || {}).map(([k, v]) => [k, String(v).replace('.', ',')])), had: !!pay };
+  showModal('<div id="payw"></div>');
+  renderPay();
+}
+const num = v => { const n = parseFloat(String(v || '').replace(/\s/g, '').replace(',', '.')); return isFinite(n) ? n : 0; };
+function renderPay() {
+  const box = $('#payw'), d = pf && payDoc(pf.kind, pf.id); if (!box || !d) return;
+  // keep what's typed when the window redraws
+  const t = $('#pftotal'); if (t) pf.total = t.value;
+  $$('#payw [data-share]').forEach(i => { pf.shares[i.dataset.share] = i.value; });
+  const ids = [...new Set([...d.ids, pf.payer])], total = num(pf.total), n = ids.length;
+  const sum = ids.reduce((a, id) => a + num(pf.shares[id]), 0);
+  box.innerHTML = `<h2>Partage des frais</h2>
+    <p class="hint intro"><b>${esc(d.title)}</b> pour ${esc(prof(d.forId)?.name || '')}. ${esc(prof(d.forId)?.name || 'La personne')} ne voit rien de tout ça.</p>
+    <div class="field"><span class="glabel">Qui a payé le cadeau ?</span>
+      <div class="people">${d.ids.map(id => { const p = prof(id), on = pf.payer === id; return `<button class="pp ${on ? 'on' : ''}" data-act="pf-payer" data-id="${id}" aria-pressed="${on}">${face(p, 'sm')}<span>${id === S.me ? 'Moi' : esc(p.name)}</span></button>`; }).join('')}</div></div>
+    <div class="field"><label for="pftotal">Montant total payé</label><div class="eur"><input type="text" id="pftotal" inputmode="decimal" placeholder="80" value="${esc(pf.total)}"><span>€</span></div></div>
+    <div class="field"><span class="glabel">Comment on partage ?</span>
+      <div class="seg"><button data-act="pf-mode" data-v="equal" class="${pf.mode === 'equal' ? 'on' : ''}">${n === 2 ? 'Moitié-moitié' : 'Parts égales'}</button><button data-act="pf-mode" data-v="custom" class="${pf.mode === 'custom' ? 'on' : ''}">Montants perso</button></div>
+      ${pf.mode === 'equal'
+        ? `<p class="hint">${total ? `${money(total / n)} chacun, pour ${n} personnes.` : 'Indique le montant total.'}</p>`
+        : `<div class="shares">${ids.map(id => { const p = prof(id); return `<label class="share">${face(p, 'xs')}<span>${id === S.me ? 'Moi' : esc(p.name)}${id === pf.payer ? ' <small>(a payé)</small>' : ''}</span><span class="eur"><input type="text" inputmode="decimal" data-share="${id}" value="${esc(pf.shares[id] || '')}" placeholder="0" aria-label="Part de ${esc(p.name)}"><span>€</span></span></label>`; }).join('')}</div>
+          <p class="hint" id="pfleft">${shareLeft(total, sum)}</p>`}
+    </div>
+    <div class="m-foot">${pf.had ? '<button class="btn danger" data-act="pf-clear">Retirer le partage</button>' : ''}<span class="sp"></span><button class="btn ghost" data-act="close">Annuler</button><button class="btn" data-act="pf-save">Enregistrer</button></div>`;
+}
+const shareLeft = (total, sum) => !total ? 'Indique le montant total.' : Math.abs(total - sum) < 0.01 ? '✓ Le compte est bon.' : total > sum ? `Reste ${money(total - sum)} à répartir.` : `${money(sum - total)} de trop par rapport au total.`;
+function savePay() {
+  const d = payDoc(pf.kind, pf.id); if (!d) { closeModal(); return; }
+  const total = num($('#pftotal')?.value);
+  if (total <= 0 || total > 99999) { toast('Indique le montant total payé.'); $('#pftotal')?.focus(); return; }
+  const pay = { by: pf.payer, total: Math.round(total * 100) / 100, mode: pf.mode, back: d.doc.pay?.back || {} };
+  if (pf.mode === 'custom') {
+    const shares = {};
+    $$('#payw [data-share]').forEach(i => { const v = Math.round(num(i.value) * 100) / 100; if (v > 0) shares[i.dataset.share] = v; });
+    const sum = Object.values(shares).reduce((a, b) => a + b, 0);
+    if (Math.abs(sum - pay.total) >= 0.01) { toast(`Les parts font ${money(sum)}, mais le total est de ${money(pay.total)}.`); return; }
+    pay.shares = shares;
+  }
+  // If the payer changed, earlier "paid back" ticks no longer mean anything
+  if (d.doc.pay && d.doc.pay.by !== pay.by) pay.back = {};
+  const { kind, id } = pf;
+  closeModal();
+  run(backend.setPay(DEV.fid, kind, id, pay), 'Partage des frais enregistré');
+}
+// ---- "Comptes": who owes how much to whom, across all the group gifts I'm on ----
+function myDebts() {
+  const out = [];
+  const add = (pay, ids, title, forId, kind, id) => debtsOf(pay, ids).filter(d => d.from === S.me || d.to === S.me).forEach(d => out.push({ ...d, title, forId, kind, id }));
+  for (const r of Object.values(S.res)) {
+    const it = S.items.find(i => i.id === r.id);
+    if (r.pay && it) add(r.pay, gangIds(r.by, r.joiners), it.title, it.ownerId, 'reservations', r.id);
+  }
+  for (const p of S.proposals) if (p.pay && p.status === 'decided') add(p.pay, gangIds(takerOf(p), p.joiners), p.title, p.forId, 'proposals', p.id);
+  return out;
+}
+function openAccounts() { showModal('<div id="accw"></div>'); renderAccounts(); }
+function renderAccounts() {
+  const box = $('#accw'); if (!box) return;
+  const all = myDebts(), open = all.filter(d => !d.back), done = all.filter(d => d.back);
+  const owe = open.filter(d => d.from === S.me), owed = open.filter(d => d.to === S.me);
+  const sum = l => l.reduce((a, d) => a + d.amount, 0);
+  // Group by person so "Tu dois 60 € à Lily" sums up several gifts
+  const byPerson = (list, key) => Object.values(list.reduce((m, d) => { (m[d[key]] = m[d[key]] || { pid: d[key], items: [] }).items.push(d); return m; }, {}));
+  const block = (list, key, mineOwes) => byPerson(list, key).map(g => {
+    const p = prof(g.pid);
+    return `<section class="acc">
+      <div class="acc-who">${face(p, 'sm')}<span>${mineOwes ? `Tu dois <b>${money(sum(g.items))}</b> à ${esc(p.name)}` : `${esc(p.name)} te doit <b>${money(sum(g.items))}</b>`}</span></div>
+      <ul>${g.items.map(d => `<li><span>${esc(d.title)} <small>pour ${esc(prof(d.forId)?.name || '')}</small></span><b>${money(d.amount)}</b><button class="mbtn small back" data-act="pay-back" data-kind="${d.kind}" data-id="${d.id}" data-who="${d.from}">${mineOwes ? "J'ai remboursé" : 'Remboursé'}</button></li>`).join('')}</ul>
+    </section>`;
+  }).join('');
+  box.innerHTML = `<h2>Les comptes</h2>
+    <p class="hint intro">Pour les cadeaux à plusieurs : qui a avancé l'argent, et qui doit combien à qui. Rien ne se paie ici, c'est juste pour s'y retrouver.</p>
+    <div class="acc-sum"><div><small>Tu dois</small><b>${money(sum(owe))}</b></div><div><small>On te doit</small><b>${money(sum(owed))}</b></div></div>
+    ${owe.length ? `<h3 class="sec">Ce que tu dois</h3>${block(owe, 'to', true)}` : ''}
+    ${owed.length ? `<h3 class="sec">Ce qu'on te doit</h3>${block(owed, 'from', false)}` : ''}
+    ${!owe.length && !owed.length ? `<p class="acc-ok">🎉 Tout est réglé, personne ne doit rien.</p>` : ''}
+    ${done.length ? `<h3 class="sec">Déjà remboursé</h3><ul class="acc-done">${done.map(d => `<li><span>${d.from === S.me ? `Tu as remboursé ${esc(prof(d.to)?.name || '')}` : `${esc(prof(d.from)?.name || '')} t'a remboursé`} · ${esc(d.title)}</span><b>${money(d.amount)}</b><button class="linkbtn" data-act="pay-unback" data-kind="${d.kind}" data-id="${d.id}" data-who="${d.from}">Annuler</button></li>`).join('')}</ul>` : ''}
+    <div class="m-foot"><span class="sp"></span><button class="btn" data-act="close">Fermer</button></div>`;
 }
 
 // ================= Stories =================
@@ -2514,7 +2736,7 @@ function showModal(html, lock = false) {
 function closeModal(force) {
   if (modalLocked && !force) return;
   modalLocked = false;
-  $('#modal').hidden = true; $('#panel').innerHTML = ''; pd = null; idr = null; pin = null; sd = null; repliesOpen = false; lastFocus?.focus?.();
+  $('#modal').hidden = true; $('#panel').innerHTML = ''; pd = null; idr = null; pin = null; sd = null; pf = null; repliesOpen = false; lastFocus?.focus?.();
 }
 
 // ================= Family code, "who are you", 6-digit code =================
@@ -2744,10 +2966,27 @@ document.addEventListener('click', e => {
     case 'prop-decide': {
       const p = S.proposals.find(x => x.id === id); if (!p) break;
       const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top, 50);
-      run(backend.updateProposal(DEV.fid, id, { status: 'decided', decidedAt: Date.now() }), `C'est noté : tu lui offres ça. ${prof(p.forId)?.name || ''} n'en saura rien.`);
+      run(backend.takeProposal(DEV.fid, id, S.me), `C'est noté : tu lui offres ça. ${prof(p.forId)?.name || ''} n'en saura rien.`);
       break;
     }
-    case 'prop-undecide': run(backend.updateProposal(DEV.fid, id, { status: 'question' })); break;
+    case 'prop-undecide': run(backend.untakeProposal(DEV.fid, id)); break;
+    case 'pay-open': openPay(el.dataset.kind, id); break;
+    case 'pay-back': {
+      const who = el.dataset.who, kind = el.dataset.kind;
+      backend.markBack(DEV.fid, kind, id, who, true)
+        .then(() => toast(who === S.me ? 'Noté : tu as remboursé' : 'Noté : remboursé', 'Annuler', () => run(backend.markBack(DEV.fid, kind, id, who, false))))
+        .catch(err => { console.error(err); toast(errorText(err)); });
+      break;
+    }
+    case 'pay-unback': run(backend.markBack(DEV.fid, el.dataset.kind, id, el.dataset.who, false)); break;
+    case 'pf-payer': pf.payer = id; renderPay(); break;
+    case 'pf-mode': pf.mode = v; renderPay(); break;
+    case 'pf-save': savePay(); break;
+    case 'pf-clear': {
+      if (!el.classList.contains('armed')) { el.classList.add('armed'); el.textContent = 'Confirmer'; break; }
+      const { kind, id: did } = pf; closeModal(); run(backend.setPay(DEV.fid, kind, did, null), 'Partage des frais retiré'); break;
+    }
+    case 'accounts': openAccounts(); break;
     case 'prop-delete': {
       if (!el.classList.contains('armed')) { el.classList.add('armed'); el.textContent = 'Confirmer'; break; }
       run(backend.deleteProposal(DEV.fid, id), 'Proposition supprimée'); break;
@@ -2898,6 +3137,12 @@ document.addEventListener('input', e => {
   const t = e.target;
   if (t.id === 'pname' && pd) pd.name = t.value;
   if (t.id === 'scap' && sd) sd.caption = t.value;
+  if (pf && (t.id === 'pftotal' || t.dataset.share)) {
+    const total = num($('#pftotal')?.value), left = $('#pfleft');
+    if (left) left.textContent = shareLeft(total, $$('#payw [data-share]').reduce((a, i) => a + num(i.value), 0));
+    const d = payDoc(pf.kind, pf.id), eq = $('#payw .seg + .hint');
+    if (d && eq && pf.mode === 'equal') { const n = new Set([...d.ids, pf.payer]).size; eq.textContent = total ? `${money(total / n)} chacun, pour ${n} personnes.` : 'Indique le montant total.'; }
+  }
   if (!idr) return;
   if (t.id === 'iurl') onUrlInput(t.value);
   if (t.id === 'ititle') { idr.title = t.value; idr.autoTitle = !t.value; refreshThumb(); }
